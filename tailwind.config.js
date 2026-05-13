@@ -16,8 +16,8 @@ export default {
         ],
       },
       boxShadow: {
-        glow: "0 24px 90px rgba(20, 184, 166, 0.18)",
-        panel: "0 24px 80px rgba(0, 0, 0, 0.42)",
+        glow: "0 24px 90px rgba(15, 23, 42, 0.14)",
+        panel: "0 24px 80px rgba(15, 23, 42, 0.10)",
       },
       keyframes: {
         "soft-pulse": {

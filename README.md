@@ -3,9 +3,22 @@
 One-page React + Tailwind dashboard for the Vibe Shuffle experiment.
 
 Vibe Shuffle compares random song selection against mood-adaptive song
-selection based on simulated heart rate and HRV. The dashboard includes a
-live mood state, Valence x Energy map, signal visualization, music player,
-queue, shuffle mode toggle, Likert ratings, and local A/B summary.
+selection based on simulated heart rate and HRV. The dashboard now runs a
+fixed validation protocol: Random Shuffle first, then Vibe Shuffle. Users rate
+each song on a 1-4 Likert scale before moving to the next song, and the results
+can be exported as a CSV file.
+
+The emotional state is derived from two axes:
+
+- Valence: low to high
+- Energy: low to high
+
+These axes map to four emotions:
+
+- Calm: high valence, low energy
+- Energetic: high valence, high energy
+- Stressed: low valence, high energy
+- Melancholic: low valence, low energy
 
 ## Run
 
@@ -21,3 +34,8 @@ Open http://localhost:5173.
 ```bash
 npm run build
 ```
+
+## Deploy
+
+The `main` branch deploys the built `dist/` folder to GitHub Pages through
+`.github/workflows/deploy.yml`.
