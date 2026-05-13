@@ -437,6 +437,70 @@ function CoverArt({ song, isPlaying }) {
   );
 }
 
+function IntroVisual() {
+  return (
+    <div
+      aria-label="Abstract music and mood illustration"
+      className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[linear-gradient(135deg,#e0f2fe_0%,#d9f99d_50%,#fed7aa_100%)]"
+      role="img"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(255,255,255,0.88),transparent_28%),radial-gradient(circle_at_72%_70%,rgba(255,255,255,0.58),transparent_32%)]" />
+      <div className="absolute left-8 right-8 top-1/2 h-px bg-white/70" />
+      <div className="absolute left-10 right-10 top-[54%] flex items-end gap-2">
+        {[38, 68, 48, 82, 56, 74, 44, 62].map((height, index) => (
+          <span
+            className="w-full rounded-full bg-white/80 shadow-sm"
+            key={height}
+            style={{
+              height: `${height}px`,
+              animation: `soft-pulse ${2.3 + index * 0.13}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="absolute left-10 top-8 rounded-full bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
+        Mood rating
+      </div>
+      <div className="absolute bottom-8 right-8 size-20 rounded-full border-[12px] border-white/75 shadow-[0_18px_55px_rgba(15,23,42,0.16)]" />
+    </div>
+  );
+}
+
+function IntroModal({ onStart, open }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 px-4 py-6 backdrop-blur-md">
+      <section
+        aria-modal="true"
+        className="w-full max-w-2xl rounded-lg border border-white/80 bg-white p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)]"
+        role="dialog"
+      >
+        <IntroVisual />
+        <div className="mt-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+            <Radio className="size-3.5" />
+            Short listening session
+          </div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+            Listen first, rate after each song.
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+            You will hear a series of short tracks. When a track ends, a rating window appears and asks how well it matched your current mood.
+          </p>
+          <button
+            className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            onClick={onStart}
+            type="button"
+          >
+            Start session
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open, song }) {
   if (!open) return null;
 
@@ -499,7 +563,8 @@ function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open,
 
 export default function App() {
   const [signals, setSignals] = useState({ hr: 76, hrv: 61, phase: 0, tick: 0 });
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [protocolId, setProtocolId] = useState(() => createProtocolId());
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -527,6 +592,8 @@ export default function App() {
     LISTENING_WINDOW_SECONDS * (1 - Math.min(trackProgress, 100) / 100);
 
   useEffect(() => {
+    if (!sessionStarted || protocolComplete) return undefined;
+
     const id = window.setInterval(() => {
       setSignals((current) => {
         const nextTick = current.tick + 1;
@@ -552,10 +619,12 @@ export default function App() {
     }, 1200);
 
     return () => window.clearInterval(id);
-  }, []);
+  }, [protocolComplete, sessionStarted]);
 
   useEffect(() => {
-    if (!isPlaying || protocolComplete || ratingPromptOpen || currentRating) return undefined;
+    if (!sessionStarted || !isPlaying || protocolComplete || ratingPromptOpen || currentRating) {
+      return undefined;
+    }
 
     const id = window.setInterval(() => {
       setTrackProgress((value) => {
@@ -573,7 +642,12 @@ export default function App() {
     }, 250);
 
     return () => window.clearInterval(id);
-  }, [currentRating, isPlaying, protocolComplete, ratingPromptOpen]);
+  }, [currentRating, isPlaying, protocolComplete, ratingPromptOpen, sessionStarted]);
+
+  function startSession() {
+    setSessionStarted(true);
+    setIsPlaying(true);
+  }
 
   function moveToSong(song) {
     setHistory((items) => [...items.slice(-8), currentSong]);
@@ -582,7 +656,7 @@ export default function App() {
     setQueueSeed((value) => value + 19);
     setTrackProgress(0);
     setRatingPromptOpen(false);
-    setIsPlaying(true);
+    setIsPlaying(sessionStarted);
   }
 
   function advanceProtocol() {
@@ -670,7 +744,8 @@ export default function App() {
     setProtocolComplete(false);
     setTrackProgress(0);
     setRatingPromptOpen(false);
-    setIsPlaying(true);
+    setSessionStarted(false);
+    setIsPlaying(false);
   }
 
   const nextButtonLabel = protocolComplete
@@ -768,7 +843,7 @@ export default function App() {
                     <button
                       aria-label={isPlaying ? "Pause" : "Play"}
                       className="flex size-16 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg transition hover:scale-[1.03]"
-                      disabled={protocolComplete || ratingPromptOpen}
+                      disabled={!sessionStarted || protocolComplete || ratingPromptOpen}
                       onClick={() => setIsPlaying((value) => !value)}
                       type="button"
                     >
@@ -877,6 +952,10 @@ export default function App() {
 
       </div>
 
+      <IntroModal
+        onStart={startSession}
+        open={!sessionStarted && !protocolComplete}
+      />
       <RatingModal
         currentRating={currentRating}
         nextButtonLabel={nextButtonLabel}
