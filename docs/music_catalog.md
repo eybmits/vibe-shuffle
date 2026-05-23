@@ -1,8 +1,13 @@
 # Real Music Catalog
 
-The preferred production catalog uses Jamendo because it provides real tracks,
-stream URLs, download permission flags, licensing metadata, cover art, and
-instrumental metadata through an API.
+The current public demo uses a curated legal instrumental catalog built from
+Wikimedia Commons/Incompetech and selected Internet Archive instrumentals. This
+gives the app a more playlist-like, recognizable instrumental pool while keeping
+direct audio URLs and license links in the repo.
+
+Jamendo remains useful for future larger catalog experiments because it provides
+real tracks, stream URLs, download permission flags, licensing metadata, cover
+art, and instrumental metadata through an API.
 
 The repository also includes an Internet Archive fallback that needs no login or
 API key. That fallback is useful when no Jamendo Client ID is available.
@@ -15,7 +20,24 @@ also restricts Audio Features/Audio Analysis access for many newer apps. For the
 study catalog we therefore use Spotify only as an optional playback/metadata
 integration, not as the source of downloaded audio.
 
-## Inputs
+## Current Curated Catalog
+
+```bash
+npm run curated:catalog
+```
+
+Generated files:
+
+- `src/data/musicCatalog.json`
+- `data/curated_instrumental_catalog.csv`
+
+The builder pulls Wikimedia Commons/Incompetech audio metadata, selected
+Internet Archive instrumental metadata, direct media URLs, and license URLs.
+Tracks are scored by source quality, duration, recognizable titles, and
+classification confidence, then selected across the four already-computed
+quadrants for experiment coverage.
+
+## Jamendo Inputs
 
 Create an ignored `.env` file:
 
@@ -42,7 +64,7 @@ JAMENDO_AUDIO_DIR=data/audio/jamendo
 Audio downloads are ignored by git. The web app uses Jamendo stream URLs in the
 catalog so the source repo stays lightweight.
 
-## Command
+## Jamendo Command
 
 ```bash
 npm run jamendo:catalog

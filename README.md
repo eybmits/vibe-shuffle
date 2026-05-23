@@ -59,7 +59,17 @@ npm run check:catalog-script
 
 The app reads a static catalog from `src/data/musicCatalog.json`.
 
-Preferred path:
+Current public-demo path:
+
+```bash
+npm run curated:catalog
+```
+
+This builds a curated legal instrumental catalog from Wikimedia
+Commons/Incompetech and selected Internet Archive instrumentals. It writes
+`src/data/musicCatalog.json` and `data/curated_instrumental_catalog.csv`.
+
+Jamendo path for future larger catalog experiments:
 
 ```bash
 JAMENDO_CLIENT_ID="..." npm run jamendo:catalog
@@ -85,7 +95,7 @@ npm run jamendo:catalog
 
 Downloaded MP3 files are saved under `data/audio/jamendo/` and ignored by git.
 
-No-login fallback used for the public demo:
+No-login broad fallback:
 
 ```bash
 npm run archive:catalog

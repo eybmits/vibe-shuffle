@@ -9,6 +9,9 @@ client-only; there is no backend service.
   expression detection, track ranking, rating modal, and CSV export.
 - `src/data/musicCatalog.json`: static track catalog consumed by the app.
 - `src/data/spotifyCatalog.json`: legacy/optional Spotify catalog output.
+- `scripts/build_curated_instrumental_catalog.mjs`: current public-demo
+  catalog generator using Wikimedia Commons/Incompetech and selected Internet
+  Archive instrumentals.
 - `scripts/build_jamendo_catalog.mjs`: preferred real-music catalog generator.
 - `scripts/build_internet_archive_catalog.mjs`: no-login real-music fallback
   generator.
@@ -54,8 +57,8 @@ There are three playback paths:
 
 ## Catalog Generation
 
-Catalog generators run at build time, not in the browser. The preferred Jamendo
-path writes `src/data/musicCatalog.json` and `data/jamendo_catalog.csv`. The
-Spotify path writes both `src/data/spotifyCatalog.json` and
-`src/data/musicCatalog.json`. Secrets are provided through environment variables
-or an ignored `.env` file and are never committed.
+Catalog generators run at build time, not in the browser. The current curated
+path writes `src/data/musicCatalog.json` and
+`data/curated_instrumental_catalog.csv`. Jamendo and Spotify paths can also
+write `src/data/musicCatalog.json`. Secrets are provided through environment
+variables or an ignored `.env` file and are never committed.

@@ -1008,7 +1008,7 @@ function MoodMap({ mood }) {
 function CoverArt({ isPlaying, song }) {
   if (song.albumImageUrl) {
     return (
-      <div className="relative aspect-square overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+      <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:max-w-[360px] lg:max-w-none">
         <img alt="" className="h-full w-full object-cover" src={song.albumImageUrl} />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent p-5 text-white">
           <div className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
@@ -1021,7 +1021,7 @@ function CoverArt({ isPlaying, song }) {
 
   return (
     <div
-      className="relative aspect-square overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
+      className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:max-w-[360px] lg:max-w-none"
       style={{
         background: `linear-gradient(135deg, ${song.palette[0]} 0%, ${song.palette[1]} 52%, ${song.palette[2]} 100%)`,
       }}
@@ -1178,7 +1178,8 @@ function IntroModal({
             <p className="mt-2 text-sm leading-6 text-slate-600">
               The camera estimates only a coarse expression signal locally in this browser. Images
               are not saved. The detector uses a short baseline calibration and then distinguishes
-              only Happy versus Sad-low for the adaptive block.
+              only Happy versus Sad-low for the adaptive block. Music starts only after you press
+              the player button.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
@@ -1187,7 +1188,7 @@ function IntroModal({
                 onClick={onStart}
                 type="button"
               >
-                Start session
+                Continue to player
               </button>
               <span className="text-sm text-slate-500">{trackCount} tracks in catalog</span>
             </div>
@@ -1388,7 +1389,7 @@ export default function App() {
         setPlaybackNotice(
           played
             ? currentSong.audioUrl
-              ? "Real instrumental demo track is playing."
+              ? "Curated instrumental track is playing."
               : "Demo audio is generated locally until Spotify tracks are imported."
             : "Demo audio could not start in this browser.",
         );
@@ -1434,20 +1435,9 @@ export default function App() {
   function startSession() {
     if (!setupReady || !songs.length) return;
     setSessionStarted(true);
-    setIsPlaying(true);
+    setIsPlaying(false);
     setTrackProgress(0);
-
-    if (!currentSong.spotifyUri) {
-      playDemoSong(currentSong).then((played) => {
-        setPlaybackNotice(
-          played
-            ? currentSong.audioUrl
-              ? "Real instrumental demo track is playing."
-              : "Demo audio is generated locally until Spotify tracks are imported."
-            : "Demo audio could not start in this browser.",
-        );
-      });
-    }
+    setPlaybackNotice("Press Start music when you are ready.");
   }
 
   function moveToSong(song) {
@@ -1671,7 +1661,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid gap-7 xl:grid-cols-[0.74fr_1fr]">
+            <div className="grid gap-7 lg:grid-cols-[minmax(240px,340px)_minmax(0,1fr)] lg:items-center">
               <CoverArt isPlaying={isPlaying} song={currentSong} />
 
               <div className="flex min-h-full flex-col justify-center gap-6">
@@ -1704,16 +1694,23 @@ export default function App() {
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <button
-                      aria-label={isPlaying ? "Pause" : "Play"}
-                      className="flex size-16 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:bg-slate-300"
+                      aria-label={isPlaying ? "Pause music" : "Start music"}
+                      className="inline-flex h-14 min-w-40 items-center justify-center gap-3 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-slate-300"
                       disabled={!sessionStarted || protocolComplete || ratingPromptOpen}
                       onClick={togglePlayback}
                       type="button"
                     >
-                      {isPlaying ? <Pause className="size-7" /> : <Play className="size-7" />}
+                      {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
+                      {isPlaying ? "Pause" : trackProgress > 0 ? "Resume" : "Start music"}
                     </button>
                     <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm">
-                      {ratingPromptOpen ? "Please rate this track" : isPlaying ? "Playing" : "Paused"}
+                      {ratingPromptOpen
+                        ? "Please rate this track"
+                        : isPlaying
+                          ? "Playing"
+                          : sessionStarted
+                            ? "Ready"
+                            : "Waiting"}
                     </div>
                   </div>
                   {playbackNotice || spotifyPlayerError || demoAudioError ? (
