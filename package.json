@@ -1,11 +1,28 @@
 {
   "name": "vibe-shuffle",
   "version": "0.1.0",
-  "private": true,
+  "description": "Mood-adaptive music validation dashboard comparing Random Shuffle and Vibe Shuffle.",
+  "license": "MIT",
+  "homepage": "https://eybmits.github.io/vibe_shuffle_site/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eybmits/vibe_shuffle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eybmits/vibe_shuffle/issues"
+  },
+  "keywords": [
+    "music-recommendation",
+    "affective-computing",
+    "spotify",
+    "react",
+    "validation-study"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "spotify:catalog": "node scripts/build_spotify_catalog.mjs",
+    "check:catalog-script": "node --check scripts/build_spotify_catalog.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0"
   },
