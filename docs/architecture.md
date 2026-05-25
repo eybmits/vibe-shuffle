@@ -6,7 +6,9 @@ client-only; there is no backend service.
 ## Main Components
 
 - `src/App.jsx`: complete experiment UI, state machine, playback handling,
-  expression detection, track ranking, rating modal, and CSV export.
+  expression sampling, track ranking, rating modal, and CSV export.
+- `src/expressionModel.js`: pure local expression scoring, baseline
+  calibration, temporal switching, and listening-window summaries.
 - `src/data/musicCatalog.json`: static track catalog consumed by the app.
 - `src/data/spotifyCatalog.json`: legacy/optional Spotify catalog output.
 - `scripts/build_curated_instrumental_catalog.mjs`: current public-demo
@@ -25,24 +27,35 @@ client-only; there is no backend service.
    `id`, `title`, `artist`, `spotifyUri`, `audioUrl`, `quadrant`,
    `valence`, `energy`, `instrumentalness`, and visual styling fields.
 3. The validation protocol starts with Random Shuffle and then Vibe Shuffle.
-4. The current expression state is estimated locally with MediaPipe.
+4. Expression samples are estimated locally with MediaPipe Face Landmarker
+   blendshapes.
 5. Random Shuffle ignores expression state for track selection.
-6. Vibe Shuffle ranks tracks by the detected expression state and recent-play
-   avoidance.
-7. After each listening window, the participant must submit a 1-4 rating.
-8. At protocol completion, ratings are exported as CSV.
+6. At the end of each listening window, the app averages the expression samples
+   from that window.
+7. Vibe Shuffle ranks the next track by that window-average expression state and
+   recent-play avoidance.
+8. After each listening window, the participant must submit a 1-4 rating.
+9. At protocol completion, ratings are exported as CSV.
 
 ## Expression Detection
 
 The browser loads MediaPipe Face Landmarker from `@mediapipe/tasks-vision`.
-The app uses face blendshape scores, not identity recognition. The current MVP
-reduces expression to:
+The app uses face blendshape scores, not identity recognition. The expression
+model estimates:
 
 - `happy`
+- `relaxed`
+- `tense`
 - `sad_low`
 
-The classifier uses a short per-session baseline, exponential smoothing, and a
-switching margin to reduce flicker. Camera frames are not stored or uploaded.
+The classifier uses a short neutral baseline, exponential smoothing, minimum
+sustained samples, and switching margins to reduce flicker. Neutral/low-evidence
+faces default to `relaxed`; `sad_low` requires sustained frown/mouth-corner
+evidence plus low smile evidence. Camera frames are not stored or uploaded.
+
+Track selection uses the average expression scores across the just-finished
+listening window, not the last detected instant. This makes brief end-of-song
+noise less likely to control the next Vibe Shuffle track.
 
 ## Playback Paths
 

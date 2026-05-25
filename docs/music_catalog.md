@@ -139,5 +139,6 @@ truth.
 ## App Behavior
 
 Random Shuffle ignores the catalog label when selecting tracks. Vibe Shuffle
-uses the detected expression state. The current face-expression MVP only emits
-`happy` or `sad_low`, so adaptive trials select from those matching pools.
+uses the averaged expression state from the just-finished listening window.
+Adaptive trials can select from `happy`, `relaxed`, `tense`, or `sad_low`
+matching pools.

@@ -16,13 +16,18 @@ import {
   Waves,
 } from "lucide-react";
 import musicCatalog from "./data/musicCatalog.json";
+import {
+  FACE_BASELINE_FRAMES,
+  FACE_SAMPLE_INTERVAL_MS,
+  createExpressionTrackerState,
+  initialExpressionScores,
+  summarizeExpressionSamples,
+  updateExpressionTracker,
+} from "./expressionModel.js";
 
 const TRACKS_PER_BLOCK = 5;
 const LISTENING_WINDOW_SECONDS = 18;
 const MEDIAPIPE_VERSION = "0.10.35";
-const FACE_BASELINE_FRAMES = 18;
-const FACE_EMA_ALPHA = 0.34;
-const FACE_SWITCH_MARGIN = 0.07;
 
 const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? "";
 const SPOTIFY_REDIRECT_URI =
@@ -175,6 +180,14 @@ function ratingsToCsv(ratings) {
     "detected_energy",
     "expression_confidence",
     "face_present",
+    "window_expression",
+    "window_expression_confidence",
+    "window_sample_count",
+    "mean_happy",
+    "mean_relaxed",
+    "mean_tense",
+    "mean_sad_low",
+    "selection_signal_source",
     "rating_1_to_4",
   ];
 
@@ -233,6 +246,24 @@ function rankSongs(songs, mode, mood, currentSongId, seed, recentIds) {
     .sort((a, b) => a.score - b.score);
 }
 
+function expressionStateToMood(expressionState) {
+  const tag =
+    expressionState?.tag && expressionState.tag in EMOTION_QUADRANTS
+      ? expressionState.tag
+      : "relaxed";
+  const style = EMOTION_QUADRANTS[tag];
+
+  return {
+    ...style,
+    confidence: Number(expressionState?.confidence ?? 0),
+    energy: Number(expressionState?.energy ?? style.energy),
+    facePresent: Boolean(expressionState?.facePresent),
+    sampleCount: Number(expressionState?.sampleCount ?? 0),
+    scores: expressionState?.scores ?? initialExpressionScores(),
+    valence: Number(expressionState?.valence ?? style.valence),
+  };
+}
+
 function base64UrlEncode(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -266,66 +297,6 @@ function readStoredToken() {
 
 function writeStoredToken(tokenPayload) {
   localStorage.setItem("vibe_shuffle_spotify_token", JSON.stringify(tokenPayload));
-}
-
-function expressionScore(categories, name) {
-  return categories.find((category) => category.categoryName === name)?.score ?? 0;
-}
-
-function expressionFeatures(categories) {
-  const smile =
-    (expressionScore(categories, "mouthSmileLeft") +
-      expressionScore(categories, "mouthSmileRight")) /
-    2;
-  const frown =
-    (expressionScore(categories, "mouthFrownLeft") +
-      expressionScore(categories, "mouthFrownRight")) /
-    2;
-  const browDown =
-    (expressionScore(categories, "browDownLeft") + expressionScore(categories, "browDownRight")) /
-    2;
-  const cheekSquint =
-    (expressionScore(categories, "cheekSquintLeft") +
-      expressionScore(categories, "cheekSquintRight")) /
-    2;
-  const mouthPress =
-    (expressionScore(categories, "mouthPressLeft") +
-      expressionScore(categories, "mouthPressRight")) /
-    2;
-  const mouthPucker = expressionScore(categories, "mouthPucker");
-
-  return {
-    happyRaw: smile * 0.78 + cheekSquint * 0.22,
-    sadRaw: frown * 0.66 + browDown * 0.2 + mouthPress * 0.08 + mouthPucker * 0.06,
-  };
-}
-
-function moodFromExpressionScores(happyScore, sadScore, previousTag) {
-  let tag = previousTag ?? "happy";
-
-  if (happyScore >= sadScore + FACE_SWITCH_MARGIN) {
-    tag = "happy";
-  } else if (sadScore >= happyScore + FACE_SWITCH_MARGIN) {
-    tag = "sad_low";
-  }
-
-  const confidence = clamp(Math.max(Math.abs(happyScore - sadScore), happyScore, sadScore), 0, 1);
-  const valence =
-    tag === "happy"
-      ? clamp(0.62 + happyScore * 0.32, 0.55, 0.95)
-      : clamp(0.38 - sadScore * 0.3, 0.05, 0.45);
-  const energy =
-    tag === "happy"
-      ? clamp(0.58 + happyScore * 0.28, 0.52, 0.9)
-      : clamp(0.36 - sadScore * 0.14, 0.12, 0.46);
-
-  return {
-    ...EMOTION_QUADRANTS[tag],
-    valence,
-    energy,
-    confidence: clamp(confidence, 0, 1),
-    facePresent: true,
-  };
 }
 
 function useSpotifyAuth() {
@@ -798,19 +769,20 @@ function useFaceExpression() {
   const landmarkerRef = useRef(null);
   const streamRef = useRef(null);
   const frameRef = useRef(null);
-  const baselineRef = useRef({ happy: 0, sad: 0, samples: 0 });
-  const smoothedScoresRef = useRef({ happy: 0, sad: 0 });
-  const lastStableRef = useRef({
-    ...EMOTION_QUADRANTS.happy,
-    confidence: 0,
-    facePresent: false,
-  });
+  const trackerRef = useRef(createExpressionTrackerState());
   const lastUpdateRef = useRef(0);
-  const [state, setState] = useState({
-    ...EMOTION_QUADRANTS.happy,
+  const sampleIdRef = useRef(0);
+  const relaxedMood = expressionStateToMood({
     confidence: 0,
-    error: "",
     facePresent: false,
+    scores: initialExpressionScores(),
+    tag: "relaxed",
+  });
+  const [state, setState] = useState({
+    ...relaxedMood,
+    error: "",
+    sample: null,
+    sampleId: 0,
     status: "idle",
   });
 
@@ -820,58 +792,39 @@ function useFaceExpression() {
 
     if (video && landmarker && video.readyState >= 2) {
       const now = performance.now();
-      if (now - lastUpdateRef.current > 360) {
+      if (now - lastUpdateRef.current > FACE_SAMPLE_INTERVAL_MS) {
         lastUpdateRef.current = now;
         const result = landmarker.detectForVideo(video, now);
         const categories = result.faceBlendshapes?.[0]?.categories ?? null;
 
         if (categories?.length) {
-          const features = expressionFeatures(categories);
-          const baseline = baselineRef.current;
+          const update = updateExpressionTracker(trackerRef.current, categories);
+          trackerRef.current = update.tracker;
 
-          if (baseline.samples < FACE_BASELINE_FRAMES) {
-            baseline.samples += 1;
-            baseline.happy += features.happyRaw;
-            baseline.sad += features.sadRaw;
-            setState({
-              ...lastStableRef.current,
-              confidence: baseline.samples / FACE_BASELINE_FRAMES,
+          if (update.status === "calibrating") {
+            setState((current) => ({
+              ...expressionStateToMood(update.expression),
+              confidence: trackerRef.current.baseline.samples / FACE_BASELINE_FRAMES,
               error: "",
-              facePresent: true,
+              sample: null,
+              sampleId: current.sampleId,
               status: "calibrating",
-            });
-          } else {
-            const baselineHappy = baseline.happy / baseline.samples;
-            const baselineSad = baseline.sad / baseline.samples;
-            const happyEvidence = clamp(
-              (features.happyRaw - baselineHappy) * 2.8 + features.happyRaw * 0.65,
-              0,
-              1,
-            );
-            const sadEvidence = clamp(
-              (features.sadRaw - baselineSad) * 3.1 +
-                features.sadRaw * 0.8 -
-                features.happyRaw * 0.25,
-              0,
-              1,
-            );
-            const smoothedScores = smoothedScoresRef.current;
-            smoothedScores.happy =
-              smoothedScores.happy * (1 - FACE_EMA_ALPHA) + happyEvidence * FACE_EMA_ALPHA;
-            smoothedScores.sad =
-              smoothedScores.sad * (1 - FACE_EMA_ALPHA) + sadEvidence * FACE_EMA_ALPHA;
-            const nextMood = moodFromExpressionScores(
-              smoothedScores.happy,
-              smoothedScores.sad,
-              lastStableRef.current.tag,
-            );
-            const stableMood = nextMood.confidence >= 0.12 ? nextMood : lastStableRef.current;
-            lastStableRef.current = stableMood;
-            setState({ ...stableMood, error: "", status: "ready" });
+            }));
+            frameRef.current = window.requestAnimationFrame(detect);
+            return;
           }
+
+          sampleIdRef.current += 1;
+          setState({
+            ...expressionStateToMood(update.expression),
+            error: "",
+            sample: update.sample,
+            sampleId: sampleIdRef.current,
+            status: "ready",
+          });
         } else {
           setState((current) => ({
-            ...lastStableRef.current,
+            ...current,
             confidence: current.confidence,
             error: "",
             facePresent: false,
@@ -888,7 +841,20 @@ function useFaceExpression() {
     if (streamRef.current || landmarkerRef.current) return;
 
     try {
-      setState((current) => ({ ...current, error: "", status: "loading" }));
+      trackerRef.current = createExpressionTrackerState();
+      sampleIdRef.current = 0;
+      setState((current) => ({
+        ...expressionStateToMood({
+          confidence: 0,
+          facePresent: false,
+          scores: initialExpressionScores(),
+          tag: "relaxed",
+        }),
+        error: "",
+        sample: null,
+        sampleId: 0,
+        status: "loading",
+      }));
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
@@ -950,6 +916,9 @@ function useFaceExpression() {
     if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
     streamRef.current?.getTracks().forEach((track) => track.stop());
     landmarkerRef.current?.close?.();
+    frameRef.current = null;
+    streamRef.current = null;
+    landmarkerRef.current = null;
   }, []);
 
   useEffect(() => stop, [stop]);
@@ -1177,9 +1146,8 @@ function IntroModal({
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               The camera estimates only a coarse expression signal locally in this browser. Images
-              are not saved. The detector uses a short baseline calibration and then distinguishes
-              only Happy versus Sad-low for the adaptive block. Music starts only after you press
-              the player button.
+              are not saved. The detector uses a short neutral baseline and then estimates Happy,
+              Relaxed, Tense, or Sad-low. Music starts only after you press the player button.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
@@ -1333,6 +1301,8 @@ export default function App() {
   const [trackProgress, setTrackProgress] = useState(0);
   const [ratingPromptOpen, setRatingPromptOpen] = useState(false);
   const [playbackNotice, setPlaybackNotice] = useState("");
+  const expressionWindowRef = useRef([]);
+  const lastWindowSampleIdRef = useRef(0);
 
   const mode = PROTOCOL_BLOCKS[currentBlockIndex].mode;
   const mood = face;
@@ -1347,10 +1317,45 @@ export default function App() {
   const progressPercent = Math.round((completedTrials / totalTrials) * 100);
   const remainingSeconds =
     LISTENING_WINDOW_SECONDS * (1 - Math.min(trackProgress, 100) / 100);
-  const cameraReady = face.status === "ready" || face.status === "searching";
+  const cameraReady =
+    face.status === "ready" || face.status === "searching" || face.status === "calibrating";
   const playbackReady = !catalogRequiresSpotify || spotifyPlayerReady;
   const setupReady = playbackReady;
   const isFallbackCatalog = catalogSource === "real-instrumental-demo" || catalogSource === "legacy";
+
+  function currentWindowSummary() {
+    return summarizeExpressionSamples(expressionWindowRef.current, face);
+  }
+
+  function resetExpressionWindow() {
+    expressionWindowRef.current = [];
+    lastWindowSampleIdRef.current = face.sampleId ?? 0;
+  }
+
+  useEffect(() => {
+    if (!face.sampleId || face.sampleId === lastWindowSampleIdRef.current) return;
+
+    lastWindowSampleIdRef.current = face.sampleId;
+
+    if (
+      !sessionStarted ||
+      !isPlaying ||
+      ratingPromptOpen ||
+      protocolComplete ||
+      !face.sample
+    ) {
+      return;
+    }
+
+    expressionWindowRef.current = [...expressionWindowRef.current.slice(-360), face.sample];
+  }, [
+    face.sample,
+    face.sampleId,
+    isPlaying,
+    protocolComplete,
+    ratingPromptOpen,
+    sessionStarted,
+  ]);
 
   useEffect(() => {
     if (!sessionStarted || !isPlaying || protocolComplete || ratingPromptOpen || currentRating) {
@@ -1434,6 +1439,7 @@ export default function App() {
 
   function startSession() {
     if (!setupReady || !songs.length) return;
+    resetExpressionWindow();
     setSessionStarted(true);
     setIsPlaying(false);
     setTrackProgress(0);
@@ -1441,6 +1447,7 @@ export default function App() {
   }
 
   function moveToSong(song) {
+    resetExpressionWindow();
     setHistory((items) => [...items.slice(-8), currentSong]);
     setCurrentSong(song);
     setTrialId((value) => value + 1);
@@ -1453,7 +1460,9 @@ export default function App() {
   function advanceProtocol() {
     if (!currentRating || protocolComplete) return;
 
-    const nextSong = queue[0] ?? songs[0];
+    const selectionMood = expressionStateToMood(currentWindowSummary());
+    const rankedSongs = rankSongs(songs, mode, selectionMood, currentSong.id, queueSeed, recentIds);
+    const nextSong = rankedSongs[0] ?? queue[0] ?? songs[0];
     const isLastTrackInBlock = currentTrackIndex === TRACKS_PER_BLOCK - 1;
     const isLastBlock = currentBlockIndex === PROTOCOL_BLOCKS.length - 1;
 
@@ -1471,7 +1480,7 @@ export default function App() {
       const transitionQueue = rankSongs(
         songs,
         nextBlock.mode,
-        mood,
+        selectionMood,
         currentSong.id,
         queueSeed + 31,
         recentIds,
@@ -1492,6 +1501,8 @@ export default function App() {
     if (protocolComplete || !ratingPromptOpen) return;
 
     setRatings((items) => {
+      const expressionSummary = currentWindowSummary();
+      const ratingMood = expressionStateToMood(expressionSummary);
       const nextRating = {
         protocol_id: protocolId,
         trial_id: trialId,
@@ -1517,12 +1528,20 @@ export default function App() {
         song_analysis_confidence: currentSong.analysisConfidence,
         song_external_url: currentSong.externalUrl,
         song_license_url: currentSong.licenseUrl,
-        detected_expression: mood.tag,
-        detected_expression_label: mood.label,
-        detected_valence: mood.valence,
-        detected_energy: mood.energy,
-        expression_confidence: Number(mood.confidence.toFixed(3)),
-        face_present: mood.facePresent,
+        detected_expression: ratingMood.tag,
+        detected_expression_label: ratingMood.label,
+        detected_valence: Number(ratingMood.valence.toFixed(3)),
+        detected_energy: Number(ratingMood.energy.toFixed(3)),
+        expression_confidence: Number(ratingMood.confidence.toFixed(3)),
+        face_present: ratingMood.facePresent,
+        window_expression: expressionSummary.tag,
+        window_expression_confidence: Number(expressionSummary.confidence.toFixed(3)),
+        window_sample_count: expressionSummary.sampleCount,
+        mean_happy: Number(expressionSummary.mean_happy.toFixed(3)),
+        mean_relaxed: Number(expressionSummary.mean_relaxed.toFixed(3)),
+        mean_tense: Number(expressionSummary.mean_tense.toFixed(3)),
+        mean_sad_low: Number(expressionSummary.mean_sad_low.toFixed(3)),
+        selection_signal_source: "window_average",
         rating_1_to_4: score,
         score,
       };
@@ -1536,6 +1555,7 @@ export default function App() {
   }
 
   function resetProtocol() {
+    resetExpressionWindow();
     setProtocolId(createProtocolId());
     setCurrentBlockIndex(0);
     setCurrentTrackIndex(0);

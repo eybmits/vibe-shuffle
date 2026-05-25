@@ -3,9 +3,9 @@
 Vibe Shuffle is a one-page React dashboard for a blinded music-recommendation
 validation study. It compares a passive Random Shuffle block against a
 mood-adaptive Vibe Shuffle block. The current prototype estimates the
-participant's expression locally in the browser, reduces it to `happy` or
-`sad_low`, and selects the next adaptive track from the corresponding catalog
-pool.
+participant's expression locally in the browser, maps it to `happy`, `relaxed`,
+`tense`, or `sad_low`, and selects the next adaptive track from the averaged
+expression state over the just-finished listening window.
 
 Live demo:
 
@@ -19,6 +19,8 @@ https://eybmits.github.io/vibe_shuffle_site/
 - Supports a legal 100-track Jamendo catalog with downloadable instrumental audio.
 - Keeps Spotify as an optional metadata/playback path, not as the download source.
 - Uses local MediaPipe Face Landmarker blendshapes for expression detection.
+- Keeps neutral/calm faces in `relaxed` unless there is sustained active
+  expression evidence.
 - Requires a 1-4 mood-fit rating after every track.
 - Exports session ratings as a CSV file.
 
@@ -52,6 +54,7 @@ Optional checks:
 
 ```bash
 npm audit --omit=dev
+npm run test:expression
 npm run check:catalog-script
 ```
 

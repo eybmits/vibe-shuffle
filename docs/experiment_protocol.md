@@ -24,10 +24,14 @@ Random Shuffle:
 
 Vibe Shuffle:
 
-- Uses the current expression state.
-- Current MVP maps expression to `happy` or `sad_low`.
+- Uses the averaged expression state from the just-finished listening window.
+- Maps expression to `happy`, `relaxed`, `tense`, or `sad_low`.
 - Selects from the matching track quadrant when available.
 - Falls back to the broader catalog if the matching pool is empty.
+
+The live camera panel may update during playback, but Vibe track selection is
+based on the listening-window average. A brief last-second expression spike
+therefore does not dominate the next song choice.
 
 ## Rating
 
@@ -56,6 +60,10 @@ The exported CSV includes:
 - detected expression label
 - detected Valence, Energy, confidence
 - whether a face was visible
+- window-average expression label and confidence
+- number of expression samples in the listening window
+- mean `happy`, `relaxed`, `tense`, and `sad_low` scores
+- selection signal source (`window_average`)
 - rating from 1 to 4
 
 The CSV does not include camera frames, face images, or identity data.
