@@ -989,6 +989,22 @@ function createMockBaselineMeasurements() {
   });
 }
 
+function physiologyQualityMessage(summary) {
+  if (!summary?.ecg_connected || summary.physiology_quality === "inactive") {
+    return "No live heart-rate packets received yet.";
+  }
+
+  if (summary.physiology_quality === "bpm_only") {
+    return "Receiving HR, but no RR intervals. HRV needs RR intervals from the sensor.";
+  }
+
+  if (summary.physiology_quality === "low") {
+    return `Baseline not good enough: ${summary.rr_count}/20 valid RR intervals. Keep the strap on and wait for more RR data.`;
+  }
+
+  return "";
+}
+
 function usePhysiologySensor() {
   const deviceRef = useRef(null);
   const characteristicRef = useRef(null);
@@ -1007,7 +1023,10 @@ function usePhysiologySensor() {
       connected: false,
       currentSummary: emptySummary,
       error: "",
+      baselineIssue: "",
       latestHeartRate: null,
+      latestSensorContact: null,
+      notificationCount: 0,
       sample: null,
       sampleId: 0,
       source: "none",
@@ -1047,7 +1066,10 @@ function usePhysiologySensor() {
       connected: false,
       currentSummary: summarizePhysiologyMeasurements([]),
       error: "",
+      baselineIssue: "",
       latestHeartRate: null,
+      latestSensorContact: null,
+      notificationCount: 0,
       sample: null,
       sampleId: 0,
       source: "none",
@@ -1067,6 +1089,7 @@ function usePhysiologySensor() {
     setState((current) => {
       const baseline = current.baseline;
       let nextBaseline = baseline;
+      let baselineIssue = current.baselineIssue;
       let baselineProgress = current.baselineProgress;
       let status = current.status;
 
@@ -1084,9 +1107,11 @@ function usePhysiologySensor() {
             baselineSummary.physiology_quality === "good"
               ? createPhysiologyBaseline(baselineMeasurementsRef.current)
               : null;
+          baselineIssue = nextBaseline ? "" : physiologyQualityMessage(baselineSummary);
           status = "ready";
           baselineProgress = 1;
         } else {
+          baselineIssue = "";
           status = "baselining";
         }
       }
@@ -1101,11 +1126,15 @@ function usePhysiologySensor() {
       return {
         ...current,
         baseline: nextBaseline,
+        baselineIssue,
         baselineProgress,
         connected: true,
         currentSummary,
         error: "",
         latestHeartRate: nextMeasurement.heartRateBpm ?? current.latestHeartRate,
+        latestSensorContact:
+          nextMeasurement.sensorContactDetected ?? current.latestSensorContact,
+        notificationCount: current.notificationCount + 1,
         sample: nextMeasurement,
         sampleId: sampleIdRef.current,
         source,
@@ -1130,7 +1159,10 @@ function usePhysiologySensor() {
       connected: true,
       currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, baseline),
       error: "",
+      baselineIssue: "",
       latestHeartRate: baseline.median_hr_bpm,
+      latestSensorContact: true,
+      notificationCount: baselineMeasurements.length,
       sample: measurementsRef.current.at(-1),
       sampleId: sampleIdRef.current,
       source: "mock",
@@ -1183,11 +1215,15 @@ function usePhysiologySensor() {
       setState((current) => ({
         ...current,
         baseline: null,
+        baselineIssue: "",
         baselineProgress: 0,
         connected: true,
         error: "",
+        latestHeartRate: null,
+        latestSensorContact: null,
+        notificationCount: 0,
         source: "ble",
-        status: "baselining",
+        status: "waiting",
       }));
     } catch (error) {
       setState((current) => ({
@@ -1361,24 +1397,52 @@ function CameraPanel({ face }) {
 
 function PhysiologyPanel({ physiology }) {
   const summary = physiology.currentSummary;
-  const statusLabel =
-    physiology.status === "ready"
-      ? physiology.source === "mock"
-        ? "Demo sensor ready"
-        : "ECG ready"
-      : physiology.status === "baselining"
-        ? `Baseline ${Math.round(physiology.baselineProgress * 100)}%`
-        : physiology.status === "connecting"
-          ? "Connecting"
-          : physiology.status === "error"
-            ? "Sensor unavailable"
-            : "Optional";
+  let statusLabel = "Optional";
+  if (physiology.status === "ready") {
+    if (physiology.source === "mock") {
+      statusLabel = "Demo sensor ready";
+    } else if (physiology.baseline) {
+      statusLabel = "ECG + HRV ready";
+    } else {
+      statusLabel =
+        summary.physiology_quality === "bpm_only" ? "HR only" : "Baseline not usable";
+    }
+  } else if (physiology.status === "baselining") {
+    statusLabel = `Baseline ${Math.round(physiology.baselineProgress * 100)}%`;
+  } else if (physiology.status === "connecting") {
+    statusLabel = "Connecting";
+  } else if (physiology.status === "waiting") {
+    statusLabel = "Waiting for HR";
+  } else if (physiology.status === "error") {
+    statusLabel = "Sensor unavailable";
+  }
   const rmssdLabel = Number.isFinite(summary.rmssd_ms)
     ? `${Math.round(summary.rmssd_ms)} ms`
     : "No RR";
   const arousalLabel = Number.isFinite(summary.physiology_arousal)
     ? `${Math.round(summary.physiology_arousal * 100)}%`
     : "Face only";
+  let helpText = "HRV is used only when RR intervals are available and baseline quality is good.";
+  if (physiology.status === "waiting") {
+    helpText =
+      "Sensor permission is granted. Waiting for live heart-rate packets. Wear the Polar strap firmly and wet the electrodes.";
+  } else if (physiology.baselineIssue) {
+    helpText = physiology.baselineIssue;
+  } else if (physiology.latestSensorContact === false) {
+    helpText = "Sensor reports poor skin contact. Wet the electrodes and wear the strap firmly.";
+  } else if (summary.physiology_quality === "bpm_only") {
+    helpText = "This connection is sending HR only. HRV needs RR intervals from the sensor.";
+  } else if (summary.physiology_quality === "low") {
+    helpText = "More RR intervals are needed before HRV can drive arousal.";
+  }
+  const qualityLabel =
+    summary.physiology_quality === "good"
+      ? "good"
+      : summary.physiology_quality === "bpm_only"
+        ? "HR only"
+        : summary.physiology_quality === "low"
+          ? "low RR"
+          : "no data";
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -1410,9 +1474,11 @@ function PhysiologyPanel({ physiology }) {
           <div className="mt-1 text-lg font-semibold text-slate-950">{arousalLabel}</div>
         </div>
       </div>
-      <p className="mt-3 text-xs leading-5 text-slate-500">
-        HRV is used only when RR intervals are available and baseline quality is good.
-      </p>
+      <p className="mt-3 text-xs leading-5 text-slate-500">{helpText}</p>
+      <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+        Quality {qualityLabel} · Packets {physiology.notificationCount} · RR{" "}
+        {summary.rr_count}/20
+      </div>
       {physiology.error ? <p className="mt-3 text-sm text-rose-600">{physiology.error}</p> : null}
     </section>
   );
@@ -1465,12 +1531,15 @@ function IntroModal({
         ? physiology.source === "mock"
           ? "Demo ECG baseline is ready."
           : "Heart-rate baseline is ready."
-        : "Heart-rate sensor is connected; HRV is not driving selection."
+        : physiology.baselineIssue ||
+          "Heart-rate sensor is connected, but HRV is not driving selection."
       : physiology.status === "baselining"
         ? `Neutral baseline ${Math.round(physiology.baselineProgress * 100)}% complete.`
         : physiology.status === "connecting"
           ? "Connecting to heart-rate sensor."
-          : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
+          : physiology.status === "waiting"
+            ? "Sensor is paired. Waiting for live heart-rate packets. Wear the strap and wet the electrodes."
+            : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/75 px-4 py-6 backdrop-blur-md">
