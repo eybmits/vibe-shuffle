@@ -68,7 +68,7 @@ The exported CSV includes:
 - mean `happy`, `relaxed`, `tense`, and `sad_low` scores
 - ECG connection state and physiology quality
 - HR/HRV features: mean HR, RR count, artifact rate, RMSSD, SDNN, pNN20
-- baseline HR/RMSSD and normalized HR/RMSSD deviations
+- baseline HR/RMSSD and normalized HR/RMSSD/SDNN deviations
 - physiology arousal plus fused Valence/Arousal
 - selection signal source (`window_average` or `face_window_plus_ecg_arousal`)
 - rating from 1 to 4

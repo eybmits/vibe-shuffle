@@ -230,6 +230,7 @@ export function summarizePhysiologyMeasurements(
     physiology_quality: quality,
     z_hr: roundNullable(zHr),
     z_rmssd: roundNullable(zRmssd),
+    z_sdnn: roundNullable(zSdnn),
   };
 }
 

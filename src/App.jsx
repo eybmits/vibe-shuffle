@@ -208,6 +208,7 @@ function ratingsToCsv(ratings) {
     "baseline_rmssd_ms",
     "z_hr",
     "z_rmssd",
+    "z_sdnn",
     "physiology_arousal",
     "fusion_valence",
     "fusion_arousal",
@@ -239,6 +240,53 @@ function downloadCsv(ratings, protocolId) {
 function formatSeconds(seconds) {
   const safeSeconds = Math.max(0, Math.ceil(seconds));
   return `0:${String(safeSeconds).padStart(2, "0")}`;
+}
+
+function createSmoothPath(points) {
+  if (!points.length) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  return points
+    .map((point, index) => {
+      if (index === 0) return `M ${point.x} ${point.y}`;
+      const previous = points[index - 1];
+      const controlX = (previous.x + point.x) / 2;
+      return `C ${controlX} ${previous.y}, ${controlX} ${point.y}, ${point.x} ${point.y}`;
+    })
+    .join(" ");
+}
+
+function buildHeartRateCurve(samples, width = 320, height = 112) {
+  const heartRates = samples
+    .map((sample) => Number(sample.heartRateBpm))
+    .filter((value) => Number.isFinite(value));
+  const values = heartRates.length ? heartRates : [66, 67, 66, 68, 67, 69, 68, 70, 69, 70];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const paddedMin = min - 4;
+  const paddedMax = max + 4;
+  const range = Math.max(1, paddedMax - paddedMin);
+  const step = values.length > 1 ? width / (values.length - 1) : width;
+  const points = values.map((value, index) => ({
+    value,
+    x: Number((index * step).toFixed(2)),
+    y: Number((height - ((value - paddedMin) / range) * height).toFixed(2)),
+  }));
+
+  return {
+    areaPath: `${createSmoothPath(points)} L ${width} ${height} L 0 ${height} Z`,
+    current: values.at(-1),
+    max,
+    min,
+    path: createSmoothPath(points),
+    points,
+  };
+}
+
+function formatSignedPoints(value) {
+  if (!Number.isFinite(value)) return "-";
+  const rounded = Math.round(value);
+  return `${rounded > 0 ? "+" : ""}${rounded} pp`;
 }
 
 function deterministicScore(id, seed) {
@@ -1024,6 +1072,7 @@ function usePhysiologySensor() {
       currentSummary: emptySummary,
       error: "",
       baselineIssue: "",
+      heartRateHistory: [],
       latestHeartRate: null,
       latestSensorContact: null,
       notificationCount: 0,
@@ -1067,6 +1116,7 @@ function usePhysiologySensor() {
       currentSummary: summarizePhysiologyMeasurements([]),
       error: "",
       baselineIssue: "",
+      heartRateHistory: [],
       latestHeartRate: null,
       latestSensorContact: null,
       notificationCount: 0,
@@ -1121,6 +1171,9 @@ function usePhysiologySensor() {
         nextBaseline,
         current.currentSummary,
       );
+      const nextHeartRateHistory = Number.isFinite(nextMeasurement.heartRateBpm)
+        ? [...(current.heartRateHistory ?? []), nextMeasurement].slice(-48)
+        : (current.heartRateHistory ?? []);
       sampleIdRef.current += 1;
 
       return {
@@ -1131,6 +1184,7 @@ function usePhysiologySensor() {
         connected: true,
         currentSummary,
         error: "",
+        heartRateHistory: nextHeartRateHistory,
         latestHeartRate: nextMeasurement.heartRateBpm ?? current.latestHeartRate,
         latestSensorContact:
           nextMeasurement.sensorContactDetected ?? current.latestSensorContact,
@@ -1160,6 +1214,7 @@ function usePhysiologySensor() {
       currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, baseline),
       error: "",
       baselineIssue: "",
+      heartRateHistory: baselineMeasurements.slice(-32),
       latestHeartRate: baseline.median_hr_bpm,
       latestSensorContact: true,
       notificationCount: baselineMeasurements.length,
@@ -1219,6 +1274,7 @@ function usePhysiologySensor() {
         baselineProgress: 0,
         connected: true,
         error: "",
+        heartRateHistory: [],
         latestHeartRate: null,
         latestSensorContact: null,
         notificationCount: 0,
@@ -1395,6 +1451,140 @@ function CameraPanel({ face }) {
   );
 }
 
+function HeartRateCurve({ physiology, summary }) {
+  const samples = physiology.heartRateHistory ?? [];
+  const curve = buildHeartRateCurve(samples);
+  const hasLiveSamples = samples.length > 0;
+  const latestLabel = Number.isFinite(summary.hr_bpm_mean)
+    ? `${Math.round(summary.hr_bpm_mean)} bpm`
+    : "Waiting";
+  const lastPoint = curve.points.at(-1);
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-lg border border-teal-100 bg-[linear-gradient(135deg,#f0fdfa_0%,#f8fafc_56%,#fff7ed_100%)] p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+            Heart-rate curve
+          </div>
+          <div className="mt-1 text-xs text-slate-500">
+            {hasLiveSamples ? `Last ${samples.length} packets` : "Waiting for live packets"}
+          </div>
+        </div>
+        <div className="rounded-full bg-white/85 px-3 py-1 text-sm font-semibold text-slate-950 shadow-sm">
+          {latestLabel}
+        </div>
+      </div>
+      <div className="relative h-32">
+        <svg
+          aria-hidden="true"
+          className="h-full w-full overflow-visible"
+          preserveAspectRatio="none"
+          viewBox="0 0 320 112"
+        >
+          <defs>
+            <linearGradient id="hrCurveStroke" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#14b8a6" />
+              <stop offset="52%" stopColor="#22c55e" />
+              <stop offset="100%" stopColor="#f97316" />
+            </linearGradient>
+            <linearGradient id="hrCurveArea" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+            </linearGradient>
+            <filter id="hrCurveGlow" x="-10%" y="-30%" width="120%" height="160%">
+              <feGaussianBlur stdDeviation="4" />
+            </filter>
+          </defs>
+          {[28, 56, 84].map((y) => (
+            <line key={y} stroke="#cbd5e1" strokeDasharray="4 8" strokeOpacity="0.55" x1="0" x2="320" y1={y} y2={y} />
+          ))}
+          <path d={curve.areaPath} fill="url(#hrCurveArea)" opacity={hasLiveSamples ? 1 : 0.36} />
+          <path
+            d={curve.path}
+            fill="none"
+            filter="url(#hrCurveGlow)"
+            opacity={hasLiveSamples ? 0.38 : 0.16}
+            stroke="#14b8a6"
+            strokeLinecap="round"
+            strokeWidth="7"
+          />
+          <path
+            d={curve.path}
+            fill="none"
+            opacity={hasLiveSamples ? 1 : 0.34}
+            stroke="url(#hrCurveStroke)"
+            strokeDasharray={hasLiveSamples ? "0" : "8 10"}
+            strokeLinecap="round"
+            strokeWidth="3.5"
+          />
+          {hasLiveSamples && lastPoint ? (
+            <>
+              <circle cx={lastPoint.x} cy={lastPoint.y} fill="#f97316" opacity="0.18" r="11" />
+              <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill="#f97316" r="4.5" />
+            </>
+          ) : null}
+        </svg>
+        {!hasLiveSamples ? (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+            Connect sensor
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <span>Min {Math.round(curve.min)} bpm</span>
+        <span>Max {Math.round(curve.max)} bpm</span>
+      </div>
+    </div>
+  );
+}
+
+function ArousalCalculation({ summary }) {
+  const hrTerm = Number.isFinite(summary.z_hr) ? summary.z_hr * 16 : null;
+  const rmssdTerm = Number.isFinite(summary.z_rmssd) ? summary.z_rmssd * 18 : null;
+  const sdnnTerm = Number.isFinite(summary.z_sdnn) ? summary.z_sdnn * 12 : null;
+  const hasArousal = Number.isFinite(summary.physiology_arousal);
+  const baselineLabel = Number.isFinite(summary.baseline_hr_bpm)
+    ? `${Math.round(summary.baseline_hr_bpm)} bpm baseline`
+    : "Baseline needed";
+
+  return (
+    <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+          Arousal calculation
+        </div>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+          {baselineLabel}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-500">
+        Baseline is centered at 50%. HR above baseline raises arousal; RMSSD/SDNN
+        below baseline raise arousal.
+      </p>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        {[
+          ["HR rise", hrTerm],
+          ["RMSSD drop", rmssdTerm],
+          ["SDNN drop", sdnnTerm],
+        ].map(([label, value]) => (
+          <div className="rounded-lg bg-slate-50 px-2 py-2" key={label}>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+              {label}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-slate-950">
+              {hasArousal ? formatSignedPoints(value) : "-"}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white">
+        Arousal = 50% + HR + RMSSD drop + SDNN drop
+      </div>
+    </div>
+  );
+}
+
 function PhysiologyPanel({ physiology }) {
   const summary = physiology.currentSummary;
   let statusLabel = "Optional";
@@ -1474,6 +1664,8 @@ function PhysiologyPanel({ physiology }) {
           <div className="mt-1 text-lg font-semibold text-slate-950">{arousalLabel}</div>
         </div>
       </div>
+      <HeartRateCurve physiology={physiology} summary={summary} />
+      <ArousalCalculation summary={summary} />
       <p className="mt-3 text-xs leading-5 text-slate-500">{helpText}</p>
       <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
         Quality {qualityLabel} · Packets {physiology.notificationCount} · RR{" "}
@@ -2079,6 +2271,7 @@ export default function App() {
         baseline_rmssd_ms: physiologySummary.baseline_rmssd_ms,
         z_hr: physiologySummary.z_hr,
         z_rmssd: physiologySummary.z_rmssd,
+        z_sdnn: physiologySummary.z_sdnn,
         physiology_arousal: physiologySummary.physiology_arousal,
         fusion_valence: Number(fusionSummary.valence.toFixed(3)),
         fusion_arousal: Number(fusionSummary.energy.toFixed(3)),
