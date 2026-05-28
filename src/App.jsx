@@ -1945,26 +1945,26 @@ function IntroModal({
                   ) : null}
                 </div>
               </SetupStep>
-              <SetupStep complete={spotifyReady} icon={Lock} title="Playback source">
-                <div className="flex items-center justify-between gap-3">
-                  <span>
-                    {!catalogRequiresSpotify
-                      ? "Instrumental playback is ready."
-                      : spotifyPlayer.ready
+              {catalogRequiresSpotify ? (
+                <SetupStep complete={spotifyReady} icon={Lock} title="Spotify playback">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>
+                      {spotifyPlayer.ready
                         ? "Spotify playback device is connected."
                         : spotifyAuth.error || spotifyPlayer.error || "Connect Spotify Premium playback."}
-                  </span>
-                  {catalogRequiresSpotify && !spotifyAuth.authenticated ? (
-                    <button
-                      className="rounded-full bg-[#32e6c8] px-3 py-1.5 text-xs font-semibold text-[#020712] shadow-sm transition hover:bg-[#8fffea]"
-                      onClick={onConnectSpotify}
-                      type="button"
-                    >
-                      Connect
-                    </button>
-                  ) : null}
-                </div>
-              </SetupStep>
+                    </span>
+                    {!spotifyAuth.authenticated ? (
+                      <button
+                        className="rounded-full bg-[#32e6c8] px-3 py-1.5 text-xs font-semibold text-[#020712] shadow-sm transition hover:bg-[#8fffea]"
+                        onClick={onConnectSpotify}
+                        type="button"
+                      >
+                        Connect
+                      </button>
+                    ) : null}
+                  </div>
+                </SetupStep>
+              ) : null}
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
