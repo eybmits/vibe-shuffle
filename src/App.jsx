@@ -1845,16 +1845,16 @@ function IntroModal({
             : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020712]/86 px-4 py-6 backdrop-blur-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#020712]/86 px-4 py-6 backdrop-blur-xl">
       <section
         aria-modal="true"
         className="w-full max-w-5xl overflow-hidden rounded-lg border border-white/10 bg-[#071827] shadow-[0_34px_120px_rgba(0,0,0,0.55)]"
         role="dialog"
       >
         <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="relative min-h-[430px] overflow-hidden bg-[#020712] p-6 text-white sm:p-8">
+          <div className="relative overflow-hidden bg-[#020712] p-6 text-white sm:p-8">
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(49,46,129,0.70),rgba(7,24,39,0.82)_48%,rgba(249,115,22,0.48))]" />
-            <div className="relative flex h-full min-h-[370px] flex-col gap-7">
+            <div className="relative flex min-h-[360px] flex-col gap-7 sm:min-h-[390px] lg:min-h-full">
               <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur">
                 <Radio className="size-4" />
                 Guided adaptive session
@@ -2542,9 +2542,9 @@ export default function App() {
         ) : null}
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <section className="overflow-hidden rounded-lg border border-white/10 bg-[#020712] text-white shadow-[0_34px_120px_rgba(0,0,0,0.46)]">
+          <section className="self-start overflow-hidden rounded-lg border border-white/10 bg-[#020712] text-white shadow-[0_34px_120px_rgba(0,0,0,0.46)]">
             <div className="grid lg:grid-cols-[minmax(300px,0.86fr)_minmax(0,1.14fr)]">
-              <div className="relative min-h-[360px] p-5 sm:min-h-[440px] sm:p-7 lg:min-h-[640px]">
+              <div className="relative p-5 sm:p-7">
                 <div
                   className="absolute inset-0 opacity-80"
                   style={{
@@ -2552,7 +2552,7 @@ export default function App() {
                   }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,7,18,0.18),rgba(2,7,18,0.84))]" />
-                <div className="relative flex h-full min-h-[320px] flex-col justify-between gap-6 sm:min-h-[400px] sm:gap-8 lg:min-h-[586px]">
+                <div className="relative flex min-h-[330px] flex-col justify-between gap-6 sm:min-h-[410px] sm:gap-8 lg:min-h-[500px]">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <span className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur">
                       <Headphones className="size-4" />
@@ -2569,7 +2569,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex min-h-[520px] flex-col justify-between gap-8 bg-[#071827] p-5 text-white sm:p-7 lg:min-h-[640px] xl:p-9">
+              <div className="flex flex-col gap-7 bg-[#071827] p-5 text-white sm:p-7 xl:p-9">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <SectionLabel icon={Music2}>Now playing</SectionLabel>
