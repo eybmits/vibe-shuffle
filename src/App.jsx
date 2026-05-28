@@ -1494,7 +1494,7 @@ function MoodMap({ mood }) {
 
 function CoverArt({ isPlaying, song }) {
   const coverClass =
-    "relative mx-auto aspect-square w-full max-w-[min(68vw,230px)] overflow-hidden rounded-lg border border-white/14 shadow-[0_34px_90px_rgba(0,0,0,0.45)] sm:max-w-[300px] md:max-w-[320px] xl:max-w-[360px]";
+    "relative mx-auto aspect-square w-full max-w-[min(62vw,210px)] overflow-hidden rounded-lg border border-white/14 shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:max-w-[240px] md:max-w-[260px] lg:max-w-[220px] xl:max-w-[240px]";
 
   if (song.albumImageUrl) {
     return (
@@ -1539,7 +1539,7 @@ function SessionWaveform({ isPlaying, song }) {
   const heights = [34, 62, 44, 86, 54, 104, 66, 48, 78, 52, 96, 42, 70, 58, 88, 46];
 
   return (
-    <div className="flex h-16 items-end justify-center gap-1.5 rounded-lg border border-white/12 bg-white/6 px-3 py-3 backdrop-blur sm:h-24 sm:gap-2 sm:px-5 sm:py-4 lg:h-28">
+    <div className="flex h-14 items-end justify-center gap-1.5 rounded-lg border border-white/12 bg-white/6 px-3 py-3 backdrop-blur sm:h-20 sm:gap-2 sm:px-4 lg:h-20">
       {heights.map((height, index) => (
         <span
           className="w-full max-w-3 rounded-full bg-[#ddf7ff]/70 shadow-sm sm:max-w-4"
@@ -1724,28 +1724,6 @@ function PhysiologyPanel({ physiology }) {
   const arousalLabel = Number.isFinite(summary.physiology_arousal)
     ? `${Math.round(summary.physiology_arousal * 100)}%`
     : "Face only";
-  let helpText = "HRV is used only when RR intervals are available and baseline quality is good.";
-  if (physiology.status === "waiting") {
-    helpText =
-      "Sensor permission is granted. Waiting for live heart-rate packets. Wear the Polar strap firmly and wet the electrodes.";
-  } else if (physiology.baselineIssue) {
-    helpText = physiology.baselineIssue;
-  } else if (physiology.latestSensorContact === false) {
-    helpText = "Sensor reports poor skin contact. Wet the electrodes and wear the strap firmly.";
-  } else if (summary.physiology_quality === "bpm_only") {
-    helpText = "This connection is sending HR only. HRV needs RR intervals from the sensor.";
-  } else if (summary.physiology_quality === "low") {
-    helpText = "More RR intervals are needed before HRV can drive arousal.";
-  }
-  const qualityLabel =
-    summary.physiology_quality === "good"
-      ? "good"
-      : summary.physiology_quality === "bpm_only"
-        ? "HR only"
-        : summary.physiology_quality === "low"
-          ? "low RR"
-          : "no data";
-
   return (
     <section className="rounded-lg border border-white/10 bg-[#071827]/92 p-4 shadow-[0_22px_70px_rgba(0,0,0,0.28)] backdrop-blur sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -1777,11 +1755,6 @@ function PhysiologyPanel({ physiology }) {
         </div>
       </div>
       <HeartRateCurve physiology={physiology} summary={summary} />
-      <p className="mt-3 text-xs leading-5 text-[#8ca3b8]">{helpText}</p>
-      <div className="mt-3 rounded-lg bg-white/7 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#8ca3b8]">
-        Quality {qualityLabel} · Packets {physiology.notificationCount} · RR{" "}
-        {summary.rr_count}/20
-      </div>
       {physiology.error ? <p className="mt-3 text-sm text-rose-300">{physiology.error}</p> : null}
     </section>
   );
@@ -2543,8 +2516,8 @@ export default function App() {
 
         <section className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
           <section className="self-start overflow-hidden rounded-lg border border-white/10 bg-[#020712] text-white shadow-[0_34px_120px_rgba(0,0,0,0.46)]">
-            <div className="grid lg:grid-cols-[minmax(300px,0.86fr)_minmax(0,1.14fr)]">
-              <div className="relative order-2 p-4 sm:p-6 lg:order-1 lg:p-7">
+            <div className="grid lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
+              <div className="relative order-2 p-4 sm:p-5 lg:order-1 lg:p-5 xl:p-6">
                 <div
                   className="absolute inset-0 opacity-80"
                   style={{
@@ -2552,13 +2525,13 @@ export default function App() {
                   }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,7,18,0.18),rgba(2,7,18,0.84))]" />
-                <div className="relative flex min-h-[280px] flex-col justify-between gap-5 sm:min-h-[360px] sm:gap-7 md:min-h-[410px] lg:min-h-[500px] lg:gap-8">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm backdrop-blur sm:px-4 sm:text-xs">
+                <div className="relative flex min-h-[250px] flex-col justify-between gap-4 sm:min-h-[320px] sm:gap-5 md:min-h-[340px] lg:min-h-[430px]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-sm backdrop-blur sm:text-[11px]">
                       <Headphones className="size-4" />
                       Participant session
                     </span>
-                    <span className="rounded-full border border-white/14 bg-[#020712]/34 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/90 backdrop-blur sm:px-4 sm:text-xs">
+                    <span className="rounded-full border border-white/14 bg-[#020712]/34 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/90 backdrop-blur sm:text-[11px]">
                       Trial {completedTrials + 1}/{totalTrials}
                     </span>
                   </div>
@@ -2569,11 +2542,11 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="order-1 flex flex-col gap-5 bg-[#071827] p-4 text-white sm:gap-7 sm:p-7 lg:order-2 xl:p-9">
+              <div className="order-1 flex flex-col gap-5 bg-[#071827] p-4 text-white sm:gap-6 sm:p-6 lg:order-2 xl:p-8">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <SectionLabel icon={Music2}>Now playing</SectionLabel>
-                    <h2 className="mt-4 max-w-2xl break-words text-3xl font-semibold leading-[1.02] tracking-tight text-white sm:mt-5 sm:text-5xl 2xl:text-6xl">
+                    <h2 className="mt-4 max-w-2xl break-words text-3xl font-semibold leading-[1.02] tracking-tight text-white sm:mt-5 sm:text-5xl 2xl:text-5xl">
                       {currentSong.title}
                     </h2>
                     <p className="mt-2 text-lg text-[#c7d7e6] sm:mt-3 sm:text-xl">{currentSong.artist}</p>
