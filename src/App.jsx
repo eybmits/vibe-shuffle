@@ -48,11 +48,34 @@ const SPOTIFY_REDIRECT_URI =
   (typeof window !== "undefined" ? `${window.location.origin}${window.location.pathname}` : "");
 
 const RATING_LABELS = {
-  1: "Not a match",
-  2: "Slight match",
+  1: "Not at all",
+  2: "Slightly",
   3: "Good match",
-  4: "Very good match",
+  4: "Very good",
 };
+
+const RATING_OPTIONS = [
+  {
+    description: "Did not fit my mood.",
+    label: RATING_LABELS[1],
+    score: 1,
+  },
+  {
+    description: "Some parts fit.",
+    label: RATING_LABELS[2],
+    score: 2,
+  },
+  {
+    description: "Mostly fit my mood.",
+    label: RATING_LABELS[3],
+    score: 3,
+  },
+  {
+    description: "Matched very well.",
+    label: RATING_LABELS[4],
+    score: 4,
+  },
+];
 
 const PROTOCOL_BLOCKS = [{ mode: "random" }, { mode: "vibe" }];
 
@@ -1349,8 +1372,10 @@ function usePhysiologySensor() {
 
 function SectionLabel({ children, icon: Icon }) {
   return (
-    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-      <Icon className="size-4 text-teal-600" />
+    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+      <span className="flex size-7 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+        <Icon className="size-3.5" />
+      </span>
       {children}
     </div>
   );
@@ -1361,13 +1386,13 @@ function MoodMap({ mood }) {
   const y = clamp(100 - mood.energy * 100, 8, 92);
 
   return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,113,113,0.12),rgba(20,184,166,0.14)),linear-gradient(0deg,rgba(148,163,184,0.08),rgba(250,204,21,0.18))]" />
-      <div className="absolute inset-5 rounded-lg border border-slate-200/70" />
-      <div className="absolute left-5 right-5 top-1/2 h-px bg-slate-300/60" />
-      <div className="absolute bottom-5 top-5 left-1/2 w-px bg-slate-300/60" />
+    <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200/90 bg-[#fbfbf7]">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,113,113,0.10),rgba(20,184,166,0.16)),linear-gradient(0deg,rgba(148,163,184,0.08),rgba(251,191,36,0.16))]" />
+      <div className="absolute inset-6 rounded-lg border border-white/80 shadow-inner" />
+      <div className="absolute left-6 right-6 top-1/2 h-px bg-slate-300/70" />
+      <div className="absolute bottom-6 top-6 left-1/2 w-px bg-slate-300/70" />
       <div
-        className="absolute size-5 rounded-full border-[3px] border-white shadow-[0_10px_32px_rgba(15,23,42,0.24)] transition-all duration-500"
+        className="absolute size-6 rounded-full border-[4px] border-white shadow-[0_14px_38px_rgba(15,23,42,0.24)] transition-all duration-500"
         style={{
           background: mood.accent,
           left: `${x}%`,
@@ -1392,31 +1417,30 @@ function MoodMap({ mood }) {
 }
 
 function CoverArt({ isPlaying, song }) {
+  const coverClass =
+    "relative mx-auto aspect-square w-full max-w-[260px] overflow-hidden rounded-lg border border-white/80 shadow-[0_28px_70px_rgba(9,24,38,0.18)] sm:max-w-[320px] xl:max-w-[360px]";
+
   if (song.albumImageUrl) {
     return (
-      <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:max-w-[360px] lg:max-w-none">
+      <div className={coverClass}>
         <img alt="" className="h-full w-full object-cover" src={song.albumImageUrl} />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent p-5 text-white">
-          <div className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
-            {song.quadrant.replace("_", " ")}
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(8,20,34,0.18))]" />
       </div>
     );
   }
 
   return (
     <div
-      className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border border-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:max-w-[360px] lg:max-w-none"
+      className={coverClass}
       style={{
         background: `linear-gradient(135deg, ${song.palette[0]} 0%, ${song.palette[1]} 52%, ${song.palette[2]} 100%)`,
       }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.78),transparent_34%),linear-gradient(120deg,rgba(255,255,255,0.28),transparent_44%,rgba(15,23,42,0.18))]" />
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.62),rgba(255,255,255,0.18)_42%,rgba(15,23,42,0.18))]" />
       <div className="absolute -left-1/4 top-0 h-full w-2/3 rotate-12 bg-white/30 blur-2xl animate-sweep" />
-      <div className="absolute bottom-8 left-8 right-8">
-        <div className="mb-5 flex items-end gap-2">
-          {[42, 68, 52, 82, 38, 72, 56].map((height, index) => (
+      <div className="absolute inset-x-8 bottom-9">
+        <div className="flex items-end gap-2">
+          {[48, 82, 58, 104, 46, 86, 62].map((height, index) => (
             <span
               className="w-full rounded-full bg-white/75 shadow-sm"
               key={`${song.id}-${height}`}
@@ -1430,13 +1454,29 @@ function CoverArt({ isPlaying, song }) {
             />
           ))}
         </div>
-        <div className="flex items-center justify-between border-t border-white/60 pt-4 text-white">
-          <span className="text-xs font-bold uppercase tracking-[0.18em]">{song.quadrant}</span>
-          <span className="text-xs font-bold uppercase tracking-[0.18em]">
-            {Math.round(song.valence * 100)}V/{Math.round(song.energy * 100)}A
-          </span>
-        </div>
       </div>
+    </div>
+  );
+}
+
+function SessionWaveform({ isPlaying, song }) {
+  const heights = [34, 62, 44, 86, 54, 104, 66, 48, 78, 52, 96, 42, 70, 58, 88, 46];
+
+  return (
+    <div className="flex h-20 items-end justify-center gap-2 rounded-lg border border-white/60 bg-white/30 px-5 py-4 backdrop-blur sm:h-28">
+      {heights.map((height, index) => (
+        <span
+          className="w-full max-w-4 rounded-full bg-white/75 shadow-sm"
+          key={`${song.id}-session-${height}-${index}`}
+          style={{
+            animation: isPlaying
+              ? `soft-pulse ${1.9 + index * 0.08}s ease-in-out infinite`
+              : "none",
+            height: `${height}%`,
+            opacity: isPlaying ? 0.96 : 0.5,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -1456,14 +1496,14 @@ function CameraPanel({ face }) {
               : "Camera not started";
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-lg border border-slate-200/90 bg-white/90 p-5 shadow-[0_18px_50px_rgba(9,24,38,0.07)] backdrop-blur">
       <div className="mb-4 flex items-center justify-between gap-3">
         <SectionLabel icon={Camera}>Expression signal</SectionLabel>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+        <span className="rounded-full bg-[#f4f6ef] px-3 py-1 text-xs font-semibold text-slate-600">
           {statusLabel}
         </span>
       </div>
-      <div className="overflow-hidden rounded-lg bg-slate-950">
+      <div className="overflow-hidden rounded-lg bg-slate-950 shadow-inner">
         <video
           aria-label="Local camera preview"
           className="aspect-video w-full scale-x-[-1] object-cover opacity-90"
@@ -1473,13 +1513,13 @@ function CameraPanel({ face }) {
         />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-lg bg-[#f7f8f2] p-3">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             Expression
           </div>
           <div className="mt-1 text-xl font-semibold text-slate-950">{face.label}</div>
         </div>
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-lg bg-[#f7f8f2] p-3">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             Confidence
           </div>
@@ -1503,7 +1543,7 @@ function HeartRateCurve({ physiology, summary }) {
   const lastPoint = curve.points.at(-1);
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-teal-100 bg-[linear-gradient(135deg,#f0fdfa_0%,#f8fafc_56%,#fff7ed_100%)] p-4">
+    <div className="mt-4 overflow-hidden rounded-lg border border-teal-100/90 bg-[linear-gradient(135deg,#ecfdf5_0%,#fbfbf7_58%,#fff7ed_100%)] p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
@@ -1513,7 +1553,7 @@ function HeartRateCurve({ physiology, summary }) {
             {hasLiveSamples ? `Last ${samples.length} packets` : "Waiting for live packets"}
           </div>
         </div>
-        <div className="rounded-full bg-white/85 px-3 py-1 text-sm font-semibold text-slate-950 shadow-sm">
+        <div className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-slate-950 shadow-sm">
           {latestLabel}
         </div>
       </div>
@@ -1631,15 +1671,15 @@ function PhysiologyPanel({ physiology }) {
           : "no data";
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-lg border border-slate-200/90 bg-white/90 p-5 shadow-[0_18px_50px_rgba(9,24,38,0.07)] backdrop-blur">
       <div className="mb-4 flex items-center justify-between gap-3">
         <SectionLabel icon={HeartPulse}>Physiology signal</SectionLabel>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+        <span className="rounded-full bg-[#f4f6ef] px-3 py-1 text-xs font-semibold text-slate-600">
           {statusLabel}
         </span>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-lg bg-[#f7f8f2] p-3">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             HR
           </div>
@@ -1647,13 +1687,13 @@ function PhysiologyPanel({ physiology }) {
             {summary.hr_bpm_mean ? `${Math.round(summary.hr_bpm_mean)} bpm` : "-"}
           </div>
         </div>
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-lg bg-[#f7f8f2] p-3">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             RMSSD
           </div>
           <div className="mt-1 text-lg font-semibold text-slate-950">{rmssdLabel}</div>
         </div>
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-lg bg-[#f7f8f2] p-3">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             Arousal
           </div>
@@ -1662,7 +1702,7 @@ function PhysiologyPanel({ physiology }) {
       </div>
       <HeartRateCurve physiology={physiology} summary={summary} />
       <p className="mt-3 text-xs leading-5 text-slate-500">{helpText}</p>
-      <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+      <div className="mt-3 rounded-lg bg-[#f7f8f2] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
         Quality {qualityLabel} · Packets {physiology.notificationCount} · RR{" "}
         {summary.rr_count}/20
       </div>
@@ -1673,11 +1713,11 @@ function PhysiologyPanel({ physiology }) {
 
 function SetupStep({ children, complete, icon: Icon, title }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-lg border border-slate-200/90 bg-white/80 p-4 shadow-sm backdrop-blur">
       <div className="flex items-start gap-3">
         <div
           className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-            complete ? "bg-teal-100 text-teal-700" : "bg-white text-slate-500"
+            complete ? "bg-teal-100 text-teal-700" : "bg-[#f4f6ef] text-slate-500"
           }`}
         >
           {complete ? <CheckCircle2 className="size-5" /> : <Icon className="size-5" />}
@@ -1729,124 +1769,142 @@ function IntroModal({
             : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/75 px-4 py-6 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f7f6ef]/90 px-4 py-6 backdrop-blur-xl">
       <section
         aria-modal="true"
-        className="w-full max-w-3xl rounded-lg border border-white/80 bg-white p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)]"
+        className="w-full max-w-5xl overflow-hidden rounded-lg border border-white/80 bg-white/95 shadow-[0_34px_110px_rgba(9,24,38,0.18)]"
         role="dialog"
       >
-        <div className="relative aspect-[16/7] overflow-hidden rounded-lg bg-[linear-gradient(135deg,#ecfeff_0%,#f0fdf4_48%,#fff7ed_100%)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_24%,rgba(255,255,255,0.9),transparent_28%),radial-gradient(circle_at_74%_66%,rgba(255,255,255,0.68),transparent_34%)]" />
-          <div className="absolute bottom-8 left-8 right-8 flex items-end gap-2">
-            {[38, 76, 48, 88, 58, 72, 44, 66].map((height, index) => (
-              <span
-                className="w-full rounded-full bg-white/80 shadow-sm"
-                key={height}
-                style={{
-                  animation: `soft-pulse ${2.1 + index * 0.13}s ease-in-out infinite`,
-                  height: `${height}px`,
-                }}
-              />
-            ))}
+        <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <div className="relative min-h-[430px] overflow-hidden bg-[#071827] p-6 text-white sm:p-8">
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(20,184,166,0.50),rgba(7,24,39,0.70)_48%,rgba(249,115,22,0.42))]" />
+            <div className="absolute inset-x-8 bottom-10 top-24 flex items-end gap-3 opacity-85">
+              {[48, 82, 56, 106, 64, 92, 50, 76, 112, 62, 88, 54].map((height, index) => (
+                <span
+                  className="w-full rounded-full bg-white/70"
+                  key={`${height}-${index}`}
+                  style={{
+                    animation: `soft-pulse ${2 + index * 0.09}s ease-in-out infinite`,
+                    height: `${height}px`,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="relative flex h-full min-h-[370px] flex-col justify-between">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur">
+                <Radio className="size-4" />
+                Guided validation session
+              </div>
+              <div>
+                <h2 className="max-w-sm text-4xl font-semibold tracking-tight sm:text-6xl">
+                  Listen. Rate. Continue.
+                </h2>
+                <p className="mt-4 max-w-sm text-sm leading-6 text-white/80">
+                  Music starts only after you press play. After each track, one short rating
+                  appears before the next listening window.
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="absolute left-6 top-6 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm">
-            Validation protocol
-          </div>
-        </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
-              Listen first, rate after each track.
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              The camera estimates only a coarse expression signal locally in this browser. Images
-              are not saved. Optional ECG/HRV stays local and is used only as an arousal signal
-              after a neutral baseline. Music starts only after you press the player button.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="p-5 sm:p-8">
+            <div className="max-w-xl">
+              <SectionLabel icon={Headphones}>Vibe Shuffle</SectionLabel>
+              <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
+                Your adaptive music session is ready.
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Expression and optional ECG/HRV signals stay local in this browser. The session is
+                blinded for the participant and exports only validation data after completion.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              <SetupStep complete={cameraReady} icon={Camera} title="Camera signal">
+                <div className="flex items-center justify-between gap-3">
+                  <span>
+                    {cameraReady
+                      ? "Expression detection is ready."
+                      : face.error || "Optional: enable local expression detection."}
+                  </span>
+                  {!cameraReady ? (
+                    <button
+                      className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                      onClick={onStartCamera}
+                      type="button"
+                    >
+                      Enable
+                    </button>
+                  ) : null}
+                </div>
+              </SetupStep>
+              <SetupStep complete={physiologyReady} icon={HeartPulse} title="Heart-rate sensor">
+                <div className="flex flex-col gap-3">
+                  <span>{physiologyStatusText}</span>
+                  {physiology.status === "idle" || physiology.status === "error" ? (
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                        onClick={onConnectHeartSensor}
+                        type="button"
+                      >
+                        Connect
+                      </button>
+                      <button
+                        className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
+                        onClick={onStartMockHeartSensor}
+                        type="button"
+                      >
+                        Demo
+                      </button>
+                    </div>
+                  ) : physiology.connected ? (
+                    <button
+                      className="w-fit rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
+                      onClick={onDisconnectHeartSensor}
+                      type="button"
+                    >
+                      Skip ECG
+                    </button>
+                  ) : null}
+                </div>
+              </SetupStep>
+              <SetupStep complete={spotifyReady} icon={Lock} title="Playback source">
+                <div className="flex items-center justify-between gap-3">
+                  <span>
+                    {!catalogRequiresSpotify
+                      ? "Instrumental playback is ready."
+                      : spotifyPlayer.ready
+                        ? "Spotify playback device is connected."
+                        : spotifyAuth.error || spotifyPlayer.error || "Connect Spotify Premium playback."}
+                  </span>
+                  {catalogRequiresSpotify && !spotifyAuth.authenticated ? (
+                    <button
+                      className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                      onClick={onConnectSpotify}
+                      type="button"
+                    >
+                      Connect
+                    </button>
+                  ) : null}
+                </div>
+              </SetupStep>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <button
-                className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(9,24,38,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                 disabled={!setupReady}
                 onClick={onStart}
                 type="button"
               >
                 Continue to player
+                <SkipForward className="size-4" />
               </button>
-              <span className="text-sm text-slate-500">{trackCount} tracks in catalog</span>
+              <span className="rounded-full bg-[#f4f6ef] px-4 py-2 text-sm font-semibold text-slate-600">
+                {trackCount} instrumental tracks
+              </span>
             </div>
-          </div>
-
-          <div className="grid gap-3">
-            <SetupStep complete={cameraReady} icon={Camera} title="Camera signal">
-              <div className="flex items-center justify-between gap-3">
-                <span>
-                  {cameraReady
-                    ? "Expression detection is ready."
-                    : face.error || "Optional: enable local expression detection."}
-                </span>
-                {!cameraReady ? (
-                  <button
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
-                    onClick={onStartCamera}
-                    type="button"
-                  >
-                    Enable
-                  </button>
-                ) : null}
-              </div>
-            </SetupStep>
-            <SetupStep complete={physiologyReady} icon={HeartPulse} title="Heart-rate sensor">
-              <div className="flex flex-col gap-3">
-                <span>{physiologyStatusText}</span>
-                {physiology.status === "idle" || physiology.status === "error" ? (
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
-                      onClick={onConnectHeartSensor}
-                      type="button"
-                    >
-                      Connect
-                    </button>
-                    <button
-                      className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
-                      onClick={onStartMockHeartSensor}
-                      type="button"
-                    >
-                      Demo
-                    </button>
-                  </div>
-                ) : physiology.connected ? (
-                  <button
-                    className="w-fit rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
-                    onClick={onDisconnectHeartSensor}
-                    type="button"
-                  >
-                    Skip ECG
-                  </button>
-                ) : null}
-              </div>
-            </SetupStep>
-            <SetupStep complete={spotifyReady} icon={Lock} title="Playback source">
-              <div className="flex items-center justify-between gap-3">
-                <span>
-                  {!catalogRequiresSpotify
-                    ? "Real instrumental playback is ready."
-                    : spotifyPlayer.ready
-                      ? "Spotify playback device is connected."
-                      : spotifyAuth.error || spotifyPlayer.error || "Connect Spotify Premium playback."}
-                </span>
-                {catalogRequiresSpotify && !spotifyAuth.authenticated ? (
-                  <button
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100"
-                    onClick={onConnectSpotify}
-                    type="button"
-                  >
-                    Connect
-                  </button>
-                ) : null}
-              </div>
-            </SetupStep>
           </div>
         </div>
       </section>
@@ -1858,39 +1916,40 @@ function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open,
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#071827]/40 px-4 py-6 backdrop-blur-md">
       <section
         aria-modal="true"
-        className="w-full max-w-xl rounded-lg border border-slate-200 bg-white p-6 shadow-[0_28px_90px_rgba(15,23,42,0.24)]"
+        className="w-full max-w-2xl rounded-lg border border-white/90 bg-white p-6 shadow-[0_32px_110px_rgba(9,24,38,0.26)] sm:p-7"
         role="dialog"
       >
         <SectionLabel icon={BarChart3}>Rating required</SectionLabel>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-          How well did this song match your mood?
+        <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
+          How well did this track fit your mood?
         </h2>
         <p className="mt-2 text-sm text-slate-500">
           You just listened to <span className="font-semibold text-slate-700">{song.title}</span>.
           Select one rating to continue.
         </p>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[1, 2, 3, 4].map((score) => {
-            const active = currentRating?.rating_1_to_4 === score;
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {RATING_OPTIONS.map((option) => {
+            const active = currentRating?.rating_1_to_4 === option.score;
 
             return (
               <button
-                className={`rounded-lg border px-2 py-3 text-center transition ${
+                className={`min-h-32 rounded-lg border px-3 py-4 text-left transition ${
                   active
-                    ? "border-slate-950 bg-slate-950 text-white"
-                    : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white"
+                    ? "border-slate-950 bg-slate-950 text-white shadow-[0_18px_44px_rgba(9,24,38,0.18)]"
+                    : "border-slate-200 bg-[#f7f8f2] text-slate-600 hover:border-teal-200 hover:bg-white"
                 }`}
-                key={score}
-                onClick={() => onRate(score)}
+                key={option.score}
+                onClick={() => onRate(option.score)}
                 type="button"
               >
-                <span className="block text-xl font-bold">{score}</span>
-                <span className="mt-1 block text-xs font-semibold leading-tight">
-                  {RATING_LABELS[score]}
+                <span className="block text-3xl font-semibold">{option.score}</span>
+                <span className="mt-3 block text-sm font-bold leading-tight">{option.label}</span>
+                <span className={`mt-2 block text-xs leading-4 ${active ? "text-white/70" : "text-slate-500"}`}>
+                  {option.description}
                 </span>
               </button>
             );
@@ -1898,9 +1957,9 @@ function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open,
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">1 = not a match, 4 = very good mood match.</p>
+          <p className="text-sm text-slate-500">1 means no fit. 4 means a very good mood fit.</p>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(9,24,38,0.18)] transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             disabled={!currentRating}
             onClick={onContinue}
             type="button"
@@ -2154,6 +2213,7 @@ export default function App() {
     setIsPlaying(false);
     setTrackProgress(0);
     setPlaybackNotice("Press Start music when you are ready.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function moveToSong(song) {
@@ -2165,6 +2225,7 @@ export default function App() {
     setTrackProgress(0);
     setRatingPromptOpen(false);
     setIsPlaying(sessionStarted);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function advanceProtocol() {
@@ -2351,41 +2412,48 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f5] text-slate-900">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(135deg,#fbfdf9_0%,#f4fbf8_34%,#f7f8ff_66%,#fff7ed_100%)]" />
-      <div className="pointer-events-none fixed inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_22%_10%,rgba(20,184,166,0.18),transparent_34%),radial-gradient(circle_at_78%_4%,rgba(249,115,22,0.13),transparent_32%)]" />
+    <main className="min-h-screen overflow-hidden bg-[#f7f5ec] text-slate-950">
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,#f4f0e5_0%,#fbfbf7_48%,#edf7f1_100%)]" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0))]" />
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm backdrop-blur">
-              <Radio className="size-3.5" />
-              Blinded validation protocol
+      <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-7">
+        <header className="flex flex-col gap-4 rounded-lg border border-white/80 bg-white/75 px-4 py-4 shadow-[0_18px_50px_rgba(9,24,38,0.06)] backdrop-blur-xl sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white shadow-[0_12px_32px_rgba(9,24,38,0.18)]">
+              <Waves className="size-5" />
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Vibe Shuffle
-            </h1>
-            <p className="mt-2 max-w-2xl text-base text-slate-600 sm:text-lg">
-              Music that adapts to your emotional state.
-            </p>
+            <div>
+              <div className="text-lg font-semibold tracking-tight text-slate-950">Vibe Shuffle</div>
+              <p className="text-sm text-slate-500">Music that adapts to your emotional state.</p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
-            <div className="rounded-lg border border-white/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                Rated
-              </div>
-              <div className="mt-1 text-xl font-semibold text-slate-950">
-                {completedTrials}/{totalTrials}
-              </div>
-            </div>
-            <div className="rounded-lg border border-white/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                State
-              </div>
-              <div className="mt-1 text-xl font-semibold text-slate-950">
-                {ratingPromptOpen ? "Rate" : isPlaying ? "Listen" : "Ready"}
-              </div>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[#f4f6ef] px-4 py-2 text-sm font-semibold text-slate-600">
+              {completedTrials}/{totalTrials} rated
+            </span>
+            <span className="rounded-full bg-[#f4f6ef] px-4 py-2 text-sm font-semibold text-slate-600">
+              {ratingPromptOpen ? "Rating required" : isPlaying ? "Listening" : "Ready"}
+            </span>
+            {protocolComplete ? (
+              <>
+                <button
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                  onClick={() => downloadCsv(ratings, protocolId)}
+                  type="button"
+                >
+                  <Download className="size-4" />
+                  Save CSV
+                </button>
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                  onClick={resetProtocol}
+                  type="button"
+                >
+                  <RotateCcw className="size-4" />
+                  Reset
+                </button>
+              </>
+            ) : null}
           </div>
         </header>
 
@@ -2397,50 +2465,39 @@ export default function App() {
           </section>
         ) : null}
 
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1.36fr)_minmax(330px,0.64fr)]">
-          <section className="overflow-hidden rounded-lg border border-white/90 bg-white/88 shadow-[0_28px_100px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-            <div className="grid gap-0 lg:grid-cols-[minmax(260px,390px)_minmax(0,1fr)]">
-              <div className="relative bg-slate-950 p-5 text-white">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <section className="overflow-hidden rounded-lg border border-white/80 bg-slate-950 text-white shadow-[0_34px_110px_rgba(9,24,38,0.18)]">
+            <div className="grid lg:grid-cols-[minmax(300px,0.86fr)_minmax(0,1.14fr)]">
+              <div className="relative min-h-[360px] p-5 sm:min-h-[440px] sm:p-7 lg:min-h-[640px]">
                 <div
-                  className="absolute inset-0 opacity-80"
+                  className="absolute inset-0 opacity-90"
                   style={{
                     background: `linear-gradient(135deg, ${currentSong.palette[0]} 0%, ${currentSong.palette[1]} 48%, ${currentSong.palette[2]} 100%)`,
                   }}
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.10),rgba(15,23,42,0.72))]" />
-                <div className="relative flex h-full min-h-[420px] flex-col justify-between gap-5">
-                  <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/82 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 shadow-sm">
-                      <Headphones className="size-3.5" />
-                      Participant player
-                    </div>
-                    <span className="rounded-full bg-slate-950/32 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white backdrop-blur">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,24,39,0.10),rgba(7,24,39,0.78))]" />
+                <div className="relative flex h-full min-h-[320px] flex-col justify-between gap-6 sm:min-h-[400px] sm:gap-8 lg:min-h-[586px]">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur">
+                      <Headphones className="size-4" />
+                      Participant session
+                    </span>
+                    <span className="rounded-full border border-white/20 bg-slate-950/25 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/90 backdrop-blur">
                       Trial {completedTrials + 1}/{totalTrials}
                     </span>
                   </div>
-                  <CoverArt isPlaying={isPlaying} song={currentSong} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-white/82 px-3 py-3 text-slate-950 shadow-sm backdrop-blur">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                        Catalog
-                      </div>
-                      <div className="mt-1 text-sm font-semibold">{songs.length} tracks</div>
-                    </div>
-                    <div className="rounded-lg bg-white/82 px-3 py-3 text-slate-950 shadow-sm backdrop-blur">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                        Protocol
-                      </div>
-                      <div className="mt-1 text-sm font-semibold">Blinded</div>
-                    </div>
+                  <div className="flex flex-1 items-center justify-center">
+                    <CoverArt isPlaying={isPlaying} song={currentSong} />
                   </div>
+                  <SessionWaveform isPlaying={isPlaying} song={currentSong} />
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between gap-8 p-5 sm:p-7">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+              <div className="flex min-h-[520px] flex-col justify-between gap-8 bg-white p-5 text-slate-950 sm:p-7 lg:min-h-[640px] xl:p-9">
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <SectionLabel icon={Music2}>Now playing</SectionLabel>
-                    <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                    <h2 className="mt-5 max-w-2xl break-words text-4xl font-semibold leading-[0.98] tracking-tight text-slate-950 sm:text-5xl 2xl:text-6xl">
                       {currentSong.title}
                     </h2>
                     <p className="mt-3 text-xl text-slate-600">{currentSong.artist}</p>
@@ -2451,55 +2508,11 @@ export default function App() {
                   <ProgressRing label="rated" value={progressPercent} />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-lg bg-slate-50 px-4 py-3">
-                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                      <Clock3 className="size-3.5 text-teal-600" />
-                      Window
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-950">
-                      {ratingPromptOpen ? "Rate" : formatSeconds(remainingSeconds)}
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 px-4 py-3">
-                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                      <Gauge className="size-3.5 text-teal-600" />
-                      Mood
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-950">{mood.label}</div>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 px-4 py-3">
-                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-                      <BarChart3 className="size-3.5 text-teal-600" />
-                      Rated
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-950">
-                      {completedTrials}/{totalTrials}
-                    </div>
-                  </div>
-                </div>
-
                 <div>
-                  <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-500">
-                    <span>Listening window</span>
-                    <span>{ratingPromptOpen ? "Ready to rate" : `${Math.round(trackProgress)}%`}</span>
-                  </div>
-                  <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        background: `linear-gradient(90deg, ${currentSong.accent}, ${mood.accent})`,
-                        width: `${trackProgress}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
                       aria-label={isPlaying ? "Pause music" : "Start music"}
-                      className="inline-flex h-14 items-center justify-center gap-3 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(15,23,42,0.18)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-slate-300"
+                      className="inline-flex h-16 items-center justify-center gap-3 rounded-full bg-slate-950 px-8 text-base font-semibold text-white shadow-[0_22px_56px_rgba(9,24,38,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                       disabled={!sessionStarted || protocolComplete || ratingPromptOpen}
                       onClick={togglePlayback}
                       type="button"
@@ -2507,7 +2520,7 @@ export default function App() {
                       {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
                       {isPlaying ? "Pause" : trackProgress > 0 ? "Resume" : "Start music"}
                     </button>
-                    <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm">
+                    <div className="flex items-center gap-2 rounded-full bg-[#f4f6ef] px-4 py-2 text-sm font-semibold text-slate-600">
                       <span
                         className={`size-2 rounded-full ${
                           isPlaying ? "animate-pulse bg-teal-500" : "bg-slate-300"
@@ -2528,12 +2541,56 @@ export default function App() {
                     </p>
                   ) : null}
                 </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg bg-[#f7f8f2] px-4 py-3">
+                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
+                      <Clock3 className="size-3.5 text-teal-600" />
+                      Window
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-950">
+                      {ratingPromptOpen ? "Rate" : formatSeconds(remainingSeconds)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-[#f7f8f2] px-4 py-3">
+                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
+                      <Gauge className="size-3.5 text-teal-600" />
+                      Mood
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-950">{mood.label}</div>
+                  </div>
+                  <div className="rounded-lg bg-[#f7f8f2] px-4 py-3">
+                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
+                      <BarChart3 className="size-3.5 text-teal-600" />
+                      Rated
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-950">
+                      {completedTrials}/{totalTrials}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200/90 bg-[#fbfbf7] p-4">
+                  <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-500">
+                    <span>Listening window</span>
+                    <span>{ratingPromptOpen ? "Ready to rate" : `${Math.round(trackProgress)}%`}</span>
+                  </div>
+                  <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        background: `linear-gradient(90deg, ${currentSong.accent}, ${mood.accent})`,
+                        width: `${trackProgress}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </section>
 
-          <aside className="grid gap-5">
-            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <aside className="grid gap-5 self-start">
+            <section className="rounded-lg border border-slate-200/90 bg-white/90 p-5 shadow-[0_18px_50px_rgba(9,24,38,0.07)] backdrop-blur">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <SectionLabel icon={Sparkles}>Current Mood</SectionLabel>
@@ -2541,7 +2598,7 @@ export default function App() {
                     <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
                       {mood.label}
                     </h2>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                    <span className="rounded-full bg-[#f4f6ef] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       {mood.tag.replace("_", " ")}
                     </span>
                   </div>
@@ -2562,7 +2619,7 @@ export default function App() {
         </section>
 
         {protocolComplete ? (
-          <section className="rounded-lg border border-teal-200 bg-teal-50 p-5 shadow-sm">
+          <section className="rounded-lg border border-teal-200 bg-teal-50/90 p-5 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="flex items-center gap-2 text-sm font-semibold text-teal-700">
