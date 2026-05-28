@@ -287,12 +287,6 @@ function buildHeartRateCurve(samples, width = 320, height = 112) {
   };
 }
 
-function formatSignedPoints(value) {
-  if (!Number.isFinite(value)) return "-";
-  const rounded = Math.round(value);
-  return `${rounded > 0 ? "+" : ""}${rounded} pp`;
-}
-
 function ProgressRing({ value, label }) {
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
@@ -1587,52 +1581,6 @@ function HeartRateCurve({ physiology, summary }) {
   );
 }
 
-function ArousalCalculation({ summary }) {
-  const hrTerm = Number.isFinite(summary.z_hr) ? summary.z_hr * 16 : null;
-  const rmssdTerm = Number.isFinite(summary.z_rmssd) ? summary.z_rmssd * 18 : null;
-  const sdnnTerm = Number.isFinite(summary.z_sdnn) ? summary.z_sdnn * 12 : null;
-  const hasArousal = Number.isFinite(summary.physiology_arousal);
-  const baselineLabel = Number.isFinite(summary.baseline_hr_bpm)
-    ? `${Math.round(summary.baseline_hr_bpm)} bpm baseline`
-    : "Baseline needed";
-
-  return (
-    <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Arousal calculation
-        </div>
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
-          {baselineLabel}
-        </span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        Baseline is centered at 50%. HR above baseline raises arousal; RMSSD/SDNN
-        below baseline raise arousal.
-      </p>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {[
-          ["HR rise", hrTerm],
-          ["RMSSD drop", rmssdTerm],
-          ["SDNN drop", sdnnTerm],
-        ].map(([label, value]) => (
-          <div className="rounded-lg bg-slate-50 px-2 py-2" key={label}>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-              {label}
-            </div>
-            <div className="mt-1 text-sm font-semibold text-slate-950">
-              {hasArousal ? formatSignedPoints(value) : "-"}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white">
-        Arousal = 50% + HR + RMSSD drop + SDNN drop
-      </div>
-    </div>
-  );
-}
-
 function PhysiologyPanel({ physiology }) {
   const summary = physiology.currentSummary;
   let statusLabel = "Optional";
@@ -1713,7 +1661,6 @@ function PhysiologyPanel({ physiology }) {
         </div>
       </div>
       <HeartRateCurve physiology={physiology} summary={summary} />
-      <ArousalCalculation summary={summary} />
       <p className="mt-3 text-xs leading-5 text-slate-500">{helpText}</p>
       <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
         Quality {qualityLabel} · Packets {physiology.notificationCount} · RR{" "}
