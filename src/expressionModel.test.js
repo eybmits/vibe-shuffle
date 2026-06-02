@@ -141,6 +141,25 @@ test("subtle sustained sad expression becomes sad_low", () => {
   assert.ok(scores.sad_low >= 0.24);
 });
 
+test("downturned lower mouth without strong frown becomes sad_low", () => {
+  const scores = scoreExpressionFeatures(
+    {
+      ...neutral,
+      browInnerUp: 0.045,
+      frown: 0.025,
+      mouthLowerDown: 0.06,
+      mouthPucker: 0.025,
+      mouthShrugLower: 0.025,
+      smile: 0.004,
+    },
+    neutral,
+  );
+  const tag = classifySequence([scores, scores, scores, scores]);
+
+  assert.equal(tag, "sad_low");
+  assert.ok(scores.sad_low >= 0.24);
+});
+
 test("raised inner brow without mouth cue stays relaxed", () => {
   const scores = scoreExpressionFeatures(
     { ...neutral, browInnerUp: 0.13, frown: 0.02, mouthShrugLower: 0.012, smile: 0.015 },
@@ -149,6 +168,25 @@ test("raised inner brow without mouth cue stays relaxed", () => {
   const tag = classifySequence([scores, scores, scores, scores]);
 
   assert.equal(tag, "relaxed");
+});
+
+test("low smile alone stays relaxed", () => {
+  const scores = scoreExpressionFeatures({ ...neutral, smile: 0.004 }, neutral);
+  const tag = classifySequence([scores, scores, scores, scores]);
+
+  assert.equal(tag, "relaxed");
+  assert.ok(scores.sad_low < 0.24);
+});
+
+test("mouth tension alone stays relaxed", () => {
+  const scores = scoreExpressionFeatures(
+    { ...neutral, mouthPress: 0.09, smile: 0.004 },
+    neutral,
+  );
+  const tag = classifySequence([scores, scores, scores, scores]);
+
+  assert.equal(tag, "relaxed");
+  assert.ok(scores.sad_low < 0.24);
 });
 
 test("tracker detects subtle sad expression after neutral baseline", () => {
@@ -169,6 +207,32 @@ test("tracker detects subtle sad expression after neutral baseline", () => {
   let expression = null;
   for (let index = 0; index < 8; index += 1) {
     const update = updateExpressionTracker(tracker, categoriesFromFeatures(subtleSad));
+    tracker = update.tracker;
+    expression = update.expression;
+  }
+
+  assert.equal(expression.tag, "sad_low");
+});
+
+test("tracker detects downturned lower mouth after neutral baseline", () => {
+  let tracker = createExpressionTrackerState();
+
+  for (let index = 0; index < 30; index += 1) {
+    tracker = updateExpressionTracker(tracker, categoriesFromFeatures(neutral)).tracker;
+  }
+
+  const downturnedMouthSad = {
+    ...neutral,
+    browInnerUp: 0.045,
+    frown: 0.025,
+    mouthLowerDown: 0.06,
+    mouthPucker: 0.025,
+    mouthShrugLower: 0.025,
+    smile: 0.004,
+  };
+  let expression = null;
+  for (let index = 0; index < 8; index += 1) {
+    const update = updateExpressionTracker(tracker, categoriesFromFeatures(downturnedMouthSad));
     tracker = update.tracker;
     expression = update.expression;
   }

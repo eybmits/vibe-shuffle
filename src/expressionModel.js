@@ -109,6 +109,10 @@ export function scoreExpressionFeatures(features, baseline = {}) {
   const mouthStretchDelta = positiveDelta(features, baseline, "mouthStretch");
   const smile = features.smile ?? 0;
   const frown = features.frown ?? 0;
+  const mouthLowerDown = features.mouthLowerDown ?? 0;
+  const mouthPucker = features.mouthPucker ?? 0;
+  const mouthRollLower = features.mouthRollLower ?? 0;
+  const mouthShrugLower = features.mouthShrugLower ?? 0;
   const lowSmile = Math.max(0, 0.12 - smile);
 
   const happy = clamp(
@@ -124,11 +128,24 @@ export function scoreExpressionFeatures(features, baseline = {}) {
     mouthShrugLowerDelta * 0.82,
     mouthPuckerDelta * 0.72,
     mouthLowerDownDelta * 0.62,
+    mouthLowerDown * 0.58,
+    mouthRollLower * 0.52,
+    mouthPucker * 0.48,
+    mouthShrugLower * 0.42,
   );
   const sadBrowCue = browInnerUpDelta + (features.browInnerUp ?? 0) * 0.22;
+  const lowValenceMouthCue =
+    lowSmile >= 0.08 &&
+    (mouthLowerDown >= 0.035 || mouthRollLower >= 0.035 || mouthPucker >= 0.024) &&
+    (features.browInnerUp >= 0.025 ||
+      frown >= 0.02 ||
+      mouthShrugLower >= 0.02 ||
+      mouthPucker >= 0.02);
   const sadGate =
     frown >= 0.055 ||
     frownDelta >= 0.025 ||
+    lowValenceMouthCue ||
+    (lowSmile >= 0.085 && sadBrowCue >= 0.025 && sadMouthCue >= 0.024) ||
     (sadBrowCue >= 0.045 && sadMouthCue >= 0.022);
   const sadBase =
     frownDelta * 3.8 +
@@ -136,12 +153,14 @@ export function scoreExpressionFeatures(features, baseline = {}) {
     browInnerUpDelta * 1.62 +
     (features.browInnerUp ?? 0) * 0.35 +
     mouthShrugLowerDelta * 1.35 +
-    (features.mouthShrugLower ?? 0) * 0.35 +
+    mouthShrugLower * 0.35 +
     mouthPuckerDelta * 0.75 +
-    (features.mouthPucker ?? 0) * 0.35 +
+    mouthPucker * 0.44 +
     mouthPressDelta * 0.58 +
     mouthLowerDownDelta * 0.62 +
+    mouthLowerDown * 0.95 +
     mouthRollLowerDelta * 0.45 +
+    mouthRollLower * 0.78 +
     browDownDelta * 0.28 +
     lowSmile * 0.22 -
     smile * 0.58 -
