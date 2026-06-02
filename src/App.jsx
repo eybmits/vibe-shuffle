@@ -118,7 +118,7 @@ const EMOTION_QUADRANTS = {
 
 const FALLBACK_PALETTE = ["#f8fafc", "#dbeafe", "#0f766e"];
 const MAIN_PANEL_CLASS =
-  "h-[430px] overflow-hidden rounded-lg border border-white/10 shadow-[0_22px_70px_rgba(0,0,0,0.28)] sm:h-[460px] xl:h-[clamp(440px,calc((100dvh-210px)/2),560px)]";
+  "h-[430px] overflow-hidden rounded-lg border border-white/10 shadow-[0_22px_70px_rgba(0,0,0,0.28)] sm:h-[460px] xl:h-full";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -1471,7 +1471,7 @@ function MoodMap({ mood }) {
       <div className={`${axisLabelClass} mb-2 text-center`}>High arousal</div>
       <div className="grid grid-cols-[3rem_minmax(0,1fr)_3rem] items-center gap-2 sm:grid-cols-[3.35rem_minmax(0,1fr)_3.35rem]">
         <div className={`${axisLabelClass} text-right leading-4`}>Low valence</div>
-        <div className="relative mx-auto aspect-square w-full max-w-[220px] overflow-hidden rounded-lg border border-white/14 bg-[#071827] shadow-inner sm:max-w-[230px]">
+        <div className="relative mx-auto aspect-square w-full max-w-[220px] overflow-hidden rounded-lg border border-white/14 bg-[#071827] shadow-inner sm:max-w-[230px] xl:max-w-[180px]">
           <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
             <div className="border-b border-r border-white/12 bg-[linear-gradient(135deg,rgba(249,115,22,0.17),rgba(129,140,248,0.08))]" />
             <div className="border-b border-white/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.13),rgba(50,230,200,0.20))]" />
@@ -1513,7 +1513,7 @@ function MoodMap({ mood }) {
 
 function CoverArt({ isPlaying, song }) {
   const coverClass =
-    "relative mx-auto aspect-square w-full max-w-[min(62vw,210px)] overflow-hidden rounded-lg border border-white/14 shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:max-w-[240px] md:max-w-[260px] lg:max-w-[220px] xl:max-w-[240px]";
+    "relative mx-auto aspect-square w-full max-w-[min(62vw,210px)] overflow-hidden rounded-lg border border-white/14 shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:max-w-[240px] md:max-w-[260px] lg:max-w-[220px] xl:max-w-[168px]";
 
   if (song.albumImageUrl) {
     return (
@@ -1533,7 +1533,7 @@ function CoverArt({ isPlaying, song }) {
     >
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06)_42%,rgba(2,7,18,0.28))]" />
       <div className="absolute -left-1/4 top-0 h-full w-2/3 rotate-12 bg-[#32e6c8]/24 blur-2xl animate-sweep" />
-      <div className="absolute inset-x-8 bottom-9">
+      <div className="absolute inset-x-8 bottom-9 xl:inset-x-6 xl:bottom-6">
         <div className="flex items-end gap-2">
           {[48, 82, 58, 104, 46, 86, 62].map((height, index) => (
             <span
@@ -1558,7 +1558,7 @@ function SessionWaveform({ isPlaying, song }) {
   const heights = [34, 62, 44, 86, 54, 104, 66, 48, 78, 52, 96, 42, 70, 58, 88, 46];
 
   return (
-    <div className="flex h-14 items-end justify-center gap-1.5 rounded-lg border border-white/12 bg-white/6 px-3 py-3 sm:h-20 sm:gap-2 sm:px-4 lg:h-20">
+    <div className="flex h-14 items-end justify-center gap-1.5 rounded-lg border border-white/12 bg-white/6 px-3 py-3 sm:h-20 sm:gap-2 sm:px-4 lg:h-20 xl:h-14 xl:px-3 xl:py-2">
       {heights.map((height, index) => (
         <span
           className="w-full max-w-3 rounded-full bg-[#ddf7ff]/70 shadow-sm sm:max-w-4"
@@ -1591,7 +1591,7 @@ function CameraPanel({ face }) {
               : "Camera not started";
 
   return (
-    <section className={`${MAIN_PANEL_CLASS} flex flex-col bg-[#071827] p-4 sm:p-5`}>
+    <section className={`${MAIN_PANEL_CLASS} flex flex-col bg-[#071827] p-4 sm:p-5 xl:p-4`}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <SectionLabel icon={Camera}>Expression signal</SectionLabel>
         <span className="rounded-full bg-white/8 px-3 py-1 text-xs font-semibold text-[#c7d7e6]">
@@ -1638,7 +1638,7 @@ function HeartRateCurve({ physiology, summary }) {
   const lastPoint = curve.points.at(-1);
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(135deg,#082033_0%,#071827_60%,#201426_100%)] p-3 sm:p-4">
+    <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(135deg,#082033_0%,#071827_60%,#201426_100%)] p-3 sm:p-4 xl:mt-3 xl:p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#32e6c8]">
@@ -1652,7 +1652,7 @@ function HeartRateCurve({ physiology, summary }) {
           {latestLabel}
         </div>
       </div>
-      <div className="relative h-28 sm:h-32">
+      <div className="relative h-28 sm:h-32 xl:h-20">
         <svg
           aria-hidden="true"
           className="h-full w-full overflow-visible"
@@ -1744,7 +1744,7 @@ function PhysiologyPanel({ physiology }) {
     ? `${Math.round(summary.physiology_arousal * 100)}%`
     : "Face only";
   return (
-    <section className={`${MAIN_PANEL_CLASS} bg-[#071827] p-4 sm:p-5`}>
+    <section className={`${MAIN_PANEL_CLASS} bg-[#071827] p-4 sm:p-5 xl:p-4`}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <SectionLabel icon={HeartPulse}>Physiology signal</SectionLabel>
         <span className="rounded-full bg-white/8 px-3 py-1 text-xs font-semibold text-[#c7d7e6]">
@@ -2480,12 +2480,12 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(160deg,#020712_0%,#071827_48%,#101329_74%,#20140f_100%)] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(160deg,#020712_0%,#071827_48%,#101329_74%,#20140f_100%)] text-white xl:h-screen xl:overflow-hidden">
 
-      <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8 lg:py-7">
-        <header className="flex flex-col gap-4 rounded-lg border border-white/10 bg-[#071827] px-4 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:px-5 md:flex-row md:items-center md:justify-between">
+      <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-4 lg:px-8 lg:py-4 xl:h-full">
+        <header className="flex flex-col gap-3 rounded-lg border border-white/10 bg-[#071827] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:px-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#32e6c8] text-[#020712] shadow-[0_0_38px_rgba(50,230,200,0.24)]">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#32e6c8] text-[#020712] shadow-[0_0_38px_rgba(50,230,200,0.24)]">
               <Waves className="size-5" />
             </div>
             <div>
@@ -2531,10 +2531,10 @@ export default function App() {
           </section>
         ) : null}
 
-        <section className="grid gap-4 sm:gap-5 xl:grid-cols-2 xl:items-stretch">
+        <section className="grid gap-4 sm:gap-5 xl:min-h-0 xl:flex-1 xl:grid-cols-2 xl:grid-rows-2 xl:gap-4 xl:items-stretch">
           <section className={`${MAIN_PANEL_CLASS} bg-[#020712] text-white`}>
-            <div className="grid h-full min-h-0 grid-cols-[minmax(118px,38%)_minmax(0,1fr)] sm:grid-cols-[minmax(170px,36%)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
-              <div className="relative min-h-0 p-3 sm:p-5 xl:p-5">
+            <div className="grid h-full min-h-0 grid-cols-[minmax(118px,38%)_minmax(0,1fr)] sm:grid-cols-[minmax(170px,36%)_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]">
+              <div className="relative min-h-0 p-3 sm:p-5 xl:p-4">
                 <div
                   className="absolute inset-0 opacity-80"
                   style={{
@@ -2542,7 +2542,7 @@ export default function App() {
                   }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,7,18,0.18),rgba(2,7,18,0.84))]" />
-                <div className="relative flex h-full min-h-0 flex-col justify-between gap-4 sm:gap-5">
+                <div className="relative flex h-full min-h-0 flex-col justify-between gap-4 sm:gap-5 xl:gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-sm sm:text-[11px]">
                       <Headphones className="size-4" />
@@ -2559,18 +2559,18 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-[#071827] p-4 text-white sm:p-6 xl:p-6">
-                <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-[#071827] p-4 text-white sm:p-6 xl:gap-3 xl:p-4">
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between xl:gap-4">
                   <div className="min-w-0">
                     <SectionLabel icon={Music2}>Now playing</SectionLabel>
-                    <h2 className="mt-4 max-w-2xl break-words text-2xl font-semibold leading-[1.02] tracking-tight text-white sm:mt-5 sm:text-4xl">
+                    <h2 className="mt-3 max-w-2xl break-words text-2xl font-semibold leading-[1.02] tracking-tight text-white sm:mt-5 sm:text-4xl xl:mt-3 xl:text-3xl">
                       {currentSong.title}
                     </h2>
-                    <p className="mt-2 text-lg text-[#c7d7e6] sm:mt-3 sm:text-xl">{currentSong.artist}</p>
+                    <p className="mt-2 text-lg text-[#c7d7e6] sm:mt-3 sm:text-xl xl:text-lg">{currentSong.artist}</p>
                     {currentSong.album ? (
                       <p className="mt-1 text-sm font-medium text-[#8ca3b8]">{currentSong.album}</p>
                     ) : null}
-                    <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
+                    <div className="mt-4 hidden flex-wrap gap-2 sm:mt-5 2xl:flex">
                       {SESSION_MODES.map((modeLabel) => (
                         <span
                           className="rounded-full border border-white/10 bg-white/7 px-3 py-1.5 text-xs font-semibold text-[#c7d7e6]"
@@ -2588,7 +2588,7 @@ export default function App() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
                       aria-label={isPlaying ? "Pause music" : "Start music"}
-                      className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-full bg-[#32e6c8] px-6 text-base font-semibold text-[#020712] shadow-[0_22px_56px_rgba(0,0,0,0.34)] transition hover:-translate-y-0.5 hover:bg-[#8fffea] disabled:cursor-not-allowed disabled:bg-white/16 disabled:text-white/45 sm:h-16 sm:w-auto sm:px-8"
+                      className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-full bg-[#32e6c8] px-6 text-base font-semibold text-[#020712] shadow-[0_22px_56px_rgba(0,0,0,0.34)] transition hover:-translate-y-0.5 hover:bg-[#8fffea] disabled:cursor-not-allowed disabled:bg-white/16 disabled:text-white/45 sm:h-16 sm:w-auto sm:px-8 xl:h-[3.25rem] xl:px-7"
                       disabled={!sessionStarted || protocolComplete || ratingPromptOpen}
                       onClick={togglePlayback}
                       type="button"
@@ -2618,36 +2618,36 @@ export default function App() {
                   ) : null}
                 </div>
 
-                <div className="grid gap-2 min-[520px]:grid-cols-3 sm:gap-3">
-                  <div className="rounded-lg bg-white/7 px-4 py-3">
+                <div className="grid gap-2 min-[520px]:grid-cols-3 sm:gap-3 xl:gap-2">
+                  <div className="rounded-lg bg-white/7 px-4 py-3 xl:px-3 xl:py-2">
                     <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#8ca3b8]">
                       <Clock3 className="size-3.5 text-[#32e6c8]" />
                       Window
                     </div>
-                    <div className="mt-2 text-2xl font-semibold text-white">
+                    <div className="mt-2 text-2xl font-semibold text-white xl:text-xl">
                       {ratingPromptOpen ? "Rate" : formatSeconds(remainingSeconds)}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-white/7 px-4 py-3">
+                  <div className="rounded-lg bg-white/7 px-4 py-3 xl:px-3 xl:py-2">
                     <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#8ca3b8]">
                       <Gauge className="size-3.5 text-[#32e6c8]" />
                       Mood
                     </div>
-                    <div className="mt-2 text-2xl font-semibold text-white">{mood.label}</div>
+                    <div className="mt-2 text-2xl font-semibold text-white xl:text-xl">{mood.label}</div>
                   </div>
-                  <div className="rounded-lg bg-white/7 px-4 py-3">
+                  <div className="rounded-lg bg-white/7 px-4 py-3 xl:px-3 xl:py-2">
                     <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#8ca3b8]">
                       <BarChart3 className="size-3.5 text-[#32e6c8]" />
                       Rated
                     </div>
-                    <div className="mt-2 text-2xl font-semibold text-white">
+                    <div className="mt-2 text-2xl font-semibold text-white xl:text-xl">
                       {completedTrials}/{totalTrials}
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-white/10 bg-white/6 p-4">
-                  <div className="mb-3 flex items-center justify-between text-sm font-semibold text-[#9db0c4]">
+                <div className="rounded-lg border border-white/10 bg-white/6 p-4 xl:p-3">
+                  <div className="mb-3 flex items-center justify-between text-sm font-semibold text-[#9db0c4] xl:mb-2">
                     <span>Listening window</span>
                     <span>{ratingPromptOpen ? "Ready to rate" : `${Math.round(trackProgress)}%`}</span>
                   </div>
@@ -2665,11 +2665,11 @@ export default function App() {
             </div>
           </section>
 
-          <section className={`${MAIN_PANEL_CLASS} flex flex-col bg-[#071827] p-4 sm:p-5`}>
-            <div className="mb-4">
+          <section className={`${MAIN_PANEL_CLASS} flex flex-col bg-[#071827] p-4 sm:p-5 xl:p-4`}>
+            <div className="mb-4 xl:mb-3">
               <SectionLabel icon={Sparkles}>Current Mood</SectionLabel>
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl xl:text-2xl">
                   {mood.label}
                 </h2>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#c7d7e6]">
