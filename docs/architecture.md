@@ -57,10 +57,11 @@ model estimates:
 The classifier does not use a personal face baseline. It uses absolute
 blendshape cues, exponential smoothing, minimum sustained samples, and switching
 margins to reduce flicker. Neutral/low-evidence faces default to `relaxed`.
-Smile evidence primarily increases Valence, while only strong facial tension
-contributes high face-derived Arousal when ECG/HRV is unavailable. `sad_low`
-requires sustained frown/downturned-mouth evidence plus low smile evidence.
-Camera frames are not stored or uploaded.
+Smile evidence increases the Valence coordinate, while frown/downturned-mouth
+or facial-tension evidence lowers Valence. The face model does not move the
+Arousal coordinate. If no face is detected, the Valence/Arousal point is held at
+the center of the map. `sad_low` requires sustained frown/downturned-mouth
+evidence plus low smile evidence. Camera frames are not stored or uploaded.
 
 Track selection uses the average expression scores across the just-finished
 listening window, not the last detected instant. This makes brief end-of-song
@@ -76,8 +77,9 @@ app computes mean HR, mean RR, RMSSD, SDNN, pNN20, RR count, and artifact rate.
 
 After connection, the app runs a neutral 60 second physiology baseline and
 stores only session-local baseline statistics. In Vibe Shuffle, ECG/HRV provides
-the dominant Arousal coordinate when quality is good, while the face-expression
-window remains the primary Valence signal. This follows the project constraint
+the Arousal coordinate when quality is good, while the face-expression window
+provides the Valence coordinate. Without good ECG/HRV, Arousal remains centered
+instead of being inferred from the face. This follows the project constraint
 that HR/HRV should not be treated as a standalone emotion classifier.
 
 ## Playback Paths

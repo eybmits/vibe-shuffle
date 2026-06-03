@@ -14,7 +14,8 @@ The face model intentionally avoids a participant-specific neutral face
 baseline because head pose, gaze direction, camera distance, and lighting can
 make that baseline unstable. Instead, neutral/low-evidence faces default to
 `relaxed`, and only clear smile, frown/downturned-mouth, or facial-tension cues
-move the Valence/Arousal estimate away from that default.
+move the Valence estimate away from center. Face cues do not move Arousal; good
+ECG/HRV controls Arousal, and no detected face keeps the plotted point centered.
 
 ## Exported Data
 

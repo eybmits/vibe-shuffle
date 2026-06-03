@@ -252,7 +252,25 @@ test("smile moves valence more than face arousal", () => {
   const state = expressionStateFromTag("happy", scores);
 
   assert.ok(state.valence > 0.85);
-  assert.ok(state.energy < 0.6);
+  assert.equal(state.energy, 0.5);
+});
+
+test("missing face centers expression coordinates", () => {
+  const state = expressionStateFromTag(
+    "happy",
+    {
+      happy: 0.9,
+      relaxed: 0,
+      tense: 0,
+      sad_low: 0,
+    },
+    false,
+  );
+
+  assert.equal(state.facePresent, false);
+  assert.equal(state.valence, 0.5);
+  assert.equal(state.energy, 0.5);
+  assert.equal(state.confidence, 0);
 });
 
 test("window average beats last-second noise", () => {

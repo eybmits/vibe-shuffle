@@ -180,10 +180,21 @@ function dominantWindowTag(scores) {
 export function expressionStateFromTag(tag, scores, facePresent = true) {
   const confidence = clamp(scores[tag] ?? 0);
 
+  if (!facePresent) {
+    return {
+      confidence: 0,
+      energy: 0.5,
+      facePresent: false,
+      scores,
+      tag: "relaxed",
+      valence: 0.5,
+    };
+  }
+
   if (tag === "happy") {
     return {
       confidence,
-      energy: clamp(0.44 + confidence * 0.14, 0.42, 0.58),
+      energy: 0.5,
       facePresent,
       scores,
       tag,
@@ -194,7 +205,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   if (tag === "tense") {
     return {
       confidence,
-      energy: clamp(0.58 + confidence * 0.34, 0.55, 0.92),
+      energy: 0.5,
       facePresent,
       scores,
       tag,
@@ -205,7 +216,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   if (tag === "sad_low") {
     return {
       confidence,
-      energy: clamp(0.34 - confidence * 0.12, 0.16, 0.4),
+      energy: 0.5,
       facePresent,
       scores,
       tag,
@@ -215,11 +226,11 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
 
   return {
     confidence,
-    energy: 0.32,
+    energy: 0.5,
     facePresent,
     scores,
     tag: "relaxed",
-    valence: clamp(0.54 + confidence * 0.08, 0.54, 0.62),
+    valence: 0.5,
   };
 }
 

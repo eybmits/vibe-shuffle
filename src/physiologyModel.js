@@ -245,28 +245,34 @@ export function fuseEmotionSignals(faceSummary, physiologySummary) {
   const physiologyUsable =
     physiologySummary?.physiology_quality === "good" &&
     Number.isFinite(physiologySummary?.physiology_arousal);
+  const facePresent = Boolean(faceSummary?.facePresent);
   const faceTag = faceSummary?.tag ?? "relaxed";
   const faceConfidence = Number(faceSummary?.confidence ?? 0);
   const physiologyArousal = physiologySummary?.physiology_arousal;
-  const faceEnergy = Number(faceSummary?.energy ?? 0.3);
-  let valence = Number(faceSummary?.valence ?? 0.66);
-  let energy = physiologyUsable ? clamp(physiologyArousal) : clamp(faceEnergy);
 
-  if (physiologyUsable && faceTag === "tense" && faceConfidence >= 0.55) {
-    energy = Math.max(energy, faceEnergy);
+  if (!facePresent) {
+    return {
+      confidence: 0,
+      energy: 0.5,
+      facePresent: false,
+      physiologyArousal: physiologyArousal ?? null,
+      physiologyQuality: physiologySummary?.physiology_quality ?? "inactive",
+      selectionSignalSource: "no_face_center",
+      tag: "relaxed",
+      valence: 0.5,
+    };
   }
 
-  if (physiologyUsable && faceTag === "relaxed" && physiologyArousal >= 0.62) {
-    valence = Math.min(valence, 0.48);
-  }
-
-  const tag = quadrantFromAxes(valence, energy);
+  const valence = clamp(Number(faceSummary?.valence ?? 0.5));
+  const energy = physiologyUsable ? clamp(physiologyArousal) : 0.5;
+  const tag = physiologyUsable ? quadrantFromAxes(valence, energy) : faceTag;
 
   return {
     confidence: physiologyUsable
       ? clamp((faceConfidence + Math.min(1, physiologySummary.rr_count / 40)) / 2)
       : faceConfidence,
     energy,
+    facePresent: true,
     physiologyArousal: physiologyArousal ?? null,
     physiologyQuality: physiologySummary?.physiology_quality ?? "inactive",
     selectionSignalSource: physiologyUsable

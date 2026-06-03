@@ -385,15 +385,18 @@ function expressionStateToMood(expressionState) {
       ? expressionState.tag
       : "relaxed";
   const style = EMOTION_QUADRANTS[tag];
+  const facePresent = Boolean(expressionState?.facePresent);
 
   return {
     ...style,
-    confidence: Number(expressionState?.confidence ?? 0),
-    energy: Number(expressionState?.energy ?? style.energy),
-    facePresent: Boolean(expressionState?.facePresent),
+    confidence: facePresent ? Number(expressionState?.confidence ?? 0) : 0,
+    description: facePresent ? style.description : "Face not detected",
+    energy: facePresent ? Number(expressionState?.energy ?? style.energy) : 0.5,
+    facePresent,
+    label: facePresent ? style.label : "Waiting",
     sampleCount: Number(expressionState?.sampleCount ?? 0),
     scores: expressionState?.scores ?? initialExpressionScores(),
-    valence: Number(expressionState?.valence ?? style.valence),
+    valence: facePresent ? Number(expressionState?.valence ?? style.valence) : 0.5,
   };
 }
 
@@ -401,7 +404,7 @@ function signalStateToMood(signalState) {
   return expressionStateToMood({
     confidence: signalState?.confidence ?? 0,
     energy: signalState?.energy,
-    facePresent: true,
+    facePresent: Boolean(signalState?.facePresent),
     scores: signalState?.scores ?? initialExpressionScores(),
     tag: signalState?.tag,
     valence: signalState?.valence,
@@ -1045,10 +1048,17 @@ function useFaceExpression() {
           });
         } else {
           setState((current) => ({
-            ...current,
-            confidence: current.confidence,
+            ...expressionStateToMood({
+              confidence: 0,
+              energy: 0.5,
+              facePresent: false,
+              scores: current.scores ?? initialExpressionScores(),
+              tag: "relaxed",
+              valence: 0.5,
+            }),
             error: "",
             facePresent: false,
+            sample: null,
             status: "searching",
           }));
         }
@@ -2661,7 +2671,7 @@ export default function App() {
                     className="size-2 rounded-full shadow-[0_0_18px_currentColor]"
                     style={{ background: mood.accent, color: mood.accent }}
                   />
-                  {mood.tag.replace("_", " ")}
+                  {mood.facePresent ? mood.tag.replace("_", " ") : "center"}
                 </span>
               </div>
               <p className="mt-2 text-sm text-[#9db0c4]">{mood.description}</p>

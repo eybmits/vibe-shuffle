@@ -81,7 +81,7 @@ test("normalizes arousal against personal baseline", () => {
 
 test("neutral face plus high HR and low HRV maps to tense", () => {
   const fused = fuseEmotionSignals(
-    { confidence: 0.2, energy: 0.28, tag: "relaxed", valence: 0.68 },
+    { confidence: 0.2, energy: 0.5, facePresent: true, tag: "relaxed", valence: 0.48 },
     { physiology_arousal: 0.88, physiology_quality: "good", rr_count: 40 },
   );
 
@@ -91,7 +91,7 @@ test("neutral face plus high HR and low HRV maps to tense", () => {
 
 test("happy face plus high arousal maps to happy", () => {
   const fused = fuseEmotionSignals(
-    { confidence: 0.8, energy: 0.7, tag: "happy", valence: 0.9 },
+    { confidence: 0.8, energy: 0.5, facePresent: true, tag: "happy", valence: 0.9 },
     { physiology_arousal: 0.88, physiology_quality: "good", rr_count: 40 },
   );
 
@@ -100,7 +100,7 @@ test("happy face plus high arousal maps to happy", () => {
 
 test("usable HRV arousal is not averaged with happy face arousal", () => {
   const fused = fuseEmotionSignals(
-    { confidence: 0.8, energy: 0.58, tag: "happy", valence: 0.9 },
+    { confidence: 0.8, energy: 0.5, facePresent: true, tag: "happy", valence: 0.9 },
     { physiology_arousal: 0.24, physiology_quality: "good", rr_count: 40 },
   );
 
@@ -110,7 +110,7 @@ test("usable HRV arousal is not averaged with happy face arousal", () => {
 
 test("neutral or happy face plus low arousal maps to relaxed", () => {
   const fused = fuseEmotionSignals(
-    { confidence: 0.5, energy: 0.62, tag: "happy", valence: 0.82 },
+    { confidence: 0.5, energy: 0.5, facePresent: true, tag: "happy", valence: 0.82 },
     { physiology_arousal: 0.25, physiology_quality: "good", rr_count: 40 },
   );
 
@@ -119,7 +119,7 @@ test("neutral or happy face plus low arousal maps to relaxed", () => {
 
 test("sad face plus low arousal maps to sad_low", () => {
   const fused = fuseEmotionSignals(
-    { confidence: 0.7, energy: 0.28, tag: "sad_low", valence: 0.24 },
+    { confidence: 0.7, energy: 0.5, facePresent: true, tag: "sad_low", valence: 0.24 },
     { physiology_arousal: 0.3, physiology_quality: "good", rr_count: 40 },
   );
 
@@ -131,11 +131,24 @@ test("missing RR intervals do not drive HRV-based selection", () => {
     { heartRateBpm: 92, rrIntervalsMs: [], timestamp: 1 },
   ]);
   const fused = fuseEmotionSignals(
-    { confidence: 0.8, energy: 0.72, tag: "happy", valence: 0.88 },
+    { confidence: 0.8, energy: 0.5, facePresent: true, tag: "happy", valence: 0.88 },
     summary,
   );
 
   assert.equal(summary.physiology_quality, "bpm_only");
   assert.equal(fused.selectionSignalSource, "window_average");
+  assert.equal(fused.energy, 0.5);
   assert.equal(fused.tag, "happy");
+});
+
+test("missing face centers both axes even when physiology is available", () => {
+  const fused = fuseEmotionSignals(
+    { confidence: 0.8, energy: 0.5, facePresent: false, tag: "happy", valence: 0.88 },
+    { physiology_arousal: 0.9, physiology_quality: "good", rr_count: 40 },
+  );
+
+  assert.equal(fused.facePresent, false);
+  assert.equal(fused.valence, 0.5);
+  assert.equal(fused.energy, 0.5);
+  assert.equal(fused.selectionSignalSource, "no_face_center");
 });
