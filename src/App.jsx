@@ -1585,12 +1585,15 @@ function getSpotifyTrackUri(song) {
   return null;
 }
 
-function buildSpotifyEmbedSrc(song) {
+function buildSpotifyEmbedSrc(song, autoplay = false) {
   const spotifyId = song.spotifyId ?? song.spotifyUri?.split(":").pop();
   if (!spotifyId) return null;
   const url = new URL(`https://open.spotify.com/embed/track/${spotifyId}`);
   url.searchParams.set("utm_source", "generator");
   url.searchParams.set("theme", "0");
+  if (autoplay) {
+    url.searchParams.set("autoplay", "1");
+  }
   return url.toString();
 }
 
@@ -1622,7 +1625,7 @@ function YouTubeMedia({ isPlaying, onReadyPlay, song, youtubeFrameRef }) {
 }
 
 function SpotifyEmbedMedia({ isPlaying, song }) {
-  const src = buildSpotifyEmbedSrc(song);
+  const src = buildSpotifyEmbedSrc(song, isPlaying);
   const mediaClass =
     "relative mx-auto aspect-square w-full max-w-[min(62vw,240px)] overflow-hidden rounded-lg border border-white/14 bg-[#020712] shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:max-w-[260px] md:max-w-[280px] lg:max-w-[240px] xl:max-w-[190px]";
 
@@ -1632,9 +1635,10 @@ function SpotifyEmbedMedia({ isPlaying, song }) {
     <div className={mediaClass}>
       {isPlaying ? (
         <iframe
+          key={`${song.id}-spotify-${isPlaying}`}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           className="absolute inset-0 h-full w-full"
-          loading="lazy"
+          loading="eager"
           src={src}
           title={`${song.title} on Spotify`}
         />
@@ -2607,7 +2611,7 @@ export default function App() {
       pauseDemoAudio();
       pauseYouTubeVideo();
       setPlaybackNotice(
-        "Spotify catalog track is embedded. If autoplay is blocked, press play in the player.",
+        "Starting embedded Spotify playback. If autoplay is blocked, press play in the player.",
       );
       return;
     }
