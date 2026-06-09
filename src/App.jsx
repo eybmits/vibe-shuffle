@@ -656,14 +656,47 @@ function loadSpotifySdk() {
 
   return new Promise((resolve, reject) => {
     const existing = document.querySelector("script[src='https://sdk.scdn.co/spotify-player.js']");
-    window.onSpotifyWebPlaybackSDKReady = () => resolve();
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      if (window.Spotify) {
+        resolve();
+      }
+    };
 
-    if (existing) return;
+    if (existing) {
+      const fallback = window.setTimeout(() => {
+        if (window.Spotify) {
+          resolve();
+          return;
+        }
+        reject(new Error("Spotify SDK did not initialize after script load."));
+      }, 15000);
+
+      existing.addEventListener(
+        "load",
+        () => {
+          window.clearTimeout(fallback);
+          resolve();
+        },
+        { once: true },
+      );
+
+      return;
+    }
 
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;
     script.onerror = () => reject(new Error("Spotify SDK failed to load."));
+    const timeout = window.setTimeout(() => {
+      reject(new Error("Spotify SDK did not initialize in time."));
+    }, 15000);
+
+    script.onload = () => {
+      window.clearTimeout(timeout);
+      if (window.Spotify) {
+        resolve();
+      }
+    };
     document.body.append(script);
   });
 }
@@ -701,7 +734,7 @@ function useSpotifyPlayer(accessToken, ensureToken) {
           setState({ deviceId, error: "", ready: true, status: "ready" });
         });
         player.addListener("not_ready", () => {
-          setState((current) => ({ ...current, ready: false, status: "idle" }));
+          setState((current) => ({ ...current, deviceId: null, ready: false, status: "idle" }));
         });
         player.addListener("initialization_error", ({ message }) => {
           setState((current) => ({ ...current, error: message, status: "error" }));
@@ -738,6 +771,50 @@ function useSpotifyPlayer(accessToken, ensureToken) {
     };
   }, [accessToken, ensureToken]);
 
+  const transferToActiveDevice = useCallback(
+    async (deviceId) => {
+      const token = await ensureToken();
+      if (!token) return false;
+
+      const response = await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [deviceId],
+          play: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.text().catch(() => "");
+        if (response.status === 403) {
+          setState((current) => ({
+            ...current,
+            error:
+              "Spotify playback permission denied. Verify premium and playback scopes.",
+          }));
+        } else if (response.status === 404) {
+          setState((current) => ({
+            ...current,
+            error: "Spotify player device not found. Reload Spotify or reconnect.",
+          }));
+        } else {
+          setState((current) => ({
+            ...current,
+            error: payload || "Could not switch Spotify to this web playback device.",
+          }));
+        }
+        return false;
+      }
+
+      return true;
+    },
+    [ensureToken],
+  );
+
   const waitForTrackStart = useCallback(async (expectedUri, timeoutMs = 2200) => {
     if (!playerRef.current) return false;
 
@@ -767,33 +844,70 @@ function useSpotifyPlayer(accessToken, ensureToken) {
       if (!spotifyUri || !state.deviceId) return false;
       const token = await ensureToken();
       if (!token) return false;
+      const transferred = await transferToActiveDevice(state.deviceId);
+      if (!transferred) return false;
 
-      const response = await fetch(
-        `https://api.spotify.com/v1/me/player/play?device_id=${state.deviceId}`,
-        {
+      const playBody = JSON.stringify({ uris: [spotifyUri], position_ms: 0 });
+      const tryPlay = async () =>
+        fetch(`https://api.spotify.com/v1/me/player/play?device_id=${state.deviceId}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ uris: [spotifyUri] }),
-        },
-      );
+          body: playBody,
+        });
+
+      let response = await tryPlay();
 
       if (!response.ok) {
+        const payload = await response.text().catch(() => "");
         const message =
           response.status === 404
             ? "Spotify playback device is not active yet."
-            : "Spotify could not start this track.";
+            : response.status === 403
+              ? "Spotify playback permission denied."
+              : payload || "Spotify could not start this track.";
         setState((current) => ({ ...current, error: message }));
         return false;
       }
 
-      const confirmed = await waitForTrackStart(spotifyUri);
+      let confirmed = await waitForTrackStart(spotifyUri, 3200);
+
       if (!confirmed) {
+        // Spotify occasionally returns HTTP 204 before the SDK state updates.
+        try {
+          await playerRef.current?.resume();
+          confirmed = await waitForTrackStart(spotifyUri, 3800);
+        } catch {
+          // ignore; we keep using confirmation state only
+        }
+      }
+
+      if (!confirmed) {
+        // Final fallback: call start command without a forced device id.
+        response = await fetch("https://api.spotify.com/v1/me/player/play", {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: playBody,
+        });
+        if (response.ok) {
+          confirmed = await waitForTrackStart(spotifyUri, 3600);
+        } else {
+          const payload = await response.text().catch(() => "");
+          setState((current) => ({ ...current, error: payload || "Could not start Spotify playback." }));
+          return false;
+        }
+      }
+
+      if (!confirmed) {
+        const fallbackText = spotifyUri ? "Could not confirm track playback on this device." : "";
         setState((current) => ({
           ...current,
-          error: "Could not confirm Spotify playback start on this device. Start failed.",
+          error: `${fallbackText} Use the Spotify tab once if playback did not start automatically.`,
         }));
         return false;
       }
@@ -801,7 +915,7 @@ function useSpotifyPlayer(accessToken, ensureToken) {
       setState((current) => ({ ...current, error: "" }));
       return true;
     },
-    [ensureToken, state.deviceId, waitForTrackStart],
+    [ensureToken, state.deviceId, waitForTrackStart, transferToActiveDevice],
   );
 
   const pause = useCallback(async () => {
@@ -2537,14 +2651,24 @@ export default function App() {
       };
     }
 
-    const startedBySdk = await playSpotifyTrack(spotifyTrackUri);
-    return {
-      started: startedBySdk,
-      mode: playbackMode,
-      message: startedBySdk
-        ? ""
-        : spotifyPlayerError || "Could not start this track. Press play in the Spotify player.",
-    };
+    try {
+      const startedBySdk = await playSpotifyTrack(spotifyTrackUri);
+      return {
+        started: startedBySdk,
+        mode: playbackMode,
+        message: startedBySdk
+          ? ""
+          : spotifyPlayerError || "Could not start this track. Check Spotify login and premium playback.",
+      };
+    } catch {
+      return {
+        started: false,
+        mode: playbackMode,
+        message:
+          spotifyPlayerError ||
+          "Could not start this track. Please reconnect Spotify and try again.",
+      };
+    }
   }
 
   function openRatingPrompt(jumped = false) {
