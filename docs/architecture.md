@@ -14,8 +14,8 @@ client-only; there is no backend service.
 - `src/data/musicCatalog.json`: static track catalog consumed by the app.
 - `src/data/spotifyCatalog.json`: legacy/optional Spotify catalog output.
 - `scripts/build_kaggle_spotify_youtube_catalog.mjs`: current public-demo
-  generator using the Kaggle Spotify Tracks Dataset mirror plus direct YouTube
-  video lookup.
+  generator using the Kaggle Spotify Tracks Dataset mirror. By default it builds
+  the full eligible Spotify-URI catalog; compact YouTube lookup is optional.
 - `scripts/build_curated_instrumental_catalog.mjs`: current public-demo
   fallback generator using Wikimedia Commons/Incompetech and selected Internet
   Archive instrumentals.
@@ -94,11 +94,16 @@ drop.
 
 ## Playback Paths
 
-There are three playback paths:
+There are four playback paths:
 
-- YouTube embedded playback: the current Kaggle/Spotify catalog stores a
+- Spotify embedded playback: the current full Kaggle catalog stores Spotify
+  track URIs and displays embedded Spotify track players. `Start music` mounts
+  the player for the listening window; browser autoplay rules can require a
+  direct click inside the embedded player.
+- YouTube embedded playback: optional compact Kaggle builds can store a
   resolved YouTube video id and embed URL for each track. The visible player
-  iframe is controlled by the same `Start music` / `Pause` button.
+  iframe is controlled by the same `Start music` / `Pause` button where the
+  browser allows it.
 - Direct MP3/stream playback: Jamendo or fallback instrumental URLs in the
   catalog.
 - Spotify Web Playback SDK: full-track playback for Spotify catalog entries
@@ -112,7 +117,7 @@ Catalog generators run at build time, not in the browser. The current public
 path writes `src/data/musicCatalog.json` and
 `data/kaggle_spotify_youtube_catalog.csv`. It uses the Spotify Tracks Dataset
 mirror, filters for high instrumental character, classifies quadrants from
-Valence and `energy`, and resolves one YouTube embed per track. Jamendo,
-Internet Archive, curated fallback, and Spotify paths can also write
-`src/data/musicCatalog.json`. Secrets are provided through environment
-variables or an ignored `.env` file and are never committed.
+Valence and `energy`, and keeps Spotify track URIs for embed playback. Jamendo,
+Internet Archive, curated fallback, compact YouTube, and Spotify API paths can
+also write `src/data/musicCatalog.json`. Secrets are provided through
+environment variables or an ignored `.env` file and are never committed.

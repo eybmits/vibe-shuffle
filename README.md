@@ -18,9 +18,9 @@ https://eybmits.github.io/vibe_shuffle_site/
 - Keeps the condition hidden from the participant.
 - Starts with a Netflix-inspired music taste baseline where the participant
   selects preferred instrumental genres.
-- Plays direct embedded YouTube videos for the selected tracks.
-- Uses a 100-track high-instrumentalness catalog generated from the Kaggle
-  Spotify Tracks Dataset mirror.
+- Plays the current full catalog through embedded Spotify track players.
+- Uses the full de-duplicated high-instrumentalness pool generated from the
+  Kaggle Spotify Tracks Dataset mirror.
 - Supports a legal 100-track Jamendo catalog with downloadable instrumental audio.
 - Keeps Spotify as an optional metadata/playback path, not as the download source.
 - Uses local MediaPipe Face Landmarker blendshapes for expression detection.
@@ -34,11 +34,13 @@ https://eybmits.github.io/vibe_shuffle_site/
 ## Current Prototype Status
 
 The deployed app is ready for coauthor review as an MVP demo. It currently uses
-the Kaggle Spotify Tracks Dataset mirror to build a static 100-track catalog
-with strict instrumental-character filters and direct YouTube embeds. The app
-does not download Spotify audio; the browser displays YouTube videos for
-participant playback. Jamendo remains available as an optional licensed-audio
-catalog path for future experiments that need downloadable/streamable MP3 URLs.
+the Kaggle Spotify Tracks Dataset mirror to build a static full-catalog pool
+with strict instrumental-character filters. The current checked-in catalog has
+6,686 de-duplicated tracks across 87 genres. The app does not download Spotify
+audio; the browser displays embedded Spotify track players for participant
+playback. Compact YouTube lookup remains available for small audit builds.
+Jamendo remains available as an optional licensed-audio catalog path for future
+experiments that need downloadable/streamable MP3 URLs.
 
 The camera detector is expression detection, not identity recognition. Optional
 ECG/HRV is used as an arousal signal, not as a standalone emotion classifier.
@@ -76,7 +78,7 @@ face-expression Valence with HR/HRV-derived Arousal for adaptive track
 selection. The `Demo` sensor button provides a local mock ECG stream for browser
 testing without hardware.
 
-## Real 100-Track Music Catalog
+## Real Music Catalog
 
 The app reads a static catalog from `src/data/musicCatalog.json`.
 
@@ -86,19 +88,34 @@ Current public-demo path:
 npm run kaggle:catalog
 ```
 
-This builds a 100-track high-instrumentalness catalog from the Spotify Tracks
-Dataset mirror and resolves the first YouTube video for each track. It writes
-`src/data/musicCatalog.json` and `data/kaggle_spotify_youtube_catalog.csv`.
+This builds the full eligible high-instrumentalness pool from the Spotify Tracks
+Dataset mirror. The default command uses `KAGGLE_CATALOG_SCOPE=full` and does
+not precompute YouTube ids. It writes `src/data/musicCatalog.json` and
+`data/kaggle_spotify_youtube_catalog.csv`.
 
 The generated catalog keeps:
 
 - Spotify track id/URI and audio-feature metadata from the dataset,
 - `valence`, `energy`/Arousal, `instrumentalness`, `speechiness`, and quadrant,
 - genre label for the participant taste-baseline screen,
-- direct YouTube video id, watch URL, search URL, and embed URL.
+- Spotify external URL plus a reproducible YouTube search URL for audit.
 
-The raw dataset CSV is ignored by git; the compact generated JSON/CSV are kept
-in the repo.
+The raw dataset CSV is ignored by git; the generated JSON/CSV are kept in the
+repo. The current full catalog distribution is:
+
+- `sad_low`: 3,505
+- `tense`: 1,960
+- `happy`: 831
+- `relaxed`: 390
+
+Optional compact YouTube build:
+
+```bash
+KAGGLE_CATALOG_SCOPE=compact YOUTUBE_LOOKUP=1 npm run kaggle:catalog
+```
+
+This builds the older 100-track, 20-genre audit catalog and resolves one
+YouTube video per selected track.
 
 Legacy curated fallback:
 
@@ -195,8 +212,12 @@ The generated files are:
 
 ## Runtime Spotify Playback
 
-Full Spotify playback in the browser uses Authorization Code with PKCE and the
-Spotify Web Playback SDK. It requires a Spotify Premium account.
+The checked-in full Kaggle catalog uses Spotify track embeds and therefore does
+not require committed Spotify credentials. Browser autoplay rules can still
+require the participant to press play inside the embedded Spotify player.
+
+The optional Spotify Web Playback SDK path uses Authorization Code with PKCE and
+requires a Spotify Premium account:
 
 ```bash
 VITE_SPOTIFY_CLIENT_ID="..."

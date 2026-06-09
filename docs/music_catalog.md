@@ -1,9 +1,10 @@
 # Real Music Catalog
 
-The current public demo uses a static 100-track catalog generated from the
-Kaggle Spotify Tracks Dataset mirror and direct YouTube lookup. The app stores
+The current public demo uses a static full-catalog pool generated from the
+Kaggle Spotify Tracks Dataset mirror. The checked-in catalog has 6,686
+de-duplicated high-instrumentalness tracks across 87 genres. The app stores
 Spotify metadata and audio-feature fields, but it does not download Spotify
-audio. Runtime playback displays the resolved YouTube video directly in the
+audio. Runtime playback displays embedded Spotify track players in the
 participant player.
 
 Jamendo remains useful for future larger catalog experiments because it provides
@@ -17,9 +18,9 @@ Spotify can provide catalog metadata and, with Premium, playback through the Web
 Playback SDK. It is not the right source for downloadable audio files. Spotify
 also restricts Audio Features/Audio Analysis access for many newer apps. For the
 study catalog we therefore use a public dataset snapshot for metadata and
-YouTube embeds for browser playback, not Spotify downloads.
+Spotify track embeds for browser playback, not Spotify downloads.
 
-## Current Kaggle Spotify + YouTube Catalog
+## Current Full Spotify-Dataset Catalog
 
 ```bash
 npm run kaggle:catalog
@@ -29,11 +30,10 @@ Generated files:
 
 - `src/data/musicCatalog.json`
 - `data/kaggle_spotify_youtube_catalog.csv`
-- `data/youtube_lookup_cache.json`
 
 The builder downloads or reads `data/spotify_tracks_dataset.csv` from the
 Hugging Face mirror of the Kaggle dataset. The raw CSV is ignored by git. The
-compact generated JSON/CSV are committed.
+generated JSON/CSV are committed.
 
 Default filters:
 
@@ -44,14 +44,20 @@ Default filters:
 - duration between 90 and 420 seconds
 - duplicate artist/title pairs removed
 
-The generator uses 20 instrumental-leaning genre buckets and picks five tracks
-per bucket by popularity. It does not force quadrant balance.
+The default generator uses `KAGGLE_CATALOG_SCOPE=full`, keeps every eligible
+de-duplicated track, and sorts candidates by popularity for deterministic
+output. It does not force quadrant balance.
 
-For each selected track, the script resolves the first YouTube video for
-`artist title official audio`. When `YT_DLP_PYTHONPATH` points to a local
-`yt-dlp` install, that path is used first; otherwise the script falls back to a
-basic YouTube search-page parse. The app stores the resulting video id, watch
-URL, search URL, and embed URL.
+Current distribution:
+
+- `happy`: 831
+- `relaxed`: 390
+- `tense`: 1,960
+- `sad_low`: 3,505
+
+The app plays these tracks through Spotify embeds generated from each
+`spotify:track:...` URI. Browser autoplay rules can require the participant to
+press play inside the embedded player even after pressing `Start music`.
 
 The Spotify dataset's `valence` and `energy` fields define the four quadrants:
 
@@ -63,6 +69,19 @@ The Spotify dataset's `valence` and `energy` fields define the four quadrants:
 Important limitation: Spotify `instrumentalness` is a strong but imperfect
 proxy for "no lyrics." Coauthors should audit
 `data/kaggle_spotify_youtube_catalog.csv` before formal participant testing.
+
+## Optional Compact YouTube Catalog
+
+```bash
+KAGGLE_CATALOG_SCOPE=compact YOUTUBE_LOOKUP=1 npm run kaggle:catalog
+```
+
+This keeps the older compact workflow: 20 instrumental-leaning genre buckets,
+five tracks per bucket, and one resolved YouTube result per selected track. It
+is useful for quick video-audit demos, but it is no longer the default catalog.
+When `YT_DLP_PYTHONPATH` points to a local `yt-dlp` install, that path is used
+first; otherwise the script falls back to a basic YouTube search-page parse. The
+app stores the resulting video id, watch URL, search URL, and embed URL.
 
 ## Legacy Curated Catalog
 

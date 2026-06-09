@@ -1579,6 +1579,21 @@ function buildYouTubeEmbedSrc(song) {
   return url.toString();
 }
 
+function getSpotifyTrackUri(song) {
+  if (song.spotifyUri) return song.spotifyUri;
+  if (song.spotifyId) return `spotify:track:${song.spotifyId}`;
+  return null;
+}
+
+function buildSpotifyEmbedSrc(song) {
+  const spotifyId = song.spotifyId ?? song.spotifyUri?.split(":").pop();
+  if (!spotifyId) return null;
+  const url = new URL(`https://open.spotify.com/embed/track/${spotifyId}`);
+  url.searchParams.set("utm_source", "generator");
+  url.searchParams.set("theme", "0");
+  return url.toString();
+}
+
 function YouTubeMedia({ isPlaying, onReadyPlay, song, youtubeFrameRef }) {
   const src = buildYouTubeEmbedSrc(song);
   const mediaClass =
@@ -1601,6 +1616,41 @@ function YouTubeMedia({ isPlaying, onReadyPlay, song, youtubeFrameRef }) {
       />
       <div className="pointer-events-none absolute left-2 top-2 rounded-full bg-[#020712]/72 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/80 backdrop-blur">
         YouTube
+      </div>
+    </div>
+  );
+}
+
+function SpotifyEmbedMedia({ isPlaying, song }) {
+  const src = buildSpotifyEmbedSrc(song);
+  const mediaClass =
+    "relative mx-auto aspect-square w-full max-w-[min(62vw,240px)] overflow-hidden rounded-lg border border-white/14 bg-[#020712] shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:max-w-[260px] md:max-w-[280px] lg:max-w-[240px] xl:max-w-[190px]";
+
+  if (!src) return null;
+
+  return (
+    <div className={mediaClass}>
+      {isPlaying ? (
+        <iframe
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          className="absolute inset-0 h-full w-full"
+          loading="lazy"
+          src={src}
+          title={`${song.title} on Spotify`}
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[linear-gradient(135deg,rgba(50,230,200,0.18),rgba(2,7,18,0.82))] px-6 text-center">
+          <Music2 className="size-9 text-[#32e6c8]" />
+          <div>
+            <div className="text-sm font-semibold text-white">Spotify player ready</div>
+            <div className="mt-1 text-xs leading-5 text-[#9db0c4]">
+              Press Start music to load the embedded track.
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="pointer-events-none absolute left-2 top-2 rounded-full bg-[#020712]/72 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/80 backdrop-blur">
+        Spotify
       </div>
     </div>
   );
@@ -1649,7 +1699,12 @@ function CoverArt({ isPlaying, song }) {
   );
 }
 
-function MediaStage({ isPlaying, onReadyPlay, song, youtubeFrameRef }) {
+function MediaStage({
+  isPlaying,
+  onReadyPlay,
+  song,
+  youtubeFrameRef,
+}) {
   if (song.youtubeVideoId || song.youtubeEmbedUrl) {
     return (
       <YouTubeMedia
@@ -1657,6 +1712,15 @@ function MediaStage({ isPlaying, onReadyPlay, song, youtubeFrameRef }) {
         onReadyPlay={onReadyPlay}
         song={song}
         youtubeFrameRef={youtubeFrameRef}
+      />
+    );
+  }
+
+  if (getSpotifyTrackUri(song)) {
+    return (
+      <SpotifyEmbedMedia
+        isPlaying={isPlaying}
+        song={song}
       />
     );
   }
@@ -1942,19 +2006,19 @@ function TasteOnboardingModal({
                   Choose the sounds you would actually listen to.
                 </h2>
                 <p className="mt-4 max-w-sm text-sm leading-6 text-white/70">
-                  Both blocks use your selected music taste. The first block stays random; the
-                  second adds the detected mood state in the background.
+                  Both listening blocks use the same selected music taste. The
+                  recommendation logic stays hidden during the session.
                 </p>
               </div>
               <div className="rounded-lg border border-white/12 bg-white/7 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-full bg-[#32e6c8] text-[#020712]">
-                    <Youtube className="size-5" />
+                    <Music2 className="size-5" />
                   </div>
                   <div>
-                    <div className="font-semibold text-white">Direct YouTube playback</div>
+                    <div className="font-semibold text-white">Embedded music playback</div>
                     <div className="text-sm text-white/62">
-                      {trackCount} high-instrumentalness tracks with embedded videos.
+                      {trackCount} high-instrumentalness tracks from the full catalog.
                     </div>
                   </div>
                 </div>
@@ -2285,8 +2349,12 @@ export default function App() {
   const songs = useMemo(() => getCatalogTracks().map(normalizeSong), []);
   const genreOptions = useMemo(() => getCatalogGenreOptions(songs), [songs]);
   const catalogSource = Array.isArray(musicCatalog) ? "legacy" : musicCatalog.source;
+  const catalogUsesSpotifyEmbed =
+    catalogSource === "spotify_dataset_full" || songs.some((song) => song.source === "spotify_dataset_full");
   const catalogRequiresSpotify =
-    catalogSource?.startsWith("spotify") && songs.some((song) => song.spotifyUri);
+    !catalogUsesSpotifyEmbed &&
+    catalogSource?.startsWith("spotify") &&
+    songs.some((song) => song.spotifyUri);
   const spotifyAuth = useSpotifyAuth();
   const spotifyPlayer = useSpotifyPlayer(spotifyAuth.accessToken, spotifyAuth.ensureToken);
   const spotifyPlayerReady = spotifyPlayer.ready;
@@ -2531,6 +2599,16 @@ export default function App() {
       pauseDemoAudio();
       setPlaybackNotice("YouTube video is embedded for this track.");
       window.setTimeout(playYouTubeVideo, 250);
+      return;
+    }
+
+    if (catalogUsesSpotifyEmbed && getSpotifyTrackUri(currentSong)) {
+      pauseSpotify();
+      pauseDemoAudio();
+      pauseYouTubeVideo();
+      setPlaybackNotice(
+        "Spotify catalog track is embedded. If autoplay is blocked, press play in the player.",
+      );
       return;
     }
 
@@ -2828,7 +2906,7 @@ export default function App() {
           </h1>
           <p className="mt-2 text-sm text-[#9db0c4]">
             Run <span className="font-mono">npm run kaggle:catalog</span> to generate the
-            Spotify-dataset + YouTube instrumental catalog.
+            full Spotify-dataset instrumental catalog.
           </p>
         </section>
       </main>

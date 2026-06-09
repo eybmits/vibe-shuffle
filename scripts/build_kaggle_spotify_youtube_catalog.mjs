@@ -11,7 +11,7 @@ const YOUTUBE_CACHE_PATH = "data/youtube_lookup_cache.json";
 const OUTPUT_JSON_PATH = "src/data/musicCatalog.json";
 const OUTPUT_CSV_PATH = "data/kaggle_spotify_youtube_catalog.csv";
 
-const TARGET_GENRES = [
+const COMPACT_GENRES = [
   "ambient",
   "piano",
   "classical",
@@ -55,11 +55,15 @@ const GENRE_LABELS = {
   "drum-and-bass": "Drum and Bass",
   club: "Club",
 };
+const CATALOG_SCOPE = process.env.KAGGLE_CATALOG_SCOPE ?? "full";
 const TRACKS_PER_GENRE = Number(process.env.KAGGLE_TRACKS_PER_GENRE ?? 5);
+const MAX_TRACKS = Number(process.env.KAGGLE_MAX_TRACKS ?? 0);
 const MIN_INSTRUMENTALNESS = Number(process.env.MIN_INSTRUMENTALNESS ?? 0.85);
 const MAX_SPEECHINESS = Number(process.env.MAX_SPEECHINESS ?? 0.12);
 const YOUTUBE_LOOKUP =
-  process.env.YOUTUBE_LOOKUP === undefined ? true : process.env.YOUTUBE_LOOKUP !== "0";
+  process.env.YOUTUBE_LOOKUP === undefined
+    ? CATALOG_SCOPE === "compact"
+    : process.env.YOUTUBE_LOOKUP !== "0";
 const YOUTUBE_DELAY_MS = Number(process.env.YOUTUBE_DELAY_MS ?? 180);
 const YT_DLP_PYTHONPATH = process.env.YT_DLP_PYTHONPATH ?? "";
 const execFileAsync = promisify(execFile);
@@ -188,6 +192,14 @@ function isExcludedCandidate(row) {
   return EXCLUDED_TEXT_SNIPPETS.some((snippet) => text.includes(snippet));
 }
 
+function labelForGenre(genre) {
+  if (GENRE_LABELS[genre]) return GENRE_LABELS[genre];
+  return genre
+    .split("-")
+    .map((word) => (word ? `${word[0].toUpperCase()}${word.slice(1)}` : word))
+    .join(" ");
+}
+
 function youtubeQuery(track) {
   return `${track.artist} ${track.title} official audio`;
 }
@@ -288,80 +300,117 @@ async function lookupYoutube(track, cache) {
   return cache[query];
 }
 
-function pickTracks(rows) {
+function isEligibleRow(row) {
+  const durationMs = numberField(row, "duration_ms");
+  return (
+    row.explicit === "False" &&
+    row.track_id &&
+    row.track_name &&
+    row.artists &&
+    !isExcludedCandidate(row) &&
+    durationMs >= 90_000 &&
+    durationMs <= 420_000 &&
+    numberField(row, "instrumentalness") >= MIN_INSTRUMENTALNESS &&
+    numberField(row, "speechiness") <= MAX_SPEECHINESS
+  );
+}
+
+function createTrack(row) {
+  const valence = numberField(row, "valence", 0.5);
+  const energy = numberField(row, "energy", 0.5);
+  const quadrant = quadrantFromAxes(valence, energy);
+  const style = QUADRANTS[quadrant];
+  return {
+    album: row.album_name,
+    albumImageUrl: null,
+    analysisConfidence: 0.93,
+    artist: row.artists.replaceAll(";", ", "),
+    categorySource: "kaggle_spotify_audio_features",
+    danceability: numberField(row, "danceability"),
+    durationMs: numberField(row, "duration_ms"),
+    energy,
+    explicit: row.explicit === "True",
+    externalUrl: `https://open.spotify.com/track/${row.track_id}`,
+    id: `spotify-${row.track_id}`,
+    instrumentalness: numberField(row, "instrumentalness"),
+    licenseUrl: "https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset",
+    popularity: numberField(row, "popularity"),
+    quadrant,
+    source: CATALOG_SCOPE === "full" ? "spotify_dataset_full" : "kaggle_spotify_youtube",
+    speechiness: numberField(row, "speechiness"),
+    spotifyId: row.track_id,
+    spotifyUri: `spotify:track:${row.track_id}`,
+    tempo: numberField(row, "tempo"),
+    title: row.track_name,
+    trackGenre: row.track_genre,
+    trackGenreLabel: labelForGenre(row.track_genre),
+    valence,
+    youtubeQuery: null,
+    youtubeSearchUrl: null,
+    youtubeUrl: null,
+    youtubeVideoId: null,
+    youtubeEmbedUrl: null,
+    accent: style.accent,
+    palette: style.palette,
+  };
+}
+
+function addTrackFromRow(row, selected, usedTrackIds, usedArtistTitles) {
+  const key = normalizedKey(row);
+  if (usedTrackIds.has(row.track_id) || usedArtistTitles.has(key)) return false;
+  selected.push(createTrack(row));
+  usedTrackIds.add(row.track_id);
+  usedArtistTitles.add(key);
+  return true;
+}
+
+function pickCompactTracks(rows) {
   const usedTrackIds = new Set();
   const usedArtistTitles = new Set();
   const selected = [];
 
-  TARGET_GENRES.forEach((genre) => {
+  COMPACT_GENRES.forEach((genre) => {
     const candidates = rows
-      .filter((row) => {
-        const durationMs = numberField(row, "duration_ms");
-        return (
-          row.track_genre === genre &&
-          row.explicit === "False" &&
-          row.track_id &&
-          row.track_name &&
-          row.artists &&
-          !isExcludedCandidate(row) &&
-          durationMs >= 90_000 &&
-          durationMs <= 420_000 &&
-          numberField(row, "instrumentalness") >= MIN_INSTRUMENTALNESS &&
-          numberField(row, "speechiness") <= MAX_SPEECHINESS
-        );
-      })
+      .filter((row) => row.track_genre === genre && isEligibleRow(row))
       .sort((a, b) => numberField(b, "popularity") - numberField(a, "popularity"));
 
     let pickedForGenre = 0;
     for (const row of candidates) {
-      const key = normalizedKey(row);
-      if (usedTrackIds.has(row.track_id) || usedArtistTitles.has(key)) continue;
-
-      const valence = numberField(row, "valence", 0.5);
-      const energy = numberField(row, "energy", 0.5);
-      const quadrant = quadrantFromAxes(valence, energy);
-      const style = QUADRANTS[quadrant];
-      selected.push({
-        album: row.album_name,
-        albumImageUrl: null,
-        analysisConfidence: 0.93,
-        artist: row.artists.replaceAll(";", ", "),
-        categorySource: "kaggle_spotify_audio_features",
-        danceability: numberField(row, "danceability"),
-        durationMs: numberField(row, "duration_ms"),
-        energy,
-        explicit: row.explicit === "True",
-        externalUrl: `https://open.spotify.com/track/${row.track_id}`,
-        id: `spotify-${row.track_id}`,
-        instrumentalness: numberField(row, "instrumentalness"),
-        licenseUrl: "https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset",
-        popularity: numberField(row, "popularity"),
-        quadrant,
-        source: "kaggle_spotify_youtube",
-        speechiness: numberField(row, "speechiness"),
-        spotifyId: row.track_id,
-        spotifyUri: `spotify:track:${row.track_id}`,
-        tempo: numberField(row, "tempo"),
-        title: row.track_name,
-        trackGenre: genre,
-        trackGenreLabel: GENRE_LABELS[genre] ?? genre,
-        valence,
-        youtubeQuery: null,
-        youtubeSearchUrl: null,
-        youtubeUrl: null,
-        youtubeVideoId: null,
-        youtubeEmbedUrl: null,
-        accent: style.accent,
-        palette: style.palette,
-      });
-      usedTrackIds.add(row.track_id);
-      usedArtistTitles.add(key);
-      pickedForGenre += 1;
+      if (addTrackFromRow(row, selected, usedTrackIds, usedArtistTitles)) pickedForGenre += 1;
       if (pickedForGenre >= TRACKS_PER_GENRE) break;
     }
   });
 
   return selected;
+}
+
+function pickFullTracks(rows) {
+  const usedTrackIds = new Set();
+  const usedArtistTitles = new Set();
+  const selected = [];
+  const candidates = rows
+    .filter(isEligibleRow)
+    .sort(
+      (a, b) =>
+        numberField(b, "popularity") - numberField(a, "popularity") ||
+        a.track_genre.localeCompare(b.track_genre) ||
+        a.track_name.localeCompare(b.track_name),
+    );
+
+  for (const row of candidates) {
+    addTrackFromRow(row, selected, usedTrackIds, usedArtistTitles);
+    if (MAX_TRACKS > 0 && selected.length >= MAX_TRACKS) break;
+  }
+
+  return selected;
+}
+
+function pickTracks(rows) {
+  if (CATALOG_SCOPE === "compact") return pickCompactTracks(rows);
+  if (CATALOG_SCOPE !== "full") {
+    throw new Error(`Unsupported KAGGLE_CATALOG_SCOPE="${CATALOG_SCOPE}". Use "full" or "compact".`);
+  }
+  return pickFullTracks(rows);
 }
 
 function csvEscape(value) {
@@ -399,24 +448,35 @@ async function main() {
   const tracks = pickTracks(rows);
   const cache = await readYoutubeCache();
 
-  for (const [index, track] of tracks.entries()) {
-    const lookup = await lookupYoutube(track, cache);
-    track.youtubeQuery = lookup.query;
-    track.youtubeSearchUrl = lookup.searchUrl;
-    track.youtubeUrl = lookup.watchUrl;
-    track.youtubeVideoId = lookup.videoId;
-    track.youtubeEmbedUrl = lookup.embedUrl;
-    if ((index + 1) % 10 === 0) {
-      console.log(`YouTube lookup ${index + 1}/${tracks.length}`);
-      await writeYoutubeCache(cache);
+  if (YOUTUBE_LOOKUP) {
+    for (const [index, track] of tracks.entries()) {
+      const lookup = await lookupYoutube(track, cache);
+      track.youtubeQuery = lookup.query;
+      track.youtubeSearchUrl = lookup.searchUrl;
+      track.youtubeUrl = lookup.watchUrl;
+      track.youtubeVideoId = lookup.videoId;
+      track.youtubeEmbedUrl = lookup.embedUrl;
+      if ((index + 1) % 10 === 0) {
+        console.log(`YouTube lookup ${index + 1}/${tracks.length}`);
+        await writeYoutubeCache(cache);
+      }
     }
+    await writeYoutubeCache(cache);
+  } else {
+    tracks.forEach((track) => {
+      const query = youtubeQuery(track);
+      track.youtubeQuery = query;
+      track.youtubeSearchUrl = youtubeSearchUrl(query);
+    });
   }
-  await writeYoutubeCache(cache);
 
-  const genreOptions = TARGET_GENRES.map((genre) => ({
+  const genres = [...new Set(tracks.map((track) => track.trackGenre))].sort((a, b) =>
+    labelForGenre(a).localeCompare(labelForGenre(b)),
+  );
+  const genreOptions = genres.map((genre) => ({
     count: tracks.filter((track) => track.trackGenre === genre).length,
     genre,
-    label: GENRE_LABELS[genre] ?? genre,
+    label: labelForGenre(genre),
   })).filter((option) => option.count > 0);
 
   await writeFile(
@@ -425,6 +485,8 @@ async function main() {
       {
         dataset: {
           filter: {
+            catalogScope: CATALOG_SCOPE,
+            maxTracks: MAX_TRACKS || null,
             maxSpeechiness: MAX_SPEECHINESS,
             minInstrumentalness: MIN_INSTRUMENTALNESS,
           },
@@ -436,7 +498,7 @@ async function main() {
         },
         generatedAt: new Date().toISOString(),
         genreOptions,
-        source: "kaggle_spotify_youtube",
+        source: CATALOG_SCOPE === "full" ? "spotify_dataset_full" : "kaggle_spotify_youtube",
         tracks,
       },
       null,

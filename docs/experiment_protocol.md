@@ -72,7 +72,8 @@ The exported CSV includes:
 - song quadrant
 - song Valence, Arousal, instrumentalness, speechiness
 - catalog category source, analysis confidence, external URL, license URL
-- YouTube video id, watch URL, and search URL
+- Spotify id/URI and external URL
+- YouTube video id, watch URL, and search URL when a compact YouTube catalog is used
 - detected expression label
 - detected Valence, Arousal, confidence
 - whether a face was visible

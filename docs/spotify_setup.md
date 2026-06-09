@@ -7,9 +7,14 @@ Spotify is used in two separate ways:
 
 These require different credentials and limitations.
 
-For the real 100-track instrumental catalog, prefer
+For the current full Spotify-dataset catalog, prefer
 [`music_catalog.md`](music_catalog.md). Spotify should not be used as a download
 source for audio files.
+
+The checked-in full catalog does not require Spotify developer credentials at
+runtime because it uses public Spotify track embeds. The Web Playback SDK path
+below is optional and only applies to catalogs generated through the Spotify API
+or experiments that need SDK control.
 
 ## Required Developer App
 
@@ -76,12 +81,17 @@ endpoint returns `403`, use curated mode.
 
 ## Runtime Playback
 
-Full-track browser playback uses Spotify Authorization Code with PKCE and the
-Spotify Web Playback SDK. It requires:
+The default full Kaggle catalog uses embedded Spotify track players. No
+`VITE_SPOTIFY_CLIENT_ID` is required for that path. Browser autoplay rules can
+still require the participant to press play directly inside the embedded
+Spotify player.
+
+The optional Spotify Web Playback SDK path uses Authorization Code with PKCE. It
+requires:
 
 - `VITE_SPOTIFY_CLIENT_ID`
 - a registered redirect URI
 - Spotify Premium for the logged-in user
 
-Without Spotify setup, the app remains usable with the real instrumental
-fallback catalog.
+Without Spotify setup, the app remains usable with the checked-in full
+Spotify-embed catalog and with direct MP3/stream fallback catalogs.

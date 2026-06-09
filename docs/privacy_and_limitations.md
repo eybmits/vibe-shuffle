@@ -54,14 +54,19 @@ playlist labels rather than measured Valence/Arousal features.
 
 Spotify full-track playback requires Spotify Premium and an authenticated user.
 
-## YouTube Playback Limitations
+## External Playback Limitations
 
-The current public catalog embeds YouTube videos for playback. Camera frames,
-expression features, ECG/HRV samples, and ratings are not sent to YouTube by the
-app, but the YouTube iframe itself is external web content and may set cookies,
-show ads, block embedding, or require age/account checks depending on the
-selected video. The catalog stores the first resolved YouTube result for a track
-query, so coauthors should audit the generated CSV before formal studies.
+The current public catalog embeds Spotify track players for playback. Camera
+frames, expression features, ECG/HRV samples, and ratings are not sent to
+Spotify by the app, but the Spotify iframe itself is external web content and
+may set cookies, require account state, or block automatic playback depending on
+browser policy.
+
+Optional compact YouTube builds embed YouTube videos. In that mode, the YouTube
+iframe itself is external web content and may set cookies, show ads, block
+embedding, or require age/account checks depending on the selected video. The
+compact catalog stores the first resolved YouTube result for a track query, so
+coauthors should audit the generated CSV before formal studies.
 
 ## ECG / HRV Limitations
 
@@ -99,6 +104,6 @@ The expression classifier estimates `happy`, `relaxed`, `tense`, and `sad_low`.
 The ECG/HRV arousal estimate should also be treated as an experimental signal
 source.
 
-The bundled Kaggle/YouTube catalog is useful for demos and pilot validation, but
-the final study should audit the selected videos or use a licensed source such
-as Jamendo if downloadable/controllable audio is required.
+The bundled Kaggle/Spotify-embed catalog is useful for demos and pilot
+validation, but the final study should audit the selected tracks or use a
+licensed source such as Jamendo if downloadable/controllable audio is required.

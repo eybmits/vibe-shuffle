@@ -4,20 +4,26 @@
 
 - Click `Start session`; browser audio requires a user gesture.
 - Check system volume and browser tab mute state.
-- Current public builds use embedded YouTube videos. If an embed is blocked,
-  open the visible `YouTube` link for that track and audit the catalog row.
-- If using Spotify playback, confirm Spotify Premium and successful login.
+- Current public builds use embedded Spotify track players. If browser autoplay
+  is blocked, press play inside the visible Spotify player.
+- If using the optional Spotify Web Playback SDK path, confirm Spotify Premium
+  and successful login.
+- If using compact YouTube builds and an embed is blocked, open the visible
+  `YouTube` link for that track and audit the catalog row.
 - If using the fallback catalog, confirm the direct MP3 URLs are reachable.
 
 ## YouTube Video Is Wrong Or Blocked
 
-The Kaggle catalog stores the first YouTube result for
+Only compact Kaggle builds store YouTube ids. They use the first YouTube result for
 `artist title official audio`. This is reproducible but not perfect. Rebuild the
 catalog after editing `data/youtube_lookup_cache.json`, or delete the relevant
 cache entry and rerun:
 
 ```bash
-YT_DLP_PYTHONPATH=/tmp/vibe_shuffle_yt_dlp npm run kaggle:catalog
+KAGGLE_CATALOG_SCOPE=compact \
+YOUTUBE_LOOKUP=1 \
+YT_DLP_PYTHONPATH=/tmp/vibe_shuffle_yt_dlp \
+npm run kaggle:catalog
 ```
 
 If a video is age-restricted or embed-blocked, replace that cache entry with a
