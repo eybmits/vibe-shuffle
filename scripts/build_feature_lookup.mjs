@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { trackNameKey } from "../src/trackKey.js";
 
 const RAW_DATASET_PATH = "data/spotify_tracks_dataset.csv";
 const OUTPUT_JSON_PATH = "public/feature-lookup.json";
@@ -58,7 +59,8 @@ function round2(value) {
 
 async function main() {
   const rows = parseCsv(await readFile(RAW_DATASET_PATH, "utf8"));
-  const lookup = {};
+  const ids = {};
+  const names = {};
   let skipped = 0;
 
   for (const row of rows) {
@@ -72,19 +74,25 @@ async function main() {
       continue;
     }
 
-    if (lookup[trackId]) continue;
-
-    lookup[trackId] = [
+    const features = [
       round2(valence),
       round2(energy),
       Number.isFinite(instrumentalness) ? round2(instrumentalness) : 0,
     ];
+
+    ids[trackId] ??= features;
+
+    // Same recording is published under many Spotify IDs (album, single,
+    // deluxe, regional re-releases), so also key by normalized artist+title.
+    const primaryArtist = String(row.artists ?? "").split(";")[0];
+    const nameKey = trackNameKey(primaryArtist, row.track_name);
+    if (nameKey) names[nameKey] ??= features;
   }
 
   await mkdir(path.dirname(OUTPUT_JSON_PATH), { recursive: true });
-  await writeFile(OUTPUT_JSON_PATH, JSON.stringify(lookup));
+  await writeFile(OUTPUT_JSON_PATH, JSON.stringify({ ids, names }));
   console.log(
-    `Wrote ${Object.keys(lookup).length} track features to ${OUTPUT_JSON_PATH} (${skipped} rows skipped).`,
+    `Wrote ${Object.keys(ids).length} ids and ${Object.keys(names).length} name keys to ${OUTPUT_JSON_PATH} (${skipped} rows skipped).`,
   );
 }
 

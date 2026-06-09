@@ -1,3 +1,5 @@
+import { trackNameKey } from "./trackKey.js";
+
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const PAGE_LIMIT = 50;
 const MAX_LIBRARY_TRACKS = 1500;
@@ -71,6 +73,7 @@ function normalizeApiTrack(track, sourceLabel) {
     spotifyId: track.id,
     spotifyUri: track.uri ?? `spotify:track:${track.id}`,
     title: track.name ?? "Untitled track",
+    primaryArtist: track.artists?.[0]?.name ?? "",
     artist: (track.artists ?? []).map((artist) => artist.name).join(", ") || "Unknown artist",
     album: track.album?.name ?? "",
     albumImageUrl: track.album?.images?.[0]?.url ?? null,
@@ -167,10 +170,13 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
 }
 
 export function matchTracksToFeatures(tracks, lookup) {
+  const ids = lookup.ids ?? lookup;
+  const names = lookup.names ?? {};
   const matched = [];
 
   for (const track of tracks) {
-    const features = lookup[track.spotifyId];
+    const nameKey = trackNameKey(track.primaryArtist || track.artist, track.title);
+    const features = ids[track.spotifyId] ?? (nameKey ? names[nameKey] : undefined);
     if (!features) continue;
 
     const [valence, energy, instrumentalness] = features;
