@@ -774,16 +774,20 @@ function useSpotifyPlayer(accessToken, ensureToken) {
   const pause = useCallback(async () => {
     try {
       await playerRef.current?.pause();
+      return true;
     } catch {
       setState((current) => ({ ...current, error: "Spotify could not pause playback." }));
+      return false;
     }
   }, []);
 
   const resume = useCallback(async () => {
     try {
       await playerRef.current?.resume();
+      return true;
     } catch {
       setState((current) => ({ ...current, error: "Spotify could not resume playback." }));
+      return false;
     }
   }, []);
 
@@ -1585,6 +1589,15 @@ function getSpotifyTrackUri(song) {
   return null;
 }
 
+function getTrackPlaybackMode(song, catalogUsesSpotifyEmbed = false) {
+  if (!song) return "none";
+  if (song.youtubeVideoId || song.youtubeEmbedUrl) return "youtube";
+  if (song.audioUrl) return "audio";
+  const spotifyTrackUri = getSpotifyTrackUri(song);
+  if (spotifyTrackUri) return catalogUsesSpotifyEmbed ? "spotify" : "demo";
+  return "demo";
+}
+
 function buildSpotifyEmbedSrc(song, autoplay = false) {
   const spotifyId = song.spotifyId ?? song.spotifyUri?.split(":").pop();
   if (!spotifyId) return null;
@@ -2356,26 +2369,24 @@ export default function App() {
   const catalogUsesSpotifyEmbed =
     catalogSource === "spotify_dataset_full" || songs.some((song) => song.source === "spotify_dataset_full");
   const catalogRequiresSpotify =
-    !catalogUsesSpotifyEmbed &&
-    catalogSource?.startsWith("spotify") &&
-    songs.some((song) => song.spotifyUri);
+    catalogUsesSpotifyEmbed &&
+    songs.every((song) => getTrackPlaybackMode(song, catalogUsesSpotifyEmbed) === "spotify");
   const spotifyAuth = useSpotifyAuth();
   const spotifyPlayer = useSpotifyPlayer(spotifyAuth.accessToken, spotifyAuth.ensureToken);
   const spotifyPlayerReady = spotifyPlayer.ready;
   const spotifyPlayerError = spotifyPlayer.error;
   const pauseSpotify = spotifyPlayer.pause;
   const playSpotifyTrack = spotifyPlayer.playTrack;
-  const resumeSpotify = spotifyPlayer.resume;
   const demoAudio = useDemoAudio();
   const demoAudioError = demoAudio.error;
   const pauseDemoAudio = demoAudio.pause;
   const playDemoSong = demoAudio.playSong;
-  const resumeDemoAudio = demoAudio.resume;
   const stopDemoAudio = demoAudio.stop;
   const face = useFaceExpression();
   const physiology = usePhysiologySensor();
   const [sessionStarted, setSessionStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaybackActive, setIsPlaybackActive] = useState(false);
   const [protocolId, setProtocolId] = useState(() => createProtocolId());
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -2436,7 +2447,7 @@ export default function App() {
     !protocolComplete &&
     !ratingPromptOpen &&
     !currentRating &&
-    (isPlaying || trackProgress > 0);
+    (isPlaybackActive || trackProgress > 0);
   const totalTrials = PROTOCOL_BLOCKS.length * TRACKS_PER_BLOCK;
   const completedTrials = ratings.length;
   const progressPercent = Math.round((completedTrials / totalTrials) * 100);
@@ -2498,8 +2509,71 @@ export default function App() {
     sendYouTubeCommand("pauseVideo");
   }
 
+  async function startCurrentTrack(song) {
+    const playbackMode = getTrackPlaybackMode(song, catalogUsesSpotifyEmbed);
+
+    if (playbackMode === "youtube") {
+      pauseSpotify();
+      pauseDemoAudio();
+      setPlaybackNotice("YouTube video is embedded for this track.");
+      window.setTimeout(playYouTubeVideo, 250);
+      return { started: true, message: "", mode: playbackMode };
+    }
+
+    if (playbackMode === "audio") {
+      const started = await playDemoSong(song);
+      return {
+        started,
+        mode: playbackMode,
+        message: started
+          ? "Curated instrumental track is playing."
+          : "Browser blocked the instrumental audio. Press play once in the browser.",
+      };
+    }
+
+    if (playbackMode === "demo") {
+      const started = await playDemoSong(song);
+      return {
+        started,
+        mode: playbackMode,
+        message: started
+          ? "Demo audio is generated locally until Spotify tracks are imported."
+          : "Demo audio could not start in this browser.",
+      };
+    }
+
+    const spotifyTrackUri = getSpotifyTrackUri(song);
+    if (!spotifyTrackUri) {
+      return {
+        started: false,
+        mode: playbackMode,
+        message: "This track has no available playback route.",
+      };
+    }
+
+    if (!spotifyPlayerReady) {
+      return {
+        started: false,
+        mode: playbackMode,
+        message: catalogRequiresSpotify
+          ? "Connect Spotify to play this catalog."
+          : "Waiting for Spotify playback device.",
+      };
+    }
+
+    const startedBySdk = await playSpotifyTrack(spotifyTrackUri);
+    return {
+      started: startedBySdk,
+      mode: playbackMode,
+      message: startedBySdk
+        ? ""
+        : spotifyPlayerError || "Could not start this track. Press play in the Spotify player.",
+    };
+  }
+
   function openRatingPrompt(jumped = false) {
     setIsPlaying(false);
+    setIsPlaybackActive(false);
     pauseSpotify();
     pauseDemoAudio();
     pauseYouTubeVideo();
@@ -2518,7 +2592,7 @@ export default function App() {
 
     if (
       !sessionStarted ||
-      !isPlaying ||
+      !isPlaybackActive ||
       ratingPromptOpen ||
       protocolComplete ||
       !face.sample
@@ -2530,7 +2604,7 @@ export default function App() {
   }, [
     face.sample,
     face.sampleId,
-    isPlaying,
+    isPlaybackActive,
     protocolComplete,
     ratingPromptOpen,
     sessionStarted,
@@ -2548,7 +2622,7 @@ export default function App() {
 
     if (
       !sessionStarted ||
-      !isPlaying ||
+      !isPlaybackActive ||
       ratingPromptOpen ||
       protocolComplete ||
       !physiology.sample
@@ -2558,7 +2632,7 @@ export default function App() {
 
     physiologyWindowRef.current = [...physiologyWindowRef.current.slice(-180), physiology.sample];
   }, [
-    isPlaying,
+    isPlaybackActive,
     physiology.sample,
     physiology.sampleId,
     protocolComplete,
@@ -2567,7 +2641,7 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!sessionStarted || !isPlaying || protocolComplete || ratingPromptOpen || currentRating) {
+    if (!sessionStarted || !isPlaybackActive || protocolComplete || ratingPromptOpen || currentRating) {
       return undefined;
     }
 
@@ -2586,106 +2660,46 @@ export default function App() {
     }, 250);
 
     return () => window.clearInterval(id);
-  }, [currentRating, isPlaying, protocolComplete, ratingPromptOpen, sessionStarted]);
+  }, [currentRating, isPlaybackActive, protocolComplete, ratingPromptOpen, sessionStarted]);
 
   useEffect(() => {
     if (!sessionStarted || ratingPromptOpen) return;
 
     let cancelled = false;
-    const spotifyTrackUri = getSpotifyTrackUri(currentSong);
 
     (async () => {
       if (!isPlaying) {
+        setIsPlaybackActive(false);
         pauseSpotify();
         pauseDemoAudio();
         pauseYouTubeVideo();
         return;
       }
 
-      if (currentSong.youtubeVideoId || currentSong.youtubeEmbedUrl) {
-        pauseSpotify();
-        pauseDemoAudio();
-        setPlaybackNotice("YouTube video is embedded for this track.");
-        window.setTimeout(playYouTubeVideo, 250);
+      if (isPlaybackActive) {
         return;
       }
 
-      if (catalogUsesSpotifyEmbed && spotifyTrackUri) {
-        pauseSpotify();
-        pauseDemoAudio();
-        pauseYouTubeVideo();
+      const result = await startCurrentTrack(currentSong);
+      if (cancelled) return;
 
-        if (spotifyPlayerReady) {
-          const playedBySdk = await playSpotifyTrack(spotifyTrackUri);
-          if (!cancelled && playedBySdk) {
-            setPlaybackNotice("");
-            return;
-          }
-        }
-
-        if (currentSong.audioUrl) {
-          const started = await playDemoSong(currentSong);
-          if (!cancelled) {
-            setPlaybackNotice(
-              started
-                ? "Playing Spotify track preview audio."
-                : "Browser blocked preview playback. Press play in the embedded player.",
-            );
-          }
-          return;
-        }
-
-        if (!cancelled) {
-          setPlaybackNotice(
-            spotifyPlayerReady
-              ? "Could not start this track. Press play in the embedded Spotify player."
-              : "Spotify playback needs Premium to start here. Press play in the embedded player.",
-          );
-        }
-        return;
-      }
-
-      if (!currentSong.spotifyUri) {
-        const played = await playDemoSong(currentSong);
-        if (!cancelled) {
-          setPlaybackNotice(
-            played
-              ? currentSong.audioUrl
-                ? "Curated instrumental track is playing."
-                : "Demo audio is generated locally until Spotify tracks are imported."
-              : "Demo audio could not start in this browser.",
-          );
-        }
-        return;
-      }
-
-      if (!spotifyPlayerReady) {
-        setPlaybackNotice("Waiting for Spotify playback device.");
-        return;
-      }
-
-      const played = await playSpotifyTrack(currentSong.spotifyUri);
-      if (!cancelled) {
-        setPlaybackNotice(played ? "" : "Spotify could not start this track.");
-      }
+      setIsPlaybackActive(result.started);
+      setIsPlaying(result.started);
+      setPlaybackNotice(result.message || "");
     })();
 
     return () => {
       cancelled = true;
     };
   }, [
-    currentSong.id,
-    currentSong.spotifyUri,
-    currentSong.youtubeEmbedUrl,
-    currentSong.youtubeVideoId,
+    currentSong,
     isPlaying,
     pauseDemoAudio,
     pauseSpotify,
-    playDemoSong,
-    playSpotifyTrack,
     ratingPromptOpen,
     sessionStarted,
-    spotifyPlayerReady,
+    startCurrentTrack,
+    isPlaybackActive,
   ]);
 
   useEffect(() => {
@@ -2701,6 +2715,7 @@ export default function App() {
     resetSignalWindows();
     setSessionStarted(true);
     setIsPlaying(false);
+    setIsPlaybackActive(false);
     setTrackProgress(0);
     setPlaybackNotice("Press Start music when you are ready.");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2729,6 +2744,8 @@ export default function App() {
     setTrackProgress(0);
     setRatingPromptOpen(false);
     setIsPlaying(sessionStarted);
+    setIsPlaybackActive(false);
+    setPlaybackNotice("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -2754,6 +2771,7 @@ export default function App() {
       setProtocolComplete(true);
       setRatingPromptOpen(false);
       setIsPlaying(false);
+      setIsPlaybackActive(false);
       stopDemoAudio();
       pauseYouTubeVideo();
       window.setTimeout(() => downloadCsv(ratings, protocolId), 0);
@@ -2883,6 +2901,7 @@ export default function App() {
     setRatingPromptOpen(false);
     setSessionStarted(false);
     setIsPlaying(false);
+    setIsPlaybackActive(false);
     setPlaybackNotice("");
     setJumpedTrialIds([]);
     setSelectedGenres([]);
@@ -2901,21 +2920,18 @@ export default function App() {
 
     if (isPlaying) {
       setIsPlaying(false);
+      setIsPlaybackActive(false);
+      setPlaybackNotice("");
       await pauseSpotify();
       await pauseDemoAudio();
       pauseYouTubeVideo();
       return;
     }
 
-    setIsPlaying(true);
-    if (currentSong.youtubeVideoId || currentSong.youtubeEmbedUrl) {
-      window.setTimeout(playYouTubeVideo, 250);
-    } else if (currentSong.spotifyUri && spotifyPlayerReady) {
-      await resumeSpotify();
-    } else if (!currentSong.spotifyUri) {
-      const resumed = await resumeDemoAudio();
-      if (!resumed) await playDemoSong(currentSong);
-    }
+    const result = await startCurrentTrack(currentSong);
+    setIsPlaybackActive(result.started);
+    setIsPlaying(result.started);
+    setPlaybackNotice(result.message || "");
   }
 
   const nextButtonLabel = protocolComplete
