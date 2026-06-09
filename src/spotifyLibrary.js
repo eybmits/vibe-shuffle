@@ -149,28 +149,55 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
   );
 
   const playlists = [];
-  await fetchPaginated(
-    token,
-    `${SPOTIFY_API_BASE}/me/playlists?limit=${PAGE_LIMIT}`,
-    (payload) => payload.items,
-    (items) => playlists.push(...items.filter(Boolean)),
-    MAX_PLAYLISTS,
-  );
+  try {
+    await fetchPaginated(
+      token,
+      `${SPOTIFY_API_BASE}/me/playlists?limit=${PAGE_LIMIT}`,
+      (payload) => payload.items,
+      (items) => playlists.push(...items.filter(Boolean)),
+      MAX_PLAYLISTS,
+    );
+  } catch (error) {
+    console.warn("[vibe-shuffle] playlist list could not be loaded:", error.message);
+  }
+
+  let skippedPlaylists = 0;
 
   for (const playlist of playlists.slice(0, MAX_PLAYLISTS)) {
     if (tracksById.size >= MAX_LIBRARY_TRACKS) break;
-    playlistCount += 1;
 
+    // Spotify blocks API access to its own editorial/algorithmic playlists
+    // (Discover Weekly, Daily Mix, …) for newer apps — they answer 403/404.
+    if (playlist.owner?.id === "spotify") {
+      skippedPlaylists += 1;
+      continue;
+    }
+
+    playlistCount += 1;
     const fields = encodeURIComponent(
       "next,items(track(id,uri,name,type,is_local,duration_ms,popularity,artists(name),album(name,images),external_urls))",
     );
-    await fetchPaginated(
-      token,
-      `${SPOTIFY_API_BASE}/playlists/${playlist.id}/tracks?limit=${PAGE_LIMIT}&fields=${fields}`,
-      (payload) => payload.items,
-      (items) => addTracks(items.map((item) => item.track), "playlist"),
-      MAX_LIBRARY_TRACKS - tracksById.size,
-    );
+
+    try {
+      await fetchPaginated(
+        token,
+        `${SPOTIFY_API_BASE}/playlists/${playlist.id}/tracks?limit=${PAGE_LIMIT}&fields=${fields}`,
+        (payload) => payload.items,
+        (items) => addTracks(items.map((item) => item.track), "playlist"),
+        MAX_LIBRARY_TRACKS - tracksById.size,
+      );
+    } catch (error) {
+      // One inaccessible playlist must not abort the whole library load.
+      skippedPlaylists += 1;
+      console.warn(
+        `[vibe-shuffle] playlist "${playlist.name}" skipped:`,
+        error.message,
+      );
+    }
+  }
+
+  if (skippedPlaylists) {
+    console.info(`[vibe-shuffle] ${skippedPlaylists} inaccessible playlists skipped.`);
   }
 
   return Array.from(tracksById.values());
