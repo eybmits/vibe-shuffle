@@ -379,3 +379,23 @@ test("personal baseline debiases a chronically tense resting face", () => {
   // The same raw tension that matches the personal baseline reads as relaxed.
   assert.equal(update.expression.tag, "relaxed");
 });
+
+test("sustained whole-frame movement maps to positive, high-arousal state", () => {
+  let tracker = createExpressionTrackerState();
+  const categories = categoriesFromFeatures(neutral);
+  let update = null;
+
+  // Dancing in front of the camera: strong frame motion, mild head drift.
+  for (let index = 0; index < 32; index += 1) {
+    update = updateExpressionTracker(tracker, categories, {
+      intensity: 0.11,
+      timestamp: index * 120,
+      x: 0.5 + Math.sin(index * 0.7) * 0.01,
+      y: 0.5 + Math.cos(index * 0.9) * 0.012,
+    });
+    tracker = update.tracker;
+  }
+
+  assert.ok(update.expression.energy > 0.75, `energy was ${update.expression.energy}`);
+  assert.equal(update.expression.tag, "happy");
+});

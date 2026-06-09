@@ -949,6 +949,8 @@ function useFaceExpression() {
   const trackerRef = useRef(createExpressionTrackerState());
   const lastUpdateRef = useRef(0);
   const sampleIdRef = useRef(0);
+  const motionCanvasRef = useRef(null);
+  const previousLuminanceRef = useRef(null);
   const relaxedMood = expressionStateToMood({
     confidence: 0,
     facePresent: false,
@@ -973,6 +975,35 @@ function useFaceExpression() {
     }
   }, []);
 
+  // Mean luminance change across a downscaled frame: captures any movement in
+  // the camera (body swaying, dancing, hands), not just facial landmarks.
+  const measureFrameMotion = useCallback((video) => {
+    try {
+      const canvas = (motionCanvasRef.current ??= document.createElement("canvas"));
+      if (!canvas.width) {
+        canvas.width = 32;
+        canvas.height = 24;
+      }
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+      const previous = previousLuminanceRef.current;
+      const luminance = new Float32Array(canvas.width * canvas.height);
+      let diffSum = 0;
+
+      for (let index = 0; index < luminance.length; index += 1) {
+        const offset = index * 4;
+        luminance[index] = (data[offset] + data[offset + 1] + data[offset + 2]) / 3;
+        if (previous) diffSum += Math.abs(luminance[index] - previous[index]);
+      }
+
+      previousLuminanceRef.current = luminance;
+      return previous ? diffSum / luminance.length / 255 : 0;
+    } catch {
+      return 0;
+    }
+  }, []);
+
   const detect = useCallback(() => {
     const video = videoRef.current;
     const landmarker = landmarkerRef.current;
@@ -983,14 +1014,18 @@ function useFaceExpression() {
         lastUpdateRef.current = now;
         const result = landmarker.detectForVideo(video, now);
         const categories = result.faceBlendshapes?.[0]?.categories ?? null;
-        // Nose-tip landmark feeds the head-motion channel (nodding/"vibing").
+        // Nose-tip landmark feeds nodding detection; frame differencing feeds
+        // the whole-body motion channel.
         const noseTip = result.faceLandmarks?.[0]?.[1] ?? null;
+        const frameMotion = measureFrameMotion(video);
 
         if (categories?.length) {
           const update = updateExpressionTracker(
             trackerRef.current,
             categories,
-            noseTip ? { timestamp: Date.now(), x: noseTip.x, y: noseTip.y } : null,
+            noseTip
+              ? { intensity: frameMotion, timestamp: Date.now(), x: noseTip.x, y: noseTip.y }
+              : null,
           );
           trackerRef.current = update.tracker;
 
@@ -1022,7 +1057,7 @@ function useFaceExpression() {
     }
 
     frameRef.current = window.requestAnimationFrame(detect);
-  }, []);
+  }, [measureFrameMotion]);
 
   const start = useCallback(async () => {
     if (streamRef.current || landmarkerRef.current) return;

@@ -14,14 +14,17 @@ export const SAD_FAST_SWITCH_SAMPLES = 2;
 export const BASELINE_EMA_ALPHA = 0.002;
 export const BASELINE_DEBIAS_FACTOR = 0.9;
 
-// Head-motion channel ("vibing"): rhythmic vertical nodding reads as positive
-// engagement, overall movement raises arousal.
+// Motion channel ("vibing"): movement in the camera frame is read as liking
+// the music — it raises positive valence and arousal. Rhythmic nodding adds
+// an extra positive boost on top.
 export const MOTION_WINDOW_MS = 3200;
 export const NOD_MIN_STEP = 0.0035;
 export const NOD_RATE_NORM = 2.2;
 export const NOD_AMPLITUDE_NORM = 0.011;
 export const MOTION_ENERGY_GAIN = 24;
+export const FRAME_MOTION_GAIN = 9;
 export const NOD_HAPPY_BOOST = 0.42;
+export const MOVEMENT_HAPPY_BOOST = 0.38;
 
 export const EXPRESSION_TAGS = ["happy", "relaxed", "tense", "sad_low"];
 
@@ -274,7 +277,16 @@ export function summarizeHeadMotion(samples) {
 
   const steps = samples.length - 1;
   const seconds = Math.max(0.4, (samples.at(-1).timestamp - samples[0].timestamp) / 1000);
-  const movement = clamp((speedSum / steps) * MOTION_ENERGY_GAIN);
+  const headMovement = clamp((speedSum / steps) * MOTION_ENERGY_GAIN);
+
+  // Whole-frame motion (body swaying, dancing, hand movement) captured via
+  // luminance frame differencing — independent of face landmarks.
+  const frameMotion = clamp(
+    (samples.reduce((total, sample) => total + (sample.intensity ?? 0), 0) / samples.length) *
+      FRAME_MOTION_GAIN,
+  );
+
+  const movement = clamp(headMovement * 0.55 + frameMotion * 0.85);
   const reversalRate = reversals / seconds;
   const meanAmplitude = reversals ? reversalAmplitudeSum / reversals : 0;
   const nodding = clamp(reversalRate / NOD_RATE_NORM) * clamp(meanAmplitude / NOD_AMPLITUDE_NORM);
@@ -321,16 +333,20 @@ export function updateExpressionTracker(tracker, categories, headPose = null) {
 
   const now = headPose?.timestamp ?? Date.now();
   const motionSamples = headPose
-    ? [...(tracker.motionSamples ?? []), { timestamp: now, x: headPose.x, y: headPose.y }].filter(
-        (sample) => now - sample.timestamp <= MOTION_WINDOW_MS,
-      )
+    ? [
+        ...(tracker.motionSamples ?? []),
+        { intensity: headPose.intensity ?? 0, timestamp: now, x: headPose.x, y: headPose.y },
+      ].filter((sample) => now - sample.timestamp <= MOTION_WINDOW_MS)
     : (tracker.motionSamples ?? []);
   const { movement, nodding } = summarizeHeadMotion(motionSamples);
 
-  // Rhythmic nodding while listening reads as positive engagement.
+  // Moving along with the music reads as liking it: sustained movement and
+  // rhythmic nodding both push valence toward happy.
   const boostedScores = {
     ...debiasedScores,
-    happy: clamp(debiasedScores.happy + nodding * NOD_HAPPY_BOOST),
+    happy: clamp(
+      debiasedScores.happy + nodding * NOD_HAPPY_BOOST + movement * MOVEMENT_HAPPY_BOOST,
+    ),
   };
 
   const smoothedScores = Object.fromEntries(
@@ -344,7 +360,7 @@ export function updateExpressionTracker(tracker, categories, headPose = null) {
     tracker.tag,
     tracker.candidate,
   );
-  const energy = clamp(0.5 + movement * 0.3 + nodding * 0.25, 0.5, 0.95);
+  const energy = clamp(0.5 + movement * 0.4 + nodding * 0.2, 0.5, 0.95);
   const expression = expressionStateFromTag(classification.tag, smoothedScores, true, energy);
 
   return {
