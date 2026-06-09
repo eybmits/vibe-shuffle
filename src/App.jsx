@@ -51,10 +51,9 @@ const SPOTIFY_REDIRECT_URI =
 const SPOTIFY_TOKEN_STORAGE_KEY = "vibe_shuffle_spotify_token_v2";
 
 const RATING_LABELS = {
-  1: "Not at all",
-  2: "Slightly",
-  3: "Good match",
-  4: "Very good",
+  1: "Bad fit",
+  2: "Okay",
+  3: "Good fit",
 };
 
 const RATING_OPTIONS = [
@@ -64,19 +63,14 @@ const RATING_OPTIONS = [
     score: 1,
   },
   {
-    description: "Some parts fit.",
+    description: "Neither good nor bad.",
     label: RATING_LABELS[2],
     score: 2,
   },
   {
-    description: "Mostly fit my mood.",
+    description: "Fit my mood well.",
     label: RATING_LABELS[3],
     score: 3,
-  },
-  {
-    description: "Matched very well.",
-    label: RATING_LABELS[4],
-    score: 4,
   },
 ];
 
@@ -89,6 +83,9 @@ const ACCENT_TEXT_GRADIENT =
   "bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-400 bg-clip-text text-transparent";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+// Fresh seed per session/restart so song selection never repeats an order.
+const randomSeed = () => Math.floor(Math.random() * 1_000_000) + 1;
 
 function createProtocolId() {
   const compactTimestamp = new Date()
@@ -174,7 +171,7 @@ function ratingsToCsv(ratings) {
     "fusion_valence",
     "fusion_arousal",
     "selection_signal_source",
-    "rating_1_to_4",
+    "rating_1_to_3",
   ];
 
   const rows = ratings.map((rating) =>
@@ -942,9 +939,15 @@ function useFaceExpression() {
         lastUpdateRef.current = now;
         const result = landmarker.detectForVideo(video, now);
         const categories = result.faceBlendshapes?.[0]?.categories ?? null;
+        // Nose-tip landmark feeds the head-motion channel (nodding/"vibing").
+        const noseTip = result.faceLandmarks?.[0]?.[1] ?? null;
 
         if (categories?.length) {
-          const update = updateExpressionTracker(trackerRef.current, categories);
+          const update = updateExpressionTracker(
+            trackerRef.current,
+            categories,
+            noseTip ? { timestamp: Date.now(), x: noseTip.x, y: noseTip.y } : null,
+          );
           trackerRef.current = update.tracker;
 
           sampleIdRef.current += 1;
@@ -1709,9 +1712,9 @@ function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open,
           Select one rating to continue.
         </p>
 
-        <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-3 gap-2.5">
           {RATING_OPTIONS.map((option) => {
-            const active = currentRating?.rating_1_to_4 === option.score;
+            const active = currentRating?.rating_1_to_3 === option.score;
 
             return (
               <button
@@ -1739,7 +1742,7 @@ function RatingModal({ currentRating, nextButtonLabel, onContinue, onRate, open,
         </div>
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">1 means no fit. 4 means a very good mood fit.</p>
+          <p className="text-sm text-slate-500">1 means no fit. 3 means a good mood fit.</p>
           <PrimaryButton disabled={!currentRating} onClick={onContinue}>
             {nextButtonLabel}
             <SkipForward className="size-4" />
@@ -1802,7 +1805,7 @@ export default function App() {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [currentSong, setCurrentSong] = useState(null);
   const [history, setHistory] = useState([]);
-  const [queueSeed, setQueueSeed] = useState(24);
+  const [queueSeed, setQueueSeed] = useState(() => randomSeed());
   const [trialId, setTrialId] = useState(1);
   const [ratings, setRatings] = useState([]);
   const [protocolComplete, setProtocolComplete] = useState(false);
@@ -2011,13 +2014,14 @@ export default function App() {
   function startSession() {
     if (!setupReady || !enoughTracks) return;
 
-    const firstSong = rankSongs(songs, "random", mood, null, queueSeed, [])[0] ?? songs[0];
+    const sessionSeed = randomSeed();
+    const firstSong = rankSongs(songs, "random", mood, null, sessionSeed, [])[0] ?? songs[0];
     resetSignalWindows();
     setCurrentSong(firstSong);
     setHistory([]);
     setCurrentBlockIndex(0);
     setCurrentTrackIndex(0);
-    setQueueSeed((value) => value + 7);
+    setQueueSeed(sessionSeed + 7);
     setSessionStarted(true);
     setIsPlaying(false);
     setIsPlaybackActive(false);
@@ -2167,7 +2171,7 @@ export default function App() {
         fusion_valence: Number(fusionSummary.valence.toFixed(3)),
         fusion_arousal: Number(fusionSummary.energy.toFixed(3)),
         selection_signal_source: fusionSummary.selectionSignalSource,
-        rating_1_to_4: score,
+        rating_1_to_3: score,
         score,
       };
 
@@ -2187,7 +2191,7 @@ export default function App() {
     setCurrentTrackIndex(0);
     setCurrentSong(null);
     setHistory([]);
-    setQueueSeed(24);
+    setQueueSeed(randomSeed());
     setTrialId(1);
     setRatings([]);
     setProtocolComplete(false);

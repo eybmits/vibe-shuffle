@@ -2,8 +2,9 @@ import { trackNameKey } from "./trackKey.js";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const PAGE_LIMIT = 50;
-const MAX_LIBRARY_TRACKS = 1500;
-const MAX_PLAYLISTS = 50;
+// Safety bounds only — high enough to cover whole personal libraries.
+const MAX_LIBRARY_TRACKS = 10000;
+const MAX_PLAYLISTS = 200;
 
 export const EMOTION_QUADRANTS = {
   happy: {

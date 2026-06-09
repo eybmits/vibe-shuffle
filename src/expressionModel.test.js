@@ -318,3 +318,64 @@ test("empty window falls back to relaxed when no camera samples exist", () => {
   assert.equal(summary.tag, "relaxed");
   assert.equal(summary.sampleCount, 0);
 });
+
+test("rhythmic nodding raises energy and boosts positive engagement", () => {
+  let tracker = createExpressionTrackerState();
+  const categories = categoriesFromFeatures(neutral);
+  let update = null;
+
+  // ~4 seconds of rhythmic vertical head movement (nodding to the beat).
+  for (let index = 0; index < 32; index += 1) {
+    update = updateExpressionTracker(tracker, categories, {
+      timestamp: index * 120,
+      x: 0.5,
+      y: 0.5 + Math.sin(index * 1.1) * 0.018,
+    });
+    tracker = update.tracker;
+  }
+
+  assert.ok(update.expression.energy > 0.6, `energy was ${update.expression.energy}`);
+  assert.ok(
+    update.tracker.smoothedScores.happy > 0.1,
+    `happy was ${update.tracker.smoothedScores.happy}`,
+  );
+});
+
+test("still head keeps neutral energy at 0.5", () => {
+  let tracker = createExpressionTrackerState();
+  const categories = categoriesFromFeatures(neutral);
+  let update = null;
+
+  for (let index = 0; index < 32; index += 1) {
+    update = updateExpressionTracker(tracker, categories, {
+      timestamp: index * 120,
+      x: 0.5,
+      y: 0.5,
+    });
+    tracker = update.tracker;
+  }
+
+  assert.equal(update.expression.energy, 0.5);
+  assert.equal(update.expression.tag, "relaxed");
+});
+
+test("personal baseline debiases a chronically tense resting face", () => {
+  let tracker = createExpressionTrackerState();
+  // Force a long-established baseline of moderate tension.
+  tracker = { ...tracker, baselineScores: { happy: 0, sad_low: 0, tense: 0.4 } };
+
+  const tenseRestingFace = categoriesFromFeatures({
+    ...neutral,
+    browDown: 0.18,
+    mouthPress: 0.14,
+  });
+
+  let update = null;
+  for (let index = 0; index < 8; index += 1) {
+    update = updateExpressionTracker(tracker, tenseRestingFace);
+    tracker = update.tracker;
+  }
+
+  // The same raw tension that matches the personal baseline reads as relaxed.
+  assert.equal(update.expression.tag, "relaxed");
+});

@@ -8,6 +8,21 @@ export const MIN_SUSTAINED_SAMPLES = 3;
 export const SAD_FAST_SWITCH_SCORE = 0.42;
 export const SAD_FAST_SWITCH_SAMPLES = 2;
 
+// Personal neutral baseline: a very slow EMA of the raw expression scores.
+// Subtracting it makes small deviations from an individually "resting" face
+// count, instead of requiring textbook-strength expressions.
+export const BASELINE_EMA_ALPHA = 0.002;
+export const BASELINE_DEBIAS_FACTOR = 0.9;
+
+// Head-motion channel ("vibing"): rhythmic vertical nodding reads as positive
+// engagement, overall movement raises arousal.
+export const MOTION_WINDOW_MS = 3200;
+export const NOD_MIN_STEP = 0.0035;
+export const NOD_RATE_NORM = 2.2;
+export const NOD_AMPLITUDE_NORM = 0.011;
+export const MOTION_ENERGY_GAIN = 24;
+export const NOD_HAPPY_BOOST = 0.42;
+
 export const EXPRESSION_TAGS = ["happy", "relaxed", "tense", "sad_low"];
 
 const clamp = (value, min = 0, max = 1) => Math.min(Math.max(value, min), max);
@@ -177,7 +192,7 @@ function dominantWindowTag(scores) {
   return topScore > 0 ? topTag : "relaxed";
 }
 
-export function expressionStateFromTag(tag, scores, facePresent = true) {
+export function expressionStateFromTag(tag, scores, facePresent = true, energy = 0.5) {
   const confidence = clamp(scores[tag] ?? 0);
 
   if (!facePresent) {
@@ -194,7 +209,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   if (tag === "happy") {
     return {
       confidence,
-      energy: 0.5,
+      energy,
       facePresent,
       scores,
       tag,
@@ -205,7 +220,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   if (tag === "tense") {
     return {
       confidence,
-      energy: 0.5,
+      energy,
       facePresent,
       scores,
       tag,
@@ -216,7 +231,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   if (tag === "sad_low") {
     return {
       confidence,
-      energy: 0.5,
+      energy,
       facePresent,
       scores,
       tag,
@@ -226,7 +241,7 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
 
   return {
     confidence,
-    energy: 0.5,
+    energy,
     facePresent,
     scores,
     tag: "relaxed",
@@ -234,21 +249,94 @@ export function expressionStateFromTag(tag, scores, facePresent = true) {
   };
 }
 
+export function summarizeHeadMotion(samples) {
+  if (samples.length < 4) return { movement: 0, nodding: 0 };
+
+  let speedSum = 0;
+  let reversals = 0;
+  let reversalAmplitudeSum = 0;
+  let lastDirection = 0;
+
+  for (let index = 1; index < samples.length; index += 1) {
+    const dx = samples[index].x - samples[index - 1].x;
+    const dy = samples[index].y - samples[index - 1].y;
+    speedSum += Math.hypot(dx, dy);
+
+    if (Math.abs(dy) >= NOD_MIN_STEP) {
+      const direction = Math.sign(dy);
+      if (lastDirection && direction !== lastDirection) {
+        reversals += 1;
+        reversalAmplitudeSum += Math.abs(dy);
+      }
+      lastDirection = direction;
+    }
+  }
+
+  const steps = samples.length - 1;
+  const seconds = Math.max(0.4, (samples.at(-1).timestamp - samples[0].timestamp) / 1000);
+  const movement = clamp((speedSum / steps) * MOTION_ENERGY_GAIN);
+  const reversalRate = reversals / seconds;
+  const meanAmplitude = reversals ? reversalAmplitudeSum / reversals : 0;
+  const nodding = clamp(reversalRate / NOD_RATE_NORM) * clamp(meanAmplitude / NOD_AMPLITUDE_NORM);
+
+  return { movement, nodding: clamp(nodding) };
+}
+
 export function createExpressionTrackerState() {
   return {
+    baselineScores: { happy: 0, sad_low: 0, tense: 0 },
     candidate: { tag: "relaxed", count: 0 },
+    motionSamples: [],
     smoothedScores: initialExpressionScores(),
     tag: "relaxed",
   };
 }
 
-export function updateExpressionTracker(tracker, categories) {
+function debiasActiveScores(rawScores, baselineScores) {
+  const happy = clamp(rawScores.happy - baselineScores.happy * BASELINE_DEBIAS_FACTOR);
+  const tense = clamp(rawScores.tense - baselineScores.tense * BASELINE_DEBIAS_FACTOR);
+  const sadLow = clamp(rawScores.sad_low - baselineScores.sad_low * BASELINE_DEBIAS_FACTOR);
+  const activeMax = Math.max(happy, tense, sadLow);
+
+  return {
+    happy,
+    relaxed: clamp(1 - activeMax * 1.35 + Math.max(0, 0.11 - activeMax) * 1.5),
+    tense,
+    sad_low: sadLow,
+  };
+}
+
+export function updateExpressionTracker(tracker, categories, headPose = null) {
   const features = expressionFeatures(categories);
   const rawScores = scoreExpressionFeatures(features);
+
+  const baselineScores = tracker.baselineScores ?? { happy: 0, sad_low: 0, tense: 0 };
+  const nextBaselineScores = {
+    happy: baselineScores.happy * (1 - BASELINE_EMA_ALPHA) + rawScores.happy * BASELINE_EMA_ALPHA,
+    sad_low:
+      baselineScores.sad_low * (1 - BASELINE_EMA_ALPHA) + rawScores.sad_low * BASELINE_EMA_ALPHA,
+    tense: baselineScores.tense * (1 - BASELINE_EMA_ALPHA) + rawScores.tense * BASELINE_EMA_ALPHA,
+  };
+  const debiasedScores = debiasActiveScores(rawScores, baselineScores);
+
+  const now = headPose?.timestamp ?? Date.now();
+  const motionSamples = headPose
+    ? [...(tracker.motionSamples ?? []), { timestamp: now, x: headPose.x, y: headPose.y }].filter(
+        (sample) => now - sample.timestamp <= MOTION_WINDOW_MS,
+      )
+    : (tracker.motionSamples ?? []);
+  const { movement, nodding } = summarizeHeadMotion(motionSamples);
+
+  // Rhythmic nodding while listening reads as positive engagement.
+  const boostedScores = {
+    ...debiasedScores,
+    happy: clamp(debiasedScores.happy + nodding * NOD_HAPPY_BOOST),
+  };
+
   const smoothedScores = Object.fromEntries(
     EXPRESSION_TAGS.map((tag) => [
       tag,
-      tracker.smoothedScores[tag] * (1 - FACE_EMA_ALPHA) + rawScores[tag] * FACE_EMA_ALPHA,
+      tracker.smoothedScores[tag] * (1 - FACE_EMA_ALPHA) + boostedScores[tag] * FACE_EMA_ALPHA,
     ]),
   );
   const classification = classifyExpressionScores(
@@ -256,7 +344,8 @@ export function updateExpressionTracker(tracker, categories) {
     tracker.tag,
     tracker.candidate,
   );
-  const expression = expressionStateFromTag(classification.tag, smoothedScores, true);
+  const energy = clamp(0.5 + movement * 0.3 + nodding * 0.25, 0.5, 0.95);
+  const expression = expressionStateFromTag(classification.tag, smoothedScores, true, energy);
 
   return {
     expression,
@@ -266,13 +355,15 @@ export function updateExpressionTracker(tracker, categories) {
       facePresent: true,
       scores: smoothedScores,
       tag: expression.tag,
-      timestamp: Date.now(),
+      timestamp: now,
       valence: expression.valence,
     },
     status: "ready",
     tracker: {
       ...tracker,
+      baselineScores: nextBaselineScores,
       candidate: classification.candidate,
+      motionSamples,
       smoothedScores,
       tag: classification.tag,
     },
@@ -306,10 +397,13 @@ export function summarizeExpressionSamples(samples, fallbackExpression = null) {
     ]),
   );
   const tag = dominantWindowTag(meanScores);
+  const meanEnergy =
+    samples.reduce((total, sample) => total + (Number(sample.energy) || 0.5), 0) / samples.length;
   const windowState = expressionStateFromTag(
     tag,
     meanScores,
     samples.some((sample) => sample.facePresent),
+    clamp(meanEnergy),
   );
   const confidence = windowState.confidence;
 

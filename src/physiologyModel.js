@@ -268,7 +268,10 @@ export function fuseEmotionSignals(faceSummary, physiologySummary) {
   }
 
   const valence = clamp(Number(faceSummary?.valence ?? 0.5));
-  const energy = physiologyUsable ? clamp(physiologyArousal) : 0.5;
+  // Without usable ECG the face channel still carries arousal (head motion).
+  const energy = physiologyUsable
+    ? clamp(physiologyArousal)
+    : clamp(Number(faceSummary?.energy ?? 0.5));
   const tag = physiologyUsable ? quadrantFromAxes(valence, energy) : faceTag;
 
   return {
