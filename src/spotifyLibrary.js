@@ -103,7 +103,16 @@ async function fetchJson(url, token) {
   }
 
   if (!response.ok) {
-    throw new Error(`Spotify API request failed (HTTP ${response.status}).`);
+    let detail = "";
+    try {
+      const payload = await response.json();
+      detail = payload?.error?.message ?? "";
+    } catch {
+      // Keep the bare status when the body is not JSON.
+    }
+    throw new Error(
+      `Spotify API request failed (HTTP ${response.status}${detail ? `: ${detail}` : ""}).`,
+    );
   }
 
   return response.json();
@@ -140,13 +149,20 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
     onProgress({ trackCount: tracksById.size, playlistCount });
   };
 
-  await fetchPaginated(
-    token,
-    `${SPOTIFY_API_BASE}/me/tracks?limit=${PAGE_LIMIT}`,
-    (payload) => payload.items,
-    (items) => addTracks(items.map((item) => item.track), "liked_songs"),
-    MAX_LIBRARY_TRACKS,
-  );
+  let lastError = null;
+
+  try {
+    await fetchPaginated(
+      token,
+      `${SPOTIFY_API_BASE}/me/tracks?limit=${PAGE_LIMIT}`,
+      (payload) => payload.items,
+      (items) => addTracks(items.map((item) => item.track), "liked_songs"),
+      MAX_LIBRARY_TRACKS,
+    );
+  } catch (error) {
+    lastError = error;
+    console.warn("[vibe-shuffle] liked songs could not be loaded:", error.message);
+  }
 
   const playlists = [];
   try {
@@ -158,6 +174,7 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
       MAX_PLAYLISTS,
     );
   } catch (error) {
+    lastError = error;
     console.warn("[vibe-shuffle] playlist list could not be loaded:", error.message);
   }
 
@@ -198,6 +215,10 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
 
   if (skippedPlaylists) {
     console.info(`[vibe-shuffle] ${skippedPlaylists} inaccessible playlists skipped.`);
+  }
+
+  if (!tracksById.size && lastError) {
+    throw lastError;
   }
 
   return Array.from(tracksById.values());
