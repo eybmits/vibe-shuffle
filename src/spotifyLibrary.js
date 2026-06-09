@@ -51,16 +51,22 @@ export function quadrantFromAxes(valence, energy) {
   return "sad_low";
 }
 
+// Bump when the lookup format changes — busts browser/CDN caches of the
+// same-named JSON file.
+const FEATURE_LOOKUP_VERSION = "2";
+
 let featureLookupPromise = null;
 
 export function loadFeatureLookup() {
-  featureLookupPromise ??= fetch("./feature-lookup.json").then((response) => {
-    if (!response.ok) {
-      featureLookupPromise = null;
-      throw new Error(`Feature lookup failed to load (HTTP ${response.status}).`);
-    }
-    return response.json();
-  });
+  featureLookupPromise ??= fetch(`./feature-lookup.json?v=${FEATURE_LOOKUP_VERSION}`).then(
+    (response) => {
+      if (!response.ok) {
+        featureLookupPromise = null;
+        throw new Error(`Feature lookup failed to load (HTTP ${response.status}).`);
+      }
+      return response.json();
+    },
+  );
 
   return featureLookupPromise;
 }

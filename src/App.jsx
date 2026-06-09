@@ -760,7 +760,25 @@ function useSpotifyLibrary(authenticated, ensureToken) {
         ]);
         if (cancelled) return;
 
+        if (!lookup.names) {
+          throw new Error(
+            "An outdated song database is cached in this browser. Hard-refresh the page (Cmd+Shift+R) and try again.",
+          );
+        }
+
         const matchedTracks = matchTracksToFeatures(tracks, lookup);
+        console.info(
+          `[vibe-shuffle] library: ${tracks.length} tracks, ${matchedTracks.length} matched ` +
+            `(lookup: ${Object.keys(lookup.ids ?? {}).length} ids, ${Object.keys(lookup.names ?? {}).length} names)`,
+        );
+        if (matchedTracks.length < tracks.length) {
+          const matchedIds = new Set(matchedTracks.map((track) => track.spotifyId));
+          const unmatchedSamples = tracks
+            .filter((track) => !matchedIds.has(track.spotifyId))
+            .slice(0, 5)
+            .map((track) => `${track.artist} — ${track.title}`);
+          console.info("[vibe-shuffle] unmatched samples:", unmatchedSamples);
+        }
         setState({
           error: "",
           matchedTracks,
