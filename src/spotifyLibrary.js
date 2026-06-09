@@ -1,4 +1,4 @@
-import { artistNameKey, trackNameKey } from "./trackKey.js";
+import { trackNameKey } from "./trackKey.js";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const PAGE_LIMIT = 50;
@@ -53,7 +53,7 @@ export function quadrantFromAxes(valence, energy) {
 
 // Bump when the lookup format changes — busts browser/CDN caches of the
 // same-named JSON file.
-const FEATURE_LOOKUP_VERSION = "4";
+const FEATURE_LOOKUP_VERSION = "5";
 
 let featureLookupPromise = null;
 
@@ -79,7 +79,7 @@ function normalizeApiTrack(track, sourceLabel) {
     spotifyId: track.id,
     spotifyUri: track.uri ?? `spotify:track:${track.id}`,
     title: track.name ?? "Untitled track",
-    primaryArtist: track.artists?.[0]?.name ?? "",
+    artistNames: (track.artists ?? []).map((artist) => artist.name).filter(Boolean),
     artist: (track.artists ?? []).map((artist) => artist.name).join(", ") || "Unknown artist",
     album: track.album?.name ?? "",
     albumImageUrl: track.album?.images?.[0]?.url ?? null,
@@ -178,22 +178,22 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
 export function matchTracksToFeatures(tracks, lookup) {
   const ids = lookup.ids ?? lookup;
   const names = lookup.names ?? {};
-  const artists = lookup.artists ?? {};
   const matched = [];
 
   for (const track of tracks) {
-    const nameKey = trackNameKey(track.primaryArtist || track.artist, track.title);
-    const artistKey = artistNameKey(track.primaryArtist || track.artist);
-
     let features = ids[track.spotifyId];
     let categorySource = "lookup_id";
-    if (!features && nameKey) {
-      features = names[nameKey];
-      categorySource = "lookup_name";
-    }
-    if (!features && artistKey) {
-      features = artists[artistKey];
-      categorySource = "lookup_artist_mean";
+
+    if (!features) {
+      const artistCandidates = track.artistNames?.length ? track.artistNames : [track.artist];
+      for (const artist of artistCandidates) {
+        const nameKey = trackNameKey(artist, track.title);
+        if (nameKey && names[nameKey]) {
+          features = names[nameKey];
+          categorySource = "lookup_name";
+          break;
+        }
+      }
     }
     if (!features) continue;
 

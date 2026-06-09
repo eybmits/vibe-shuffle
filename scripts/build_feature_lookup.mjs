@@ -3,7 +3,7 @@ import { createReadStream } from "node:fs";
 import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import { artistNameKey, trackNameKey } from "../src/trackKey.js";
+import { trackNameKey } from "../src/trackKey.js";
 
 const SMALL_DATASET_PATH = "data/spotify_tracks_dataset.csv";
 const LARGE_DATASET_PATH = "data/spotify_12m_tracks_features.csv";
@@ -150,11 +150,12 @@ async function ensureLargeDataset() {
 }
 
 // The large dataset stores artists as a Python-style list string: ['A', "B"].
-const FIRST_ARTIST_PATTERN = /^\[\s*(['"])(.*?)\1\s*(?:,|\])/;
+const MAX_ARTIST_KEYS = 3;
 
-function firstArtistFromList(value) {
-  const match = FIRST_ARTIST_PATTERN.exec(String(value ?? ""));
-  return match ? match[2] : "";
+function artistsFromList(value) {
+  return [...String(value ?? "").matchAll(/(['"])(.*?)\1/g)]
+    .map((match) => match[2])
+    .slice(0, MAX_ARTIST_KEYS);
 }
 
 function round2(value) {
@@ -177,18 +178,16 @@ function parseFeatures(valenceRaw, energyRaw, instrumentalnessRaw) {
 async function main() {
   const ids = {};
   const names = {};
-  const artistSums = new Map();
   let skipped = 0;
   let largeRows = 0;
 
-  const addArtistSample = (artistKey, features) => {
-    if (!artistKey) return;
-    const sums = artistSums.get(artistKey) ?? [0, 0, 0, 0];
-    sums[0] += features[0];
-    sums[1] += features[1];
-    sums[2] += features[2];
-    sums[3] += 1;
-    artistSums.set(artistKey, sums);
+  // Collaboration tracks list several artists; key the song under each of the
+  // first few so a library entry matches regardless of artist order.
+  const addNameKeys = (artists, title, features) => {
+    for (const artist of artists) {
+      const nameKey = trackNameKey(artist, title);
+      if (nameKey) names[nameKey] ??= features;
+    }
   };
 
   for (const row of parseCsv(await readFile(SMALL_DATASET_PATH, "utf8"))) {
@@ -199,10 +198,8 @@ async function main() {
     }
 
     ids[row.track_id] ??= features;
-    const primaryArtist = String(row.artists ?? "").split(";")[0];
-    const nameKey = trackNameKey(primaryArtist, row.track_name);
-    if (nameKey) names[nameKey] ??= features;
-    addArtistSample(artistNameKey(primaryArtist), features);
+    const artists = String(row.artists ?? "").split(";").slice(0, MAX_ARTIST_KEYS);
+    addNameKeys(artists, row.track_name, features);
   }
 
   if (await ensureLargeDataset()) {
@@ -231,30 +228,15 @@ async function main() {
         continue;
       }
 
-      const primaryArtist = firstArtistFromList(row[columnIndex.artists]);
-      const nameKey = trackNameKey(primaryArtist, row[columnIndex.name]);
-      if (nameKey) names[nameKey] ??= features;
-      addArtistSample(artistNameKey(primaryArtist), features);
+      addNameKeys(artistsFromList(row[columnIndex.artists]), row[columnIndex.name], features);
     }
   }
 
-  // Tier-3 fallback: average mood profile per artist for tracks no dataset
-  // contains individually.
-  const artists = {};
-  for (const [artistKey, [valenceSum, energySum, instrumentalnessSum, count]] of artistSums) {
-    artists[artistKey] = [
-      round2(valenceSum / count),
-      round2(energySum / count),
-      round2(instrumentalnessSum / count),
-    ];
-  }
-
   await mkdir(path.dirname(OUTPUT_JSON_PATH), { recursive: true });
-  await writeFile(OUTPUT_JSON_PATH, JSON.stringify({ ids, names, artists }));
+  await writeFile(OUTPUT_JSON_PATH, JSON.stringify({ ids, names }));
   console.log(
-    `Wrote ${Object.keys(ids).length} ids, ${Object.keys(names).length} name keys, ` +
-      `${Object.keys(artists).length} artist keys to ${OUTPUT_JSON_PATH} ` +
-      `(${largeRows} large-dataset rows, ${skipped} rows skipped).`,
+    `Wrote ${Object.keys(ids).length} ids and ${Object.keys(names).length} name keys ` +
+      `to ${OUTPUT_JSON_PATH} (${largeRows} large-dataset rows, ${skipped} rows skipped).`,
   );
 }
 

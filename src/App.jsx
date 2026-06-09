@@ -760,7 +760,7 @@ function useSpotifyLibrary(authenticated, ensureToken) {
         ]);
         if (cancelled) return;
 
-        if (!lookup.names || !lookup.artists) {
+        if (!lookup.names) {
           throw new Error(
             "An outdated song database is cached in this browser. Hard-refresh the page (Cmd+Shift+R) and try again.",
           );
@@ -769,7 +769,7 @@ function useSpotifyLibrary(authenticated, ensureToken) {
         const matchedTracks = matchTracksToFeatures(tracks, lookup);
         console.info(
           `[vibe-shuffle] library: ${tracks.length} tracks, ${matchedTracks.length} matched ` +
-            `(lookup: ${Object.keys(lookup.ids ?? {}).length} ids, ${Object.keys(lookup.names ?? {}).length} names, ${Object.keys(lookup.artists ?? {}).length} artists)`,
+            `(lookup: ${Object.keys(lookup.ids ?? {}).length} ids, ${Object.keys(lookup.names ?? {}).length} names)`,
         );
         if (matchedTracks.length < tracks.length) {
           const matchedIds = new Set(matchedTracks.map((track) => track.spotifyId));
