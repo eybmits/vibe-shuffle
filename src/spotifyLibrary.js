@@ -53,7 +53,7 @@ export function quadrantFromAxes(valence, energy) {
 
 // Bump when the lookup format changes — busts browser/CDN caches of the
 // same-named JSON file.
-const FEATURE_LOOKUP_VERSION = "3";
+const FEATURE_LOOKUP_VERSION = "4";
 
 let featureLookupPromise = null;
 

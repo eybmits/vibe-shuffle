@@ -12,3 +12,6 @@ build/
 data/audio/
 data/spotify_tracks_dataset.csv
 public/audio/
+data/spotify_12m_tracks_features.csv
+data/spotify_12m.zip
+public/feature-lookup.json
