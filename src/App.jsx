@@ -783,6 +783,7 @@ function useSpotifyLibrary(authorized, ensureToken) {
   const [state, setState] = useState({
     error: "",
     matchedTracks: [],
+    phase: "",
     playlistCount: 0,
     status: "idle",
     totalCount: 0,
@@ -805,10 +806,11 @@ function useSpotifyLibrary(authorized, ensureToken) {
 
         const [lookup, tracks] = await Promise.all([
           loadFeatureLookup(),
-          fetchUserLibrary(ensureToken, ({ trackCount, playlistCount }) => {
+          fetchUserLibrary(ensureToken, ({ trackCount, playlistCount, phase }) => {
             if (cancelled) return;
             setState((current) => ({
               ...current,
+              phase,
               playlistCount,
               totalCount: trackCount,
             }));
@@ -1695,7 +1697,7 @@ function SetupScreen({
 
   const libraryStatusText =
     library.status === "loading"
-      ? `Reading your library… ${library.totalCount} songs found so far.`
+      ? `${library.phase || "Reading your library"}… ${library.totalCount} songs so far.`
       : library.status === "ready"
         ? enoughTracks
           ? `${matchedCount} of your ${library.totalCount} songs are mood-mapped and ready.`

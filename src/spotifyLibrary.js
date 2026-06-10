@@ -155,6 +155,10 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
   const tracksById = new Map();
   let playlistCount = 0;
 
+  let phase = "Reading saved songs";
+
+  const report = () => onProgress({ phase, playlistCount, trackCount: tracksById.size });
+
   const addTracks = (apiTracks, sourceLabel) => {
     for (const apiTrack of apiTracks) {
       if (tracksById.size >= MAX_LIBRARY_TRACKS) return;
@@ -163,7 +167,7 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
         tracksById.set(normalized.spotifyId, normalized);
       }
     }
-    onProgress({ trackCount: tracksById.size, playlistCount });
+    report();
   };
 
   let lastError = null;
@@ -178,8 +182,14 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
     );
   } catch (error) {
     lastError = error;
+    phase = `Saved songs failed (${error.message})`;
+    report();
     console.warn("[vibe-shuffle] liked songs could not be loaded:", error.message);
   }
+
+  const likedCount = tracksById.size;
+  phase = "Reading playlists";
+  report();
 
   const playlists = [];
   try {
@@ -192,12 +202,14 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
     );
   } catch (error) {
     lastError = error;
+    phase = `Playlists failed (${error.message})`;
+    report();
     console.warn("[vibe-shuffle] playlist list could not be loaded:", error.message);
   }
 
   let skippedPlaylists = 0;
 
-  for (const playlist of playlists.slice(0, MAX_PLAYLISTS)) {
+  for (const [index, playlist] of playlists.slice(0, MAX_PLAYLISTS).entries()) {
     if (tracksById.size >= MAX_LIBRARY_TRACKS) break;
 
     // Spotify blocks API access to its own editorial/algorithmic playlists
@@ -208,6 +220,8 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
     }
 
     playlistCount += 1;
+    phase = `Reading playlist ${index + 1}/${playlists.length}`;
+    report();
     const fields = encodeURIComponent(
       "next,items(track(id,uri,name,type,is_local,duration_ms,popularity,artists(name),album(name,images),external_urls))",
     );
@@ -223,19 +237,22 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
     } catch (error) {
       // One inaccessible playlist must not abort the whole library load.
       skippedPlaylists += 1;
-      console.warn(
-        `[vibe-shuffle] playlist "${playlist.name}" skipped:`,
-        error.message,
-      );
+      lastError = error;
+      console.warn(`[vibe-shuffle] playlist "${playlist.name}" skipped:`, error.message);
     }
   }
 
-  if (skippedPlaylists) {
-    console.info(`[vibe-shuffle] ${skippedPlaylists} inaccessible playlists skipped.`);
-  }
+  console.info(
+    `[vibe-shuffle] library load done: ${likedCount} liked, ` +
+      `${tracksById.size - likedCount} from playlists, ${playlists.length} playlists, ` +
+      `${skippedPlaylists} skipped.`,
+  );
 
-  if (!tracksById.size && lastError) {
-    throw lastError;
+  if (!tracksById.size) {
+    if (lastError) throw lastError;
+    throw new Error(
+      "No readable songs were found. Make sure you granted library access and have saved songs or playlists.",
+    );
   }
 
   return Array.from(tracksById.values());
