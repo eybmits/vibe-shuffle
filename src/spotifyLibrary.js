@@ -93,7 +93,7 @@ function normalizeApiTrack(track, sourceLabel) {
   };
 }
 
-async function fetchJson(url, token) {
+async function fetchJson(url, token, attempt = 0) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   let response;
@@ -113,18 +113,20 @@ async function fetchJson(url, token) {
 
   if (response.status === 429) {
     const retryAfter = Number(response.headers.get("Retry-After") ?? 1);
-    // Short throttles: wait it out silently. Long ones: surface clearly so the
-    // load doesn't look like a silent hang at 0 songs.
-    if (retryAfter > 4) {
-      const error = new Error(
-        `Spotify rate limit hit (too many requests). Wait about ${retryAfter}s and press Retry.`,
-      );
-      error.isRateLimit = true;
-      error.retryAfter = retryAfter;
-      throw error;
+    // Retry a couple of short throttles, but never loop forever — a persistent
+    // 429 must surface as a clear message instead of an endless 0-songs spinner.
+    if (attempt < 2 && retryAfter <= 4) {
+      await new Promise((resolve) => setTimeout(resolve, (retryAfter + 0.2) * 1000));
+      return fetchJson(url, token, attempt + 1);
     }
-    await new Promise((resolve) => setTimeout(resolve, (retryAfter + 0.2) * 1000));
-    return fetchJson(url, token);
+    const error = new Error(
+      `Spotify is rate-limiting this app (too many requests today). Wait ${Math.max(
+        retryAfter,
+        30,
+      )}s — or a few minutes if it persists — then press Retry.`,
+    );
+    error.isRateLimit = true;
+    throw error;
   }
 
   if (!response.ok) {
