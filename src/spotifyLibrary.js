@@ -113,6 +113,16 @@ async function fetchJson(url, token) {
 
   if (response.status === 429) {
     const retryAfter = Number(response.headers.get("Retry-After") ?? 1);
+    // Short throttles: wait it out silently. Long ones: surface clearly so the
+    // load doesn't look like a silent hang at 0 songs.
+    if (retryAfter > 4) {
+      const error = new Error(
+        `Spotify rate limit hit (too many requests). Wait about ${retryAfter}s and press Retry.`,
+      );
+      error.isRateLimit = true;
+      error.retryAfter = retryAfter;
+      throw error;
+    }
     await new Promise((resolve) => setTimeout(resolve, (retryAfter + 0.2) * 1000));
     return fetchJson(url, token);
   }
