@@ -1680,10 +1680,6 @@ function SetupScreen({
   const matchedCount = library.matchedTracks.length;
   const enoughTracks = matchedCount >= MIN_MATCHED_TRACKS;
 
-  // Only treat the account as blocked when the library itself fails on a
-  // permission error — the advisory profile probe never blocks on its own.
-  const accountBlocked =
-    spotifyAuth.authenticated && library.status === "error" && /403/.test(library.error ?? "");
   const spotifyStepComplete = spotifyAuth.authenticated && spotifyPlayer.ready;
   const libraryStepComplete = library.status === "ready" && enoughTracks;
   const physiologyReady = !physiology.connected || physiology.status === "ready";
@@ -1708,9 +1704,7 @@ function SetupScreen({
           ? `${matchedCount} of your ${library.totalCount} songs are mood-mapped and ready.`
           : `Only ${matchedCount} of ${library.totalCount} songs could be mood-mapped — at least ${MIN_MATCHED_TRACKS} are needed. Try an account with more saved music.`
         : library.status === "error"
-          ? accountBlocked
-            ? "This Spotify account isn't approved for this app yet. The study organizer must add your account email under User Management in the Spotify Developer Dashboard."
-            : library.error
+          ? library.error
           : spotifyAuth.authenticated
             ? "Ready to read your saved songs and playlists."
             : "Connects after the Spotify sign-in.";
