@@ -1671,34 +1671,37 @@ function SetupScreen({
   const matchedCount = library.matchedTracks.length;
   const enoughTracks = matchedCount >= MIN_MATCHED_TRACKS;
 
-  const accountBlocked = Boolean(spotifyAuth.authenticated && spotifyProfile.error);
-  const spotifyStepComplete =
-    spotifyAuth.authenticated && spotifyPlayer.ready && Boolean(spotifyProfile.profile);
+  // Only treat the account as blocked when the library itself fails on a
+  // permission error — the advisory profile probe never blocks on its own.
+  const accountBlocked =
+    spotifyAuth.authenticated && library.status === "error" && /403/.test(library.error ?? "");
+  const spotifyStepComplete = spotifyAuth.authenticated && spotifyPlayer.ready;
   const libraryStepComplete = library.status === "ready" && enoughTracks;
   const physiologyReady = !physiology.connected || physiology.status === "ready";
 
   const spotifyStatusText = !spotifyAuth.authenticated
     ? spotifyAuth.error || "Sign in with Spotify Premium. Your music plays right in this browser."
-    : accountBlocked
-      ? spotifyProfile.error
-      : spotifyProfile.profile
-        ? spotifyPlayer.ready
-          ? `Connected as ${spotifyProfile.profile.displayName}${
-              spotifyProfile.profile.email ? ` (${spotifyProfile.profile.email})` : ""
-            }.`
-          : spotifyPlayer.error || "Connecting the Spotify player…"
-        : "Checking account access…";
+    : spotifyProfile.profile
+      ? spotifyPlayer.ready
+        ? `Connected as ${spotifyProfile.profile.displayName}${
+            spotifyProfile.profile.email ? ` (${spotifyProfile.profile.email})` : ""
+          }.`
+        : spotifyPlayer.error || "Connecting the Spotify player…"
+      : spotifyPlayer.ready
+        ? "Spotify player is connected and ready."
+        : spotifyPlayer.error || "Connecting the Spotify player…";
 
-  const libraryStatusText = accountBlocked
-    ? "Waiting for an authorized Spotify account."
-    : library.status === "loading"
+  const libraryStatusText =
+    library.status === "loading"
       ? `Reading your library… ${library.totalCount} songs found so far.`
       : library.status === "ready"
         ? enoughTracks
           ? `${matchedCount} of your ${library.totalCount} songs are mood-mapped and ready.`
           : `Only ${matchedCount} of ${library.totalCount} songs could be mood-mapped — at least ${MIN_MATCHED_TRACKS} are needed. Try an account with more saved music.`
         : library.status === "error"
-          ? library.error
+          ? accountBlocked
+            ? "This Spotify account isn't approved for this app yet. The study organizer must add your account email under User Management in the Spotify Developer Dashboard."
+            : library.error
           : "Connects automatically after the Spotify sign-in.";
 
   const physiologyStatusText =
@@ -1742,12 +1745,9 @@ function SetupScreen({
                 Connect
               </GhostButton>
             ) : (
-              <div className="flex shrink-0 gap-2">
-                {accountBlocked ? (
-                  <GhostButton onClick={spotifyProfile.retry}>Retry</GhostButton>
-                ) : null}
-                <GhostButton onClick={onDisconnectSpotify}>Switch account</GhostButton>
-              </div>
+              <GhostButton className="shrink-0" onClick={onDisconnectSpotify}>
+                Switch account
+              </GhostButton>
             )}
           </div>
         </SetupStep>
@@ -1926,10 +1926,10 @@ export default function App() {
   const pauseSpotify = spotifyPlayer.pause;
   const playSpotifyTrack = spotifyPlayer.playTrack;
   const spotifyProfile = useSpotifyProfile(spotifyAuth.authenticated, spotifyAuth.ensureToken);
-  const library = useSpotifyLibrary(
-    spotifyAuth.authenticated && Boolean(spotifyProfile.profile),
-    spotifyAuth.ensureToken,
-  );
+  // The library load is gated only on a working login — the profile probe is
+  // advisory (display + a clear hint if the account is not allowlisted) and
+  // must never block the flow on its own.
+  const library = useSpotifyLibrary(spotifyAuth.authenticated, spotifyAuth.ensureToken);
   const songs = library.matchedTracks;
   const face = useFaceExpression();
   const physiology = usePhysiologySensor();
