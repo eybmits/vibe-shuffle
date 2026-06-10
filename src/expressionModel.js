@@ -195,6 +195,19 @@ function dominantWindowTag(scores) {
   return topScore > 0 ? topTag : "relaxed";
 }
 
+// Scale chosen so a clearly positive/negative face reaches the extremes while a
+// moderate expression stays in mid-range.
+export const VALENCE_SCALE = 1.05;
+
+// Continuous valence from the positive-vs-negative expression balance — no
+// per-tag bands or discontinuities, and strong expressions reach the extremes.
+export function valenceFromScores(scores) {
+  const happy = scores.happy ?? 0;
+  const tense = scores.tense ?? 0;
+  const sad = scores.sad_low ?? 0;
+  return clamp(0.5 + (happy - 0.55 * sad - 0.45 * tense) * VALENCE_SCALE, 0.05, 0.95);
+}
+
 export function expressionStateFromTag(tag, scores, facePresent = true, energy = 0.5) {
   const confidence = clamp(scores[tag] ?? 0);
 
@@ -209,46 +222,13 @@ export function expressionStateFromTag(tag, scores, facePresent = true, energy =
     };
   }
 
-  if (tag === "happy") {
-    return {
-      confidence,
-      energy,
-      facePresent,
-      scores,
-      tag,
-      valence: clamp(0.58 + confidence * 0.36, 0.55, 0.95),
-    };
-  }
-
-  if (tag === "tense") {
-    return {
-      confidence,
-      energy,
-      facePresent,
-      scores,
-      tag,
-      valence: clamp(0.38 - confidence * 0.18, 0.12, 0.45),
-    };
-  }
-
-  if (tag === "sad_low") {
-    return {
-      confidence,
-      energy,
-      facePresent,
-      scores,
-      tag,
-      valence: clamp(0.42 - confidence * 0.28, 0.06, 0.45),
-    };
-  }
-
   return {
     confidence,
     energy,
     facePresent,
     scores,
-    tag: "relaxed",
-    valence: 0.5,
+    tag: tag in { happy: 1, tense: 1, sad_low: 1 } ? tag : "relaxed",
+    valence: valenceFromScores(scores),
   };
 }
 
