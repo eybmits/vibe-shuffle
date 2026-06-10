@@ -1,3 +1,4 @@
+import { DEMO_TRACKS } from "./demoTracks.js";
 import { trackNameKey } from "./trackKey.js";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
@@ -289,6 +290,37 @@ export async function fetchUserLibrary(ensureToken, onProgress = () => {}) {
   }
 
   return Array.from(tracksById.values());
+}
+
+// Self-contained demo pool: real Spotify tracks with embedded features, so it
+// needs neither the library API nor the large feature lookup. Used as a
+// guaranteed fallback for demos/submission when the library can't be read.
+export function buildDemoLibrary() {
+  return DEMO_TRACKS.map((track) => {
+    const quadrant = quadrantFromAxes(track.valence, track.energy);
+    const style = EMOTION_QUADRANTS[quadrant];
+    return {
+      id: `spotify-${track.spotifyId}`,
+      spotifyId: track.spotifyId,
+      spotifyUri: `spotify:track:${track.spotifyId}`,
+      title: track.title,
+      artist: track.artist,
+      artistNames: [track.artist],
+      album: "",
+      albumImageUrl: null,
+      durationMs: null,
+      popularity: track.popularity ?? 0,
+      externalUrl: `https://open.spotify.com/track/${track.spotifyId}`,
+      librarySource: "demo",
+      valence: track.valence,
+      energy: track.energy,
+      instrumentalness: track.instrumentalness ?? 0,
+      quadrant,
+      categorySource: "demo_set",
+      accent: style.accent,
+      palette: style.palette,
+    };
+  });
 }
 
 export function matchTracksToFeatures(tracks, lookup) {

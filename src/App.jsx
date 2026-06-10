@@ -34,6 +34,7 @@ import {
 } from "./physiologyModel.js";
 import {
   EMOTION_QUADRANTS,
+  buildDemoLibrary,
   fetchUserLibrary,
   fetchUserProfile,
   loadFeatureLookup,
@@ -875,7 +876,20 @@ function useSpotifyLibrary(authorized, ensureToken) {
 
   const load = useCallback(() => setLoadCount((value) => value + 1), []);
 
-  return { ...state, load };
+  // Guaranteed offline fallback — never touches the Spotify library API.
+  const useDemo = useCallback(() => {
+    const matchedTracks = buildDemoLibrary();
+    setState({
+      error: "",
+      matchedTracks,
+      phase: "",
+      playlistCount: 0,
+      status: "ready",
+      totalCount: matchedTracks.length,
+    });
+  }, []);
+
+  return { ...state, load, useDemo };
 }
 
 function cameraErrorMessage(error) {
@@ -1772,17 +1786,28 @@ function SetupScreen({
               ) : null}
               {libraryStatusText}
             </span>
-            {missingLibraryScope ? (
-              <GhostButton className="shrink-0" onClick={onDisconnectSpotify}>
-                Switch account
-              </GhostButton>
-            ) : spotifyAuth.authenticated &&
-              (library.status === "idle" || library.status === "error") ? (
-              <GhostButton className="shrink-0" onClick={library.load}>
-                {library.status === "error" ? "Retry" : "Load my songs"}
-              </GhostButton>
-            ) : null}
+            <div className="flex shrink-0 flex-wrap gap-2">
+              {missingLibraryScope ? (
+                <GhostButton onClick={onDisconnectSpotify}>Switch account</GhostButton>
+              ) : spotifyAuth.authenticated &&
+                !missingLibraryScope &&
+                (library.status === "idle" || library.status === "error") ? (
+                <GhostButton onClick={library.load}>
+                  {library.status === "error" ? "Retry" : "Load my songs"}
+                </GhostButton>
+              ) : null}
+              {spotifyAuth.authenticated && library.status !== "loading" ? (
+                <GhostButton onClick={library.useDemo}>Use demo songs</GhostButton>
+              ) : null}
+            </div>
           </div>
+          {spotifyAuth.authenticated &&
+          (library.status === "error" || library.status === "idle") ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Tip: if Spotify is rate-limiting your library, “Use demo songs” runs the full
+              session with a curated set of real tracks.
+            </p>
+          ) : null}
         </SetupStep>
 
         <SetupStep complete={cameraReady} index={3} title="Camera signal (optional)">
