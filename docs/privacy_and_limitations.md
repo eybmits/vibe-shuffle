@@ -1,109 +1,59 @@
-# Privacy And Limitations
+# Privacy and limitations
 
-## Camera Privacy
+## Camera privacy
 
-Expression detection runs locally in the browser. The app does not upload,
-store, or export camera frames.
+Expression detection runs **locally in the browser**. The app does not upload,
+store, or export camera frames or face landmarks.
 
-The app uses [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker)
-blendshapes to estimate expression. This is not identity recognition and should
-not be presented as biometric identification, clinical affect diagnosis, or
-validated microexpression detection.
+It uses [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker)
+blendshapes to estimate expression. This is **not** identity recognition,
+clinical affect diagnosis, or validated microexpression detection.
 
-The face model intentionally avoids a participant-specific neutral face
-baseline because head pose, gaze direction, camera distance, and lighting can
-make that baseline unstable. Instead, neutral/low-evidence faces default to
-`relaxed`, and only clear smile, frown/downturned-mouth, or facial-tension cues
-move the Valence estimate away from center. Face cues do not move Arousal; good
-ECG/HRV controls Arousal, and no detected face keeps the plotted point centered.
+The face model learns a **personal neutral baseline** (a slow running average of
+the resting face) and reports *deviations* from it, so an individually "strict"
+resting face still reads as neutral. The positive-vs-negative balance maps to a
+continuous valence. Face cues drive the **valence** axis only.
 
-## Exported Data
+## Heart-rate / arousal
 
-The CSV stores derived experimental data:
+The optional sensor uses Web Bluetooth and the standard
+[Bluetooth Heart Rate Service](https://www.bluetooth.com/specifications/specs/heart-rate-service-1-0/).
+HRV needs RR intervals in the packets; devices that expose only bpm are logged
+but not used for HRV. Arousal is computed from baseline-normalized HR (up) and
+RMSSD (down) over a 120 s personal baseline, and can move **both** above and
+below neutral. Head/body motion adds to arousal on top of the ECG. HR/HRV is an
+experimental arousal signal, not a standalone emotion classifier, and the weights
+are pilot values, not validated clinical coefficients.
 
-- track metadata
-- hidden condition label
-- detected expression state
-- derived Valence/Arousal estimates
-- expression confidence
-- window-average expression scores
-- optional ECG/HRV summary metrics and baseline-normalized arousal
-- rating
+## Signal-fusion rationale
 
-It does not contain images, video, face landmarks, raw ECG waveforms, or raw
-camera frames.
+Face = valence, ECG = arousal (both directions), motion = additive arousal
+boost. Autonomic signals (HR/HRV) track arousal well but cannot separate
+positive from negative valence; facial expression is the more direct valence
+signal. Without a usable ECG, the camera/motion channel carries arousal but can
+only raise it (stillness is ambiguous), so the lower half of the arousal axis is
+reliably reachable only with a sensor.
 
-## Expression API Scope
+## Exported data
 
-The current implementation stays local-only: camera frames do not leave the
-browser. Cloud emotion APIs such as
-[AWS Rekognition](https://docs.aws.amazon.com/rekognition/latest/dg/faces.html)
-are therefore out of scope because they require sending images or frames to an
-external service.
+The CSV contains only derived experimental data (`CSV_COLUMNS` in
+`src/App.jsx`): protocol/track metadata, the (hidden) block condition, the fused
+valence/arousal at rating time, optional physiology summary fields, and the two
+ratings. It contains **no** images, video, face landmarks, or raw ECG waveforms.
 
-[Hume Expression Measurement](https://dev.hume.ai/docs/expression-measurement/overview)
-is also not used for this prototype because its legacy API is being sunset, with
-the last listed API-use/download date on June 14, 2026. The project keeps
-MediaPipe Face Landmarker as the defensible browser-local signal source.
+## Spotify limitations
 
-## Spotify Limitations
+- Spotify **Audio Features** are deprecated/restricted for newer apps, so the
+  app does not call them at runtime — the curated tracks carry features from a
+  ~2022 dataset (see [`music_catalog.md`](music_catalog.md)). Tracks released
+  after that dataset are therefore not in the pool.
+- Full-track playback requires **Spotify Premium** and an allowlisted account
+  (Development mode); see [`spotify_setup.md`](spotify_setup.md).
 
-Spotify Audio Features are deprecated and may be blocked for newer apps. The
-curated playlist mode avoids this endpoint, but its categories are human-curated
-playlist labels rather than measured Valence/Arousal features.
-
-Spotify full-track playback requires Spotify Premium and an authenticated user.
-
-## External Playback Limitations
-
-The current public catalog embeds Spotify track players for playback. Camera
-frames, expression features, ECG/HRV samples, and ratings are not sent to
-Spotify by the app, but the Spotify iframe itself is external web content and
-may set cookies, require account state, or block automatic playback depending on
-browser policy.
-
-Optional compact YouTube builds embed YouTube videos. In that mode, the YouTube
-iframe itself is external web content and may set cookies, show ads, block
-embedding, or require age/account checks depending on the selected video. The
-compact catalog stores the first resolved YouTube result for a track query, so
-coauthors should audit the generated CSV before formal studies.
-
-## ECG / HRV Limitations
-
-The ECG/heart-rate path uses the browser's Web Bluetooth access to the standard
-[Bluetooth Heart Rate Service](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/HRS_v1.0/out/en/index-en.html).
-HRV requires RR intervals in the Heart Rate Measurement packets. Devices that
-only expose bpm are displayed and logged, but they are not used for HRV-based
-track selection.
-
-The physiology model uses personal baseline deviations. Higher HR with lower
-RMSSD/SDNN is treated as higher arousal, but HR/HRV is not used as a standalone
-emotion classifier. Recent Nature-family work supports physiology as useful for
-emotion recognition while also favoring multimodal signals, so this app uses
-face expression for Valence and ECG/HRV for Arousal. HR, RMSSD, and SDNN use
-equal pilot weights in the Arousal formula; these are not validated clinical
-coefficients.
-
-Relevant references:
-
-- [Scientific Reports 2026: IoT-based emotion recognition using internal body parameters](https://www.nature.com/articles/s41598-026-35982-9)
-- [npj Flexible Electronics 2026: smart hoodie for emotion recognition and regulation](https://www.nature.com/articles/s41528-026-00585-x)
-
-## Jamendo Catalog Limitations
-
-The Jamendo catalog path uses real instrumental tracks and keeps license URLs and
-download-permission flags. Valence and Arousal are inferred from Jamendo
-musicinfo tags, speed labels, and waveform peaks. These annotations are
-reproducible and useful for the experiment, but they are still heuristic music
-emotion labels rather than externally validated ground truth.
-
-## Scientific Limitations
+## Scientific limitations
 
 This is an MVP validation dashboard, not a validated affect-recognition system.
-The expression classifier estimates `happy`, `relaxed`, `tense`, and `sad_low`.
-The ECG/HRV arousal estimate should also be treated as an experimental signal
-source.
-
-The bundled Kaggle/Spotify-embed catalog is useful for demos and pilot
-validation, but the final study should audit the selected tracks or use a
-licensed source such as Jamendo if downloadable/controllable audio is required.
+The valence/arousal estimates and the quadrant labels (Energetic / Calm / Tense
+/ Melancholic) should be treated as experimental signals. The fixed 100-track
+pool keeps the Vibe-vs-Random comparison controlled but is not a personalized or
+exhaustive music selection.

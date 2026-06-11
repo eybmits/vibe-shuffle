@@ -13,12 +13,11 @@ https://eybmits.github.io/vibe_shuffle_site/
 
 ```bash
 npm install --cache ./.npm-cache
-npm run lookup:catalog   # regenerates public/feature-lookup.json (gitignored);
-                         # downloads the Kaggle 1.2M-songs dataset on first run
 npm run build
 ```
 
-The build output is written to `dist/` (including the ~59 MB feature lookup).
+The build output is written to `dist/`. The Spotify Client ID is baked in from
+`VITE_SPOTIFY_CLIENT_ID` at build time, so build with the `.env` present.
 
 ## Deploy To GitHub Pages Repo
 

@@ -305,9 +305,6 @@ function useSpotifyAuth() {
       accessToken: payload.access_token,
       refreshToken: payload.refresh_token ?? tokenRef.current?.refreshToken ?? null,
       expiresAt: Date.now() + Number(payload.expires_in ?? 3600) * 1000,
-      // Spotify returns the actually-granted scopes here — keep them so we can
-      // detect a login that is missing library access.
-      scope: payload.scope ?? tokenRef.current?.scope ?? "",
     };
     writeStoredToken(nextToken);
     setToken(nextToken);
@@ -366,15 +363,14 @@ function useSpotifyAuth() {
       client_id: SPOTIFY_CLIENT_ID,
       // Always show the account dialog so a wrong account can be switched.
       show_dialog: "true",
+      // Playback only — the app plays a fixed curated set, it does not read the
+      // user's library.
       scope: [
         "streaming",
         "user-read-email",
         "user-read-private",
         "user-read-playback-state",
         "user-modify-playback-state",
-        "user-library-read",
-        "playlist-read-private",
-        "playlist-read-collaborative",
       ].join(" "),
       redirect_uri: SPOTIFY_REDIRECT_URI,
       state,
@@ -441,8 +437,6 @@ function useSpotifyAuth() {
     disconnect,
     ensureToken,
     error,
-    grantedScope: token?.scope ?? "",
-    hasLibraryScope: (token?.scope ?? "").includes("user-library-read"),
     status,
   };
 }
@@ -684,162 +678,6 @@ function useSpotifyPlayer(accessToken, ensureToken) {
   };
 }
 
-function useSpotifyProfile(authenticated, ensureToken) {
-  const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    if (!authenticated) {
-      setProfile(null);
-      setError("");
-      return undefined;
-    }
-
-    let cancelled = false;
-    setProfile(null);
-    setError("");
-
-    // Never let the account probe hang the setup screen on "Checking…".
-    const timeout = new Promise((_, reject) =>
-      window.setTimeout(
-        () => reject(new Error("Spotify did not respond in time. Check your connection and retry.")),
-        12000,
-      ),
-    );
-
-    Promise.race([fetchUserProfile(ensureToken), timeout])
-      .then((payload) => {
-        if (cancelled) return;
-        setProfile(payload);
-        setError("");
-      })
-      .catch((profileError) => {
-        if (cancelled) return;
-        setProfile(null);
-        setError(
-          /403/.test(profileError.message)
-            ? "This Spotify account isn't approved for this app yet. The study organizer must add your account email under User Management in the Spotify Developer Dashboard."
-            : profileError.message,
-        );
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authenticated, ensureToken, attempt]);
-
-  const retry = useCallback(() => setAttempt((value) => value + 1), []);
-
-  return { error, profile, retry };
-}
-
-function useSpotifyLibrary(authorized, ensureToken) {
-  const [state, setState] = useState({
-    error: "",
-    matchedTracks: [],
-    phase: "",
-    playlistCount: 0,
-    status: "idle",
-    totalCount: 0,
-  });
-  const [loadCount, setLoadCount] = useState(0);
-
-  useEffect(() => {
-    // Manual trigger only: never fire API calls on page load / reload, so a
-    // rate limit can't be kept alive by the app re-requesting on every render.
-    if (!authorized || loadCount === 0) return undefined;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        setState((current) => ({ ...current, error: "", status: "loading" }));
-
-        // 1) Read the library first and show its count — this is independent of
-        //    the large feature lookup, so a slow lookup can't freeze it at 0.
-        const tracks = await fetchUserLibrary(
-          ensureToken,
-          ({ trackCount, playlistCount, phase }) => {
-            if (cancelled) return;
-            setState((current) => ({
-              ...current,
-              phase,
-              playlistCount,
-              totalCount: trackCount,
-            }));
-          },
-        );
-        if (cancelled) return;
-
-        // 2) Then load the mood database and match (heavy parse happens here).
-        setState((current) => ({
-          ...current,
-          phase: "Mood-mapping your songs",
-          totalCount: tracks.length,
-        }));
-        const lookup = await loadFeatureLookup();
-        if (cancelled) return;
-
-        if (!lookup.names) {
-          throw new Error(
-            "An outdated song database is cached in this browser. Hard-refresh the page (Cmd+Shift+R) and try again.",
-          );
-        }
-
-        const matchedTracks = matchTracksToFeatures(tracks, lookup);
-        console.info(
-          `[vibe-shuffle] library: ${tracks.length} tracks, ${matchedTracks.length} matched ` +
-            `(lookup: ${Object.keys(lookup.ids ?? {}).length} ids, ${Object.keys(lookup.names ?? {}).length} names)`,
-        );
-        setState({
-          error: "",
-          matchedTracks,
-          phase: "",
-          playlistCount: 0,
-          status: "ready",
-          totalCount: tracks.length,
-        });
-      } catch (error) {
-        if (cancelled) return;
-        setState((current) => ({
-          ...current,
-          error: error.message ?? "Your Spotify library could not be loaded.",
-          status: "error",
-        }));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authorized, ensureToken, loadCount]);
-
-  // Reset back to idle when the account disconnects.
-  useEffect(() => {
-    if (!authorized) {
-      setLoadCount(0);
-      setState((current) => ({ ...current, error: "", status: "idle", totalCount: 0 }));
-    }
-  }, [authorized]);
-
-  const load = useCallback(() => setLoadCount((value) => value + 1), []);
-
-  // Guaranteed offline fallback — never touches the Spotify library API.
-  const useDemo = useCallback(() => {
-    const matchedTracks = buildDemoLibrary();
-    setState({
-      error: "",
-      matchedTracks,
-      phase: "",
-      playlistCount: 0,
-      status: "ready",
-      totalCount: matchedTracks.length,
-    });
-  }, []);
-
-  return { ...state, load, useDemo };
-}
 
 function cameraErrorMessage(error) {
   if (!navigator.mediaDevices?.getUserMedia) {

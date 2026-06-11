@@ -1,241 +1,130 @@
 # Vibe Shuffle
 
-Vibe Shuffle is a one-page React dashboard for a blinded music-recommendation
-validation study. It compares a passive Random Shuffle block against a
-mood-adaptive Vibe Shuffle block. The current prototype estimates the
-participant's expression locally in the browser, maps it to `happy`, `relaxed`,
-`tense`, or `sad_low`, and selects the next adaptive track from the averaged
-expression state plus optional ECG/HRV arousal over the just-finished listening
-window.
+Vibe Shuffle is a single-page React app for a blinded music-recommendation
+validation study. It compares a passive **Random Shuffle** block against a
+mood-adaptive **Vibe Shuffle** block, while estimating the participant's
+affective state locally in the browser (facial expression + optional heart-rate
+sensor) and logging two ratings per track.
 
-Live demo:
+Live demo: https://eybmits.github.io/vibe_shuffle_site/
 
-https://eybmits.github.io/vibe_shuffle_site/
+## What it does
 
-## What It Does
+- Plays a **fixed curated pool of 100 well-known Spotify tracks** (25 per
+  valence/arousal quadrant) via the Spotify Web Playback SDK. No personal
+  library is read — Spotify is used **only for playback**.
+- Runs a **counterbalanced protocol**: two blocks (Random and Vibe), 5 tracks
+  each, 60 seconds per track. The block order is **randomized per session**.
+- Estimates the participant's state locally:
+  - **Camera → valence.** MediaPipe Face Landmarker blendshapes are mapped to a
+    *continuous* valence with a personal neutral baseline (small deviations from
+    an individual resting face count; a clear smile approaches 0.95, a clearly
+    negative face approaches 0.10).
+  - **Heart-rate sensor → arousal.** An optional Web Bluetooth ECG/HR sensor
+    drives arousal **both up and down** (HR↑ / RMSSD↓ → higher arousal) against
+    a 120 s personal baseline.
+  - **Body/head motion → arousal boost.** Movement in the camera (nodding,
+    swaying) adds to arousal on top of the ECG. Without an ECG it carries
+    arousal alone (upward only).
+  - **Fusion:** face = valence axis, ECG = arousal base (both directions),
+    motion adds on top. State maps to one of four quadrants
+    (Energetic / Calm / Tense / Melancholic) at the 0.5 thresholds.
+- The **Vibe** block ranks the next track by distance to the measured state in
+  the valence/arousal plane; the **Random** block picks deterministically at
+  random. Both draw from the same 100-track pool.
+- After each track, **two sequential 5-point ratings**: (1) how much you like
+  the song, (2) how well it fit your current mood. Separating liking from
+  mood-fit lets the analysis check whether a low fit is just low liking.
+- At the end: a **results chart** (mean mood-fit Vibe vs Random, with liking as
+  a control) and a **CSV export** with only the validation-relevant columns.
+- All camera and heart-rate processing stays in the browser. Only the ratings
+  (and the derived state values) are exported.
 
-- Runs a fixed validation protocol: Random Shuffle first, then Vibe Shuffle.
-- Keeps the condition hidden from the participant.
-- Starts with a Netflix-inspired music taste baseline where the participant
-  selects preferred instrumental genres.
-- Plays the current full catalog through embedded Spotify track players.
-- Uses the full de-duplicated high-instrumentalness pool generated from the
-  Kaggle Spotify Tracks Dataset mirror.
-- Supports a legal 100-track Jamendo catalog with downloadable instrumental audio.
-- Keeps Spotify as an optional metadata/playback path, not as the download source.
-- Uses local MediaPipe Face Landmarker blendshapes for expression detection.
-- Keeps neutral/calm faces in `relaxed` unless there is sustained active
-  expression evidence.
-- Supports optional Web Bluetooth heart-rate sensors. RR intervals enable HRV;
-  bpm-only devices are logged but not used for HRV-based selection.
-- Requires a 1-4 mood-fit rating after every track.
-- Exports session ratings as a CSV file.
+## Stack
 
-## Current Prototype Status
+- React 19 + Vite, Tailwind CSS.
+- `@mediapipe/tasks-vision` Face Landmarker (loaded from CDN at runtime).
+- Spotify Web Playback SDK (loaded at runtime) for playback.
+- Web Bluetooth (`heart_rate` GATT service) for the optional sensor.
 
-The deployed app is ready for coauthor review as an MVP demo. It currently uses
-the Kaggle Spotify Tracks Dataset mirror to build a static full-catalog pool
-with strict instrumental-character filters. The current checked-in catalog has
-6,686 de-duplicated tracks across 87 genres. The app does not download Spotify
-audio; the browser displays embedded Spotify track players for participant
-playback. Compact YouTube lookup remains available for small audit builds.
-Jamendo remains available as an optional licensed-audio catalog path for future
-experiments that need downloadable/streamable MP3 URLs.
+## Project layout
 
-The camera detector is expression detection, not identity recognition. Optional
-ECG/HRV is used as an arousal signal, not as a standalone emotion classifier.
-Camera frames and physiology streams stay in the browser and are not uploaded.
+| Path | Purpose |
+| --- | --- |
+| `src/App.jsx` | App shell: setup screen, session/protocol, playback, rating modal, results chart, CSV export, Spotify auth + player + camera + HR hooks. |
+| `src/expressionModel.js` | Facial-expression model: blendshapes → scores → continuous valence, personal baseline, head-motion channel. |
+| `src/physiologyModel.js` | HR/HRV parsing, baseline, arousal estimate, and `fuseEmotionSignals` (face + ECG + motion). |
+| `src/spotifyLibrary.js` | `EMOTION_QUADRANTS`, `quadrantFromAxes`, and `buildDemoLibrary()`. |
+| `src/demoTracks.js` | The 100 curated tracks (real Spotify IDs + embedded valence/energy). |
+| `src/*.test.js` | Node test suites for the expression and physiology models. |
+| `docs/` | Architecture, experiment protocol, Spotify setup, deployment, privacy, troubleshooting. |
 
-## Quick Start
+The demo set in `src/demoTracks.js` was generated once from the public Kaggle
+"Spotify Tracks Dataset" (real Spotify audio features, ~2022): the 25 most
+popular tracks per quadrant with their valence/energy baked in. It is a static
+data module — no build step is required at runtime.
 
-```bash
-npm install --cache ./.npm-cache
-npm run dev
-```
+## Setup
 
-Open http://localhost:5173.
+A Spotify app (Client ID) is required for playback. See
+[docs/spotify_setup.md](docs/spotify_setup.md). In short:
 
-## Build
+1. Create an app at https://developer.spotify.com/dashboard and enable **Web API**
+   and **Web Playback SDK**.
+2. Add the redirect URI(s): the deployed site URL and `http://localhost:5173/`
+   for local dev.
+3. The app is in **Development mode**, so every Spotify account that signs in
+   must be added under **User Management** (max. 5) and must have **Spotify
+   Premium**.
 
-```bash
-npm run build
-```
-
-Optional checks:
-
-```bash
-npm audit --omit=dev
-npm test
-npm run check:catalog-script
-```
-
-## Optional ECG / HRV Input
-
-The browser app can connect to standard Bluetooth Heart Rate Service devices,
-for example chest straps that expose RR intervals. After connection, the app
-runs a neutral 60 second baseline before using HRV. Vibe Shuffle then fuses
-face-expression Valence with HR/HRV-derived Arousal for adaptive track
-selection. The `Demo` sensor button provides a local mock ECG stream for browser
-testing without hardware.
-
-## Real Music Catalog
-
-The app reads a static catalog from `src/data/musicCatalog.json`.
-
-Current public-demo path:
+Create a `.env` (git-ignored) with the Client ID:
 
 ```bash
-npm run kaggle:catalog
+VITE_SPOTIFY_CLIENT_ID=your_client_id
+# optional, defaults to the current origin+path:
+# VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/
 ```
 
-This builds the full eligible high-instrumentalness pool from the Spotify Tracks
-Dataset mirror. The default command uses `KAGGLE_CATALOG_SCOPE=full` and does
-not precompute YouTube ids. It writes `src/data/musicCatalog.json` and
-`data/kaggle_spotify_youtube_catalog.csv`.
-
-The generated catalog keeps:
-
-- Spotify track id/URI and audio-feature metadata from the dataset,
-- `valence`, `energy`/Arousal, `instrumentalness`, `speechiness`, and quadrant,
-- genre label for the participant taste-baseline screen,
-- Spotify external URL plus a reproducible YouTube search URL for audit.
-
-The raw dataset CSV is ignored by git; the generated JSON/CSV are kept in the
-repo. The current full catalog distribution is:
-
-- `sad_low`: 3,505
-- `tense`: 1,960
-- `happy`: 831
-- `relaxed`: 390
-
-Optional compact YouTube build:
+## Develop, test, build
 
 ```bash
-KAGGLE_CATALOG_SCOPE=compact YOUTUBE_LOOKUP=1 npm run kaggle:catalog
+npm install
+npm run dev      # local dev server (Vite)
+npm test         # expression + physiology model test suites
+npm run build    # production build to dist/
+npm run preview  # serve the production build
 ```
 
-This builds the older 100-track, 20-genre audit catalog and resolves one
-YouTube video per selected track.
+## Running a session
 
-Legacy curated fallback:
+1. **Connect Spotify** (Premium + allowlisted account). The web player must
+   report ready.
+2. **Camera** (optional) and **heart-rate sensor** (optional; a "Demo" sensor
+   is available for testing) can be enabled.
+3. **Begin session.** Each track plays for 60 s, then the two ratings appear.
+4. After 10 tracks the result chart is shown and the CSV is offered.
 
-```bash
-npm run curated:catalog
+## CSV columns
+
+The export is intentionally slim (`CSV_COLUMNS` in `src/App.jsx`):
+
+```
+protocol_id, timestamp, block_order, block_number, block_mode, track_number,
+song_id, spotify_id, song_title, artist, song_quadrant, song_valence,
+song_arousal, face_present, ecg_connected, physiology_quality,
+detected_valence, detected_arousal, physiology_arousal,
+rating_like_1_to_5, rating_fit_1_to_5
 ```
 
-This builds a curated legal instrumental catalog from Wikimedia
-Commons/Incompetech and selected Internet Archive instrumentals. It writes
-`src/data/musicCatalog.json` and `data/curated_instrumental_catalog.csv`.
+`block_mode` is `random` or `vibe`; `block_order` records the counterbalanced
+order (e.g. `vibe>random`). `detected_valence`/`detected_arousal` are the fused
+state at rating time.
 
-Jamendo path for future larger catalog experiments:
+## Deployment
 
-```bash
-JAMENDO_CLIENT_ID="..." npm run jamendo:catalog
-```
-
-The Jamendo script:
-
-- filters for `vocalinstrumental=instrumental`,
-- keeps only tracks with playable audio and cover art,
-- by default requires `audiodownload_allowed=true`,
-- estimates `valence` and arousal from Jamendo mood tags, speed labels, and
-  waveform peaks. The static catalog field is still named `energy` for
-  compatibility with imported music metadata,
-- assigns one of `happy`, `relaxed`, `tense`, or `sad_low`,
-- writes `src/data/musicCatalog.json` and `data/jamendo_catalog.csv`.
-
-Optional local audio audit:
-
-```bash
-JAMENDO_CLIENT_ID="..." \
-JAMENDO_DOWNLOAD_AUDIO=true \
-npm run jamendo:catalog
-```
-
-Downloaded MP3 files are saved under `data/audio/jamendo/` and ignored by git.
-
-No-login broad fallback:
-
-```bash
-npm run archive:catalog
-```
-
-This uses the Internet Archive advanced search and metadata APIs to collect
-licensed instrumental MP3 files from the `netlabels` collection without any API key. It writes
-`src/data/musicCatalog.json` and `data/internet_archive_catalog.csv`.
-
-## Spotify Catalog Modes
-
-Spotify remains useful for browser playback and metadata, but Spotify content
-must not be downloaded. The Spotify importer writes both
-`src/data/spotifyCatalog.json` and `src/data/musicCatalog.json`.
-
-### Curated Playlist Mode
-
-Use this mode when Spotify Audio Features are unavailable. Spotify provides
-metadata, cover art, track URIs, and playback identifiers; the category comes
-from the playlist you choose.
-
-```bash
-SPOTIFY_CLIENT_ID="..." \
-SPOTIFY_CLIENT_SECRET="..." \
-SPOTIFY_CATALOG_MODE="curated" \
-SPOTIFY_HAPPY_PLAYLIST_URL="https://open.spotify.com/playlist/..." \
-SPOTIFY_SAD_PLAYLIST_URL="https://open.spotify.com/playlist/..." \
-npm run spotify:catalog
-```
-
-Optional four-quadrant curated inputs:
-
-```bash
-SPOTIFY_RELAXED_PLAYLIST_URL="https://open.spotify.com/playlist/..."
-SPOTIFY_TENSE_PLAYLIST_URL="https://open.spotify.com/playlist/..."
-```
-
-### Audio Features Mode
-
-Use this mode only if the Spotify app still has access to the deprecated Audio
-Features endpoint.
-
-```bash
-SPOTIFY_CLIENT_ID="..." \
-SPOTIFY_CLIENT_SECRET="..." \
-SPOTIFY_CATALOG_MODE="features" \
-SPOTIFY_PLAYLIST_URL="https://open.spotify.com/playlist/..." \
-npm run spotify:catalog
-```
-
-The generated files are:
-
-- `src/data/spotifyCatalog.json`
-- `data/spotify_catalog.csv`
-
-## Runtime Spotify Playback
-
-The checked-in full Kaggle catalog uses Spotify track embeds and therefore does
-not require committed Spotify credentials. Browser autoplay rules can still
-require the participant to press play inside the embedded Spotify player.
-
-The optional Spotify Web Playback SDK path uses Authorization Code with PKCE and
-requires a Spotify Premium account:
-
-```bash
-VITE_SPOTIFY_CLIENT_ID="..."
-VITE_SPOTIFY_REDIRECT_URI="http://localhost:5173/"
-```
-
-The redirect URI must also be registered in the Spotify Developer Dashboard.
-
-## Documentation
-
-- [Architecture](docs/architecture.md)
-- [Experiment protocol](docs/experiment_protocol.md)
-- [Real music catalog](docs/music_catalog.md)
-- [Spotify setup](docs/spotify_setup.md)
-- [Deployment](docs/deployment.md)
-- [Privacy and limitations](docs/privacy_and_limitations.md)
-- [Troubleshooting](docs/troubleshooting.md)
+The build in `dist/` is published to a separate GitHub Pages repo. See
+[docs/deployment.md](docs/deployment.md).
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).

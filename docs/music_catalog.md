@@ -1,209 +1,38 @@
-# Real Music Catalog
+# Curated Track Set
 
-The current public demo uses a static full-catalog pool generated from the
-Kaggle Spotify Tracks Dataset mirror. The checked-in catalog has 6,686
-de-duplicated high-instrumentalness tracks across 87 genres. The app stores
-Spotify metadata and audio-feature fields, but it does not download Spotify
-audio. Runtime playback displays embedded Spotify track players in the
-participant player.
+The app plays a **fixed set of 100 curated Spotify tracks**, defined in
+`src/demoTracks.js`. There is no runtime catalog build and no personal-library
+read — Spotify is used only for playback.
 
-Jamendo remains useful for future larger catalog experiments because it provides
-real tracks, stream URLs, download permission flags, licensing metadata, cover
-art, and instrumental metadata through an API. The repository also includes
-curated and Internet Archive fallback generators.
+## Contents
 
-## Why Not Download From Spotify
+- 100 well-known tracks, **25 per valence/arousal quadrant** (Energetic / Calm /
+  Tense / Melancholic).
+- Each entry has a real Spotify track ID/URI and **embedded audio features**
+  (`valence`, `energy`, `instrumentalness`, `popularity`), so the quadrant is
+  determined deterministically without any API call or lookup file.
 
-Spotify can provide catalog metadata and, with Premium, playback through the Web
-Playback SDK. It is not the right source for downloadable audio files. Spotify
-also restricts Audio Features/Audio Analysis access for many newer apps. For the
-study catalog we therefore use a public dataset snapshot for metadata and
-Spotify track embeds for browser playback, not Spotify downloads.
-
-## Current Full Spotify-Dataset Catalog
-
-```bash
-npm run kaggle:catalog
+```js
+{ spotifyId: "4LRPiXqCikLlN15c3yImP7", title: "As It Was", artist: "Harry Styles",
+  valence: 0.66, energy: 0.73, instrumentalness: 0, popularity: 94 }
 ```
 
-Generated files:
+`buildDemoLibrary()` in `src/spotifyLibrary.js` turns these into the runtime
+track objects (adding quadrant, accent, palette via `EMOTION_QUADRANTS`).
 
-- `src/data/musicCatalog.json`
-- `data/kaggle_spotify_youtube_catalog.csv`
+## How it was generated
 
-The builder downloads or reads `data/spotify_tracks_dataset.csv` from the
-Hugging Face mirror of the Kaggle dataset. The raw CSV is ignored by git. The
-generated JSON/CSV are committed.
+The set was produced once from the public Kaggle "Spotify Tracks Dataset"
+(real Spotify audio features, ~2022): for each quadrant, the most popular,
+de-duplicated tracks with `popularity ≥ 55` were taken until 25 were collected.
+The result was written directly into `src/demoTracks.js` as a static module.
 
-Default filters:
+To regenerate or swap tracks, edit `src/demoTracks.js` directly (real Spotify
+track IDs are required for playback, and valence/energy must be in 0–1).
 
-- `instrumentalness >= 0.85`
-- `speechiness <= 0.12`
-- non-explicit tracks
-- playable Spotify track id present
-- duration between 90 and 420 seconds
-- duplicate artist/title pairs removed
+## Why a fixed set
 
-The default generator uses `KAGGLE_CATALOG_SCOPE=full`, keeps every eligible
-de-duplicated track, and sorts candidates by popularity for deterministic
-output. It does not force quadrant balance.
-
-Current distribution:
-
-- `happy`: 831
-- `relaxed`: 390
-- `tense`: 1,960
-- `sad_low`: 3,505
-
-The app plays these tracks through Spotify embeds generated from each
-`spotify:track:...` URI. Browser autoplay rules can require the participant to
-press play inside the embedded player even after pressing `Start music`.
-
-The Spotify dataset's `valence` and `energy` fields define the four quadrants:
-
-- `happy`: high valence, high arousal
-- `relaxed`: high valence, low arousal
-- `tense`: low valence, high arousal
-- `sad_low`: low valence, low arousal
-
-Important limitation: Spotify `instrumentalness` is a strong but imperfect
-proxy for "no lyrics." Coauthors should audit
-`data/kaggle_spotify_youtube_catalog.csv` before formal participant testing.
-
-## Optional Compact YouTube Catalog
-
-```bash
-KAGGLE_CATALOG_SCOPE=compact YOUTUBE_LOOKUP=1 npm run kaggle:catalog
-```
-
-This keeps the older compact workflow: 20 instrumental-leaning genre buckets,
-five tracks per bucket, and one resolved YouTube result per selected track. It
-is useful for quick video-audit demos, but it is no longer the default catalog.
-When `YT_DLP_PYTHONPATH` points to a local `yt-dlp` install, that path is used
-first; otherwise the script falls back to a basic YouTube search-page parse. The
-app stores the resulting video id, watch URL, search URL, and embed URL.
-
-## Legacy Curated Catalog
-
-```bash
-npm run curated:catalog
-```
-
-Generated files:
-
-- `src/data/musicCatalog.json`
-- `data/curated_instrumental_catalog.csv`
-
-The builder pulls Wikimedia Commons/Incompetech audio metadata, selected
-Internet Archive instrumental metadata, direct media URLs, and license URLs.
-Tracks are scored by source quality, duration, recognizable titles, and
-classification confidence.
-
-## Jamendo Inputs
-
-Create an ignored `.env` file:
-
-```bash
-JAMENDO_CLIENT_ID=...
-JAMENDO_MAX_TRACKS=100
-JAMENDO_REQUIRE_DOWNLOAD_ALLOWED=true
-```
-
-Optional discovery tags can be added if the default searches return too few
-tracks:
-
-```bash
-JAMENDO_DISCOVERY_TAGS=instrumental cinematic piano ambient happy sad
-```
-
-Optional local MP3 download for audit:
-
-```bash
-JAMENDO_DOWNLOAD_AUDIO=true
-JAMENDO_AUDIO_DIR=data/audio/jamendo
-```
-
-Audio downloads are ignored by git. The web app uses Jamendo stream URLs in the
-catalog so the source repo stays lightweight.
-
-## Jamendo Command
-
-```bash
-npm run jamendo:catalog
-```
-
-Generated files:
-
-- `src/data/musicCatalog.json`: static catalog consumed by the app.
-- `data/jamendo_catalog.csv`: tabular audit/export file.
-
-## No-Login Internet Archive Fallback
-
-If no Jamendo Client ID is available, build a real instrumental catalog from
-Internet Archive:
-
-```bash
-npm run archive:catalog
-```
-
-Generated files:
-
-- `src/data/musicCatalog.json`
-- `data/internet_archive_catalog.csv`
-
-The script queries licensed `netlabels` items with instrumental metadata,
-selects playable MP3 files, keeps Internet Archive item URLs and license URLs,
-and estimates Valence/Arousal from subjects, titles, query context, and file
-metadata. You can override the collection for exploration:
-
-```bash
-ARCHIVE_COLLECTION=opensource_audio npm run archive:catalog
-```
-
-This path avoids account setup, but the music metadata is less curated than
-Jamendo. Coauthors should audit the generated CSV before a formal experiment.
-
-## Filtering
-
-The script queries Jamendo with:
-
-- `vocalinstrumental=instrumental`
-- `audioformat=mp32`
-- `audiodlformat=mp32`
-- `include=musicinfo licenses stats`
-- cover art required
-- playable audio URL required
-- download permission required by default
-
-The script does not force quadrant balance. If 100 eligible tracks naturally
-produce 11 `sad_low`, 37 `relaxed`, 24 `happy`, and 28 `tense`, that is kept.
-
-## Valence/Arousal Assignment
-
-Jamendo does not expose Spotify-style Audio Features. The script estimates the
-two axes from available real metadata:
-
-- Valence: Jamendo mood/theme tags such as `happy`, `uplifting`, `sad`,
-  `melancholic`, `dark`, and `dramatic`.
-- Arousal: Jamendo speed labels, high/low energy tags, and waveform peak
-  statistics. The JSON field remains `energy` for compatibility with common
-  music-metadata terminology.
-
-Quadrants:
-
-- `happy`: high valence, high arousal
-- `relaxed`: high valence, low arousal
-- `tense`: low valence, high arousal
-- `sad_low`: low valence, low arousal
-
-These labels are reproducible catalog annotations, not clinical emotion ground
-truth.
-
-## App Behavior
-
-Before setup, the participant selects preferred music genres. Both Random
-Shuffle and the hidden adaptive block use that same selected genre pool. Random
-Shuffle ranks the pool pseudo-randomly; the adaptive block uses the averaged
-expression and optional ECG/HRV state from the just-finished listening window.
-Adaptive trials can select from `happy`, `relaxed`, `tense`, or `sad_low`
-matching pools inside the same genre-constrained candidate set.
+- Works without reading the participant's Spotify library, so it is unaffected
+  by the Spotify library API rate limits and Development-mode restrictions.
+- Every participant draws from the same balanced pool, which keeps the
+  Vibe-vs-Random comparison controlled.

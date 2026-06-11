@@ -1,91 +1,55 @@
 # Experiment Protocol
 
-The app implements a fixed blinded validation protocol for comparing Random
-Shuffle against Vibe Shuffle.
+The app implements a blinded, counterbalanced validation protocol comparing
+**Random Shuffle** against **Vibe Shuffle**.
 
-## Session Structure
+## Design
 
-- Pre-session: participant selects preferred instrumental genres as a music
-  taste baseline.
-- Block 1: Random Shuffle.
-- Block 2: hidden genre-constrained Vibe Shuffle.
-- Tracks per block: 5.
-- Listening window per track: 30 seconds by default.
-- Total ratings per session: 10.
+- **Pool**: a fixed set of 100 curated Spotify tracks (`src/demoTracks.js`), 25
+  per valence/arousal quadrant. Every participant hears from the same pool.
+- **Blocks**: two blocks — `random` and `vibe` — of 5 tracks each (10 tracks
+  total). The block order is **randomized per session** (counterbalancing) and
+  recorded as `block_order` (e.g. `vibe>random`).
+- **Listening window**: each track plays for **60 seconds**, then the rating
+  prompt opens. The participant can also rate early ("Rate now").
+- **Blinding**: the condition (random vs vibe) is never shown to the
+  participant during the session.
 
-The participant does not see the current block or condition. The UI presents a
-neutral listening session and asks for a mood-fit rating after each track.
+## Selection
 
-## Track Selection
+- **Random block**: the next track is chosen deterministically at random from
+  the pool (a per-session seed makes the order differ every run).
+- **Vibe block**: the next track is the one whose (valence, arousal) is closest
+  to the participant's fused state over the just-finished window, filtered to
+  the matching quadrant when possible, with a penalty for recently played
+  tracks.
 
-Random Shuffle:
+The participant's state is the fusion of facial valence and (optional)
+heart-rate arousal plus head-motion; see `architecture.md`.
 
-- Uses the same participant-selected genre pool as the adaptive block.
-- Selects tracks using a deterministic pseudo-random score.
-- Does not use expression state for ranking.
-- Avoids very recent repeats where possible.
+## Ratings
 
-Hidden genre-constrained Vibe Shuffle:
+After each track, two **5-point** questions are asked **in sequence**:
 
-- Uses the same participant-selected genre pool as Random Shuffle.
-- Uses the averaged expression state from the just-finished listening window.
-- If ECG/HRV quality is good, fuses face-expression Valence with HR/HRV-derived
-  Arousal.
-- Maps the fused Valence/Arousal state to `happy`, `relaxed`, `tense`, or
-  `sad_low`.
-- Selects from the matching track quadrant inside that genre pool when
-  available.
-- Falls back to the selected genre pool if the matching quadrant is empty.
-- Falls back to the broader catalog only if the selected genre pool is empty.
+1. **Liking** — "How much do you like this song?" → `rating_like_1_to_5`
+2. **Mood-fit** — "How well did it fit your current mood?" → `rating_fit_1_to_5`
 
-The live camera panel may update during playback, but Vibe track selection is
-based on the listening-window average. A brief last-second expression or
-physiology spike therefore does not dominate the next song choice.
+Mood-fit is the primary outcome; liking is the control. Asking both lets the
+analysis separate "did not fit my mood" from "I just don't like this song".
 
-Participants can use `Jump to rating` to end the current listening window early.
-The rating is still mandatory before the next track starts, and the CSV marks
-that trial with `jumped_to_rating=true`.
+## Outcome & export
 
-## Rating
+At the end the app shows mean **mood-fit Vibe vs Random** (with liking as a
+control bar) and exports a CSV. Columns (`CSV_COLUMNS` in `src/App.jsx`):
 
-After each track, a modal blocks progress until the participant rates:
+```
+protocol_id, timestamp, block_order, block_number, block_mode, track_number,
+song_id, spotify_id, song_title, artist, song_quadrant, song_valence,
+song_arousal, face_present, ecg_connected, physiology_quality,
+detected_valence, detected_arousal, physiology_arousal,
+rating_like_1_to_5, rating_fit_1_to_5
+```
 
-1. Not a match
-2. Slight match
-3. Good match
-4. Very good match
-
-The next track starts only after a rating is recorded.
-
-## CSV Export
-
-The exported CSV includes:
-
-- protocol/session id
-- timestamp
-- block number and hidden block mode
-- selected genre slugs and labels
-- track number
-- listening window duration and whether the participant jumped to rating
-- track id, source, Jamendo id, Spotify id, Spotify URI
-- title, artist, album, genre, popularity
-- song quadrant
-- song Valence, Arousal, instrumentalness, speechiness
-- catalog category source, analysis confidence, external URL, license URL
-- Spotify id/URI and external URL
-- YouTube video id, watch URL, and search URL when a compact YouTube catalog is used
-- detected expression label
-- detected Valence, Arousal, confidence
-- whether a face was visible
-- window-average expression label and confidence
-- number of expression samples in the listening window
-- mean `happy`, `relaxed`, `tense`, and `sad_low` scores
-- ECG connection state and physiology quality
-- HR/HRV features: mean HR, RR count, artifact rate, RMSSD, SDNN, pNN20
-- baseline HR/RMSSD and normalized HR/RMSSD/SDNN deviations
-- physiology arousal plus fused Valence/Arousal
-- selection signal source (`window_average` or `face_window_plus_ecg_arousal`)
-- rating from 1 to 4
-
-The CSV does not include camera frames, face images, raw ECG waveforms, or
-identity data.
+Primary analysis: compare `rating_fit_1_to_5` between `block_mode = vibe` and
+`block_mode = random`, controlling for `rating_like_1_to_5` and accounting for
+`block_order`.

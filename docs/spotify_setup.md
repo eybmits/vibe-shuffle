@@ -1,97 +1,56 @@
 # Spotify Setup
 
-Spotify is used in two separate ways:
+Spotify is used for **playback only** (Web Playback SDK). The app does not read
+the participant's library and does not use Spotify Audio Features at runtime —
+the 100 curated tracks carry their own features (see
+[`music_catalog.md`](music_catalog.md)).
 
-- Build-time catalog generation.
-- Runtime browser playback.
+## Developer app
 
-These require different credentials and limitations.
+Create an app at https://developer.spotify.com/dashboard.
 
-For the current full Spotify-dataset catalog, prefer
-[`music_catalog.md`](music_catalog.md). Spotify should not be used as a download
-source for audio files.
+- **APIs/SDKs**: enable **Web API** and **Web Playback SDK**.
+- **Redirect URIs**: add the deployed site URL (e.g.
+  `https://eybmits.github.io/vibe_shuffle_site/`) and, for local dev,
+  `http://localhost:5173/`. They must match exactly.
+- The Client ID is public and is baked into the build; the **Client Secret is
+  not needed** for this app — never commit it.
 
-The checked-in full catalog does not require Spotify developer credentials at
-runtime because it uses public Spotify track embeds. The Web Playback SDK path
-below is optional and only applies to catalogs generated through the Spotify API
-or experiments that need SDK control.
-
-## Required Developer App
-
-Create a Spotify Developer app and configure redirect URIs for local and
-deployed use. Keep client secrets out of the repo.
-
-Useful local variables:
+Local env (`.env`, git-ignored):
 
 ```bash
-SPOTIFY_CLIENT_ID=...
-SPOTIFY_CLIENT_SECRET=...
-VITE_SPOTIFY_CLIENT_ID=...
-VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/
+VITE_SPOTIFY_CLIENT_ID=your_client_id
+# optional; defaults to the current origin + path:
+# VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/
 ```
 
-## Curated Playlist Mode
+## OAuth scopes
 
-Recommended mode for this repository. It avoids Spotify Audio Features.
+Authorization Code with PKCE, **playback scopes only**:
 
-```bash
-SPOTIFY_CATALOG_MODE=curated
-SPOTIFY_HAPPY_PLAYLIST_URL=https://open.spotify.com/playlist/...
-SPOTIFY_SAD_PLAYLIST_URL=https://open.spotify.com/playlist/...
-npm run spotify:catalog
+```
+streaming
+user-read-email
+user-read-private
+user-read-playback-state
+user-modify-playback-state
 ```
 
-Optional:
+## Development mode (important)
 
-```bash
-SPOTIFY_RELAXED_PLAYLIST_URL=https://open.spotify.com/playlist/...
-SPOTIFY_TENSE_PLAYLIST_URL=https://open.spotify.com/playlist/...
-```
+New apps are in **Development mode**. This has two hard limits that apply to
+**every** account that signs in:
 
-In this mode, Spotify supplies metadata and playback identifiers. The category
-is assigned by the source playlist:
+1. **Allowlist** — each Spotify account must be added under **User Management**
+   in the dashboard (name + the account's Spotify email). The app owner counts
+   automatically; everyone else must be added. The current tier allows up to
+   **5** users. Non-allowlisted accounts get `403` and cannot play.
+2. **Spotify Premium** — the Web Playback SDK only plays for Premium accounts.
 
-- Happy playlist -> `happy`
-- Sad playlist -> `sad_low`
-- Relaxed playlist -> `relaxed`
-- Tense playlist -> `tense`
+For more than 5 participants, either rotate the allowlist entries or request a
+Quota Extension (production mode) from Spotify.
 
-The resulting Valence/Arousal values are category estimates, not Spotify Audio
-Features.
+## Troubleshooting
 
-## Audio Features Mode
-
-This mode uses Spotify Audio Features if the app still has access:
-
-```bash
-SPOTIFY_CATALOG_MODE=features
-SPOTIFY_PLAYLIST_URL=https://open.spotify.com/playlist/...
-npm run spotify:catalog
-```
-
-The script queries Spotify's Valence and `energy` audio-feature fields,
-instrumentalness, speechiness, danceability, and tempo. In the app UI, `energy`
-is presented as Arousal. It filters for instrumental character:
-
-- `instrumentalness >= 0.5`
-- `speechiness <= 0.33`
-
-Spotify has deprecated and restricted Audio Features for some newer apps. If the
-endpoint returns `403`, use curated mode.
-
-## Runtime Playback
-
-The default full Kaggle catalog uses embedded Spotify track players. No
-`VITE_SPOTIFY_CLIENT_ID` is required for that path. Browser autoplay rules can
-still require the participant to press play directly inside the embedded
-Spotify player.
-
-The optional Spotify Web Playback SDK path uses Authorization Code with PKCE. It
-requires:
-
-- `VITE_SPOTIFY_CLIENT_ID`
-- a registered redirect URI
-- Spotify Premium for the logged-in user
-
-Without Spotify setup, the app remains usable with the checked-in full
-Spotify-embed catalog and with direct MP3/stream fallback catalogs.
+See [`troubleshooting.md`](troubleshooting.md) for `403` (allowlist), rate
+limits, Premium, and redirect-URI issues.

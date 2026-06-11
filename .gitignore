@@ -9,9 +9,9 @@ node_modules/
 .venv/
 dist/
 build/
-data/audio/
+
+# Large local-only data artifacts used to generate src/demoTracks.js (not needed at runtime)
 data/spotify_tracks_dataset.csv
-public/audio/
 data/spotify_12m_tracks_features.csv
 data/spotify_12m.zip
 public/feature-lookup.json
