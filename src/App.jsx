@@ -606,11 +606,39 @@ function useSpotifyPlayer(accessToken, ensureToken) {
     [ensureToken],
   );
 
+  // Poll the SDK until it reports the expected track actually playing (not
+  // paused). Some browsers accept the play request (HTTP 204) but leave the
+  // audio element suspended, so we must confirm and recover.
+  const waitForStarted = useCallback(async (expectedUri, timeoutMs) => {
+    const player = playerRef.current;
+    if (!player) return false;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const current = await player.getCurrentState().catch(() => null);
+      if (
+        current &&
+        !current.paused &&
+        current.track_window?.current_track?.uri === expectedUri
+      ) {
+        return true;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+    return false;
+  }, []);
+
   const playTrack = useCallback(
     async (spotifyUri) => {
       if (!spotifyUri || !state.deviceId) return false;
       const token = await ensureToken();
       if (!token) return false;
+
+      // Unlock the SDK audio element (Safari/iOS need this; harmless elsewhere).
+      try {
+        await playerRef.current?.activateElement?.();
+      } catch {
+        // best effort
+      }
 
       const playBody = JSON.stringify({ uris: [spotifyUri], position_ms: 0 });
       const tryPlay = () =>
@@ -644,10 +672,26 @@ function useSpotifyPlayer(accessToken, ensureToken) {
         return false;
       }
 
+      // Confirm audio actually started; recover the silent-but-accepted case the
+      // same way a manual pause→play would (resume, then re-issue play).
+      let started = await waitForStarted(spotifyUri, 2500);
+      if (!started) {
+        try {
+          await playerRef.current?.resume();
+        } catch {
+          // best effort
+        }
+        started = await waitForStarted(spotifyUri, 1200);
+      }
+      if (!started) {
+        await tryPlay().catch(() => {});
+        await waitForStarted(spotifyUri, 1200);
+      }
+
       setState((current) => ({ ...current, error: "" }));
       return true;
     },
-    [ensureToken, state.deviceId, transferToActiveDevice],
+    [ensureToken, state.deviceId, transferToActiveDevice, waitForStarted],
   );
 
   const pause = useCallback(async () => {
