@@ -1582,7 +1582,7 @@ function SetupScreen({
             : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
 
   return (
-    <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col justify-center gap-10 px-4 py-12 sm:px-6">
+    <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl animate-fade-in flex-col justify-center gap-10 px-4 py-12 sm:px-6">
       <div className="flex flex-col items-center gap-8 text-center">
         <BrandMark compact />
         <div>
@@ -2451,7 +2451,7 @@ export default function App() {
           </div>
         </header>
 
-        <section className={`${GLASS_CARD} relative overflow-hidden`}>
+        <section className={`${GLASS_CARD} relative animate-fade-in overflow-hidden`}>
           {/* ambient album-colour glow that drifts behind the player */}
           {currentSong ? (
             <div
@@ -2481,46 +2481,58 @@ export default function App() {
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-5">
-                <div className="relative shrink-0">
+              <div className="flex flex-wrap items-center gap-7">
+                {/* Play control with a circular listening-window progress ring */}
+                <div className="relative grid size-28 shrink-0 place-items-center">
                   {isPlaying ? (
                     <span
                       aria-hidden="true"
-                      className="absolute -inset-2 animate-breathe rounded-full bg-gradient-to-br from-cyan-400/40 to-violet-500/40 blur-md"
+                      className="absolute size-20 animate-breathe rounded-full bg-gradient-to-br from-cyan-400/40 to-violet-500/40 blur-lg"
                     />
                   ) : null}
-                <button
-                  aria-label={isPlaying ? "Pause music" : "Start music"}
-                  className={`relative flex size-20 items-center justify-center rounded-full ${ACCENT_GRADIENT} text-[#05060f] shadow-[0_0_60px_rgba(34,211,238,0.35)] transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:bg-none disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none disabled:hover:scale-100`}
-                  disabled={protocolComplete || ratingPromptOpen}
-                  onClick={togglePlayback}
-                  type="button"
-                >
-                  {isPlaying ? (
-                    <Pause className="size-8" />
-                  ) : (
-                    <Play className="ml-1 size-8" />
-                  )}
-                </button>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    <span className="flex items-center gap-1.5">
-                      <Clock3 className="size-3.5" />
-                      Listening window
-                    </span>
-                    <span>{ratingPromptOpen ? "Rate" : formatSeconds(remainingSeconds)}</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className={`h-full rounded-full ${ACCENT_GRADIENT} transition-all duration-700`}
-                      style={{ width: `${trackProgress}%` }}
+                  <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 112 112">
+                    <circle cx="56" cy="56" r="52" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="52"
+                      fill="none"
+                      stroke="url(#windowRing)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 52}
+                      strokeDashoffset={2 * Math.PI * 52 * (1 - Math.min(trackProgress, 100) / 100)}
+                      style={{ transition: "stroke-dashoffset 0.7s linear" }}
                     />
+                    <defs>
+                      <linearGradient id="windowRing" x1="0" x2="1" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#22d3ee" />
+                        <stop offset="100%" stopColor="#a78bfa" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <button
+                    aria-label={isPlaying ? "Pause music" : "Start music"}
+                    className={`relative flex size-20 items-center justify-center rounded-full ${ACCENT_GRADIENT} text-[#05060f] shadow-[0_0_60px_rgba(34,211,238,0.35)] transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:bg-none disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none disabled:hover:scale-100`}
+                    disabled={protocolComplete || ratingPromptOpen}
+                    onClick={togglePlayback}
+                    type="button"
+                  >
+                    {isPlaying ? <Pause className="size-8" /> : <Play className="ml-1 size-8" />}
+                  </button>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-4xl font-semibold tabular-nums text-white">
+                    {ratingPromptOpen ? "Rate" : formatSeconds(remainingSeconds)}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    <Clock3 className="size-3.5" />
+                    Listening window
                   </div>
                 </div>
 
-                <GhostButton disabled={!canJumpToRating} onClick={jumpToRating}>
+                <GhostButton className="ml-auto" disabled={!canJumpToRating} onClick={jumpToRating}>
                   <SkipForward className="size-4" />
                   Rate now
                 </GhostButton>
@@ -2533,7 +2545,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className="grid animate-fade-in gap-4 sm:grid-cols-3" style={{ animationDelay: "120ms" }}>
           <SignalCard
             icon={Sparkles}
             label="Mood"
