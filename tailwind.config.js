@@ -52,6 +52,10 @@ export default {
           "0%, 100%": { transform: "scale(1.05) translate(0,0)", opacity: "0.55" },
           "50%": { transform: "scale(1.2) translate(2%, -3%)", opacity: "0.8" },
         },
+        "highlight-wipe": {
+          "0%": { transform: "scaleX(0)", opacity: "0" },
+          "100%": { transform: "scaleX(1)", opacity: "1" },
+        },
       },
       animation: {
         "soft-pulse": "soft-pulse 3s ease-in-out infinite",
@@ -62,6 +66,7 @@ export default {
         "fade-in": "fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
         "scale-in": "scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
         "ambient-drift": "ambient-drift 14s ease-in-out infinite",
+        "highlight-wipe": "highlight-wipe 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

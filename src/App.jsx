@@ -7,6 +7,7 @@ import {
   Clock3,
   Download,
   HeartPulse,
+  Moon,
   Music2,
   Pause,
   Play,
@@ -15,6 +16,7 @@ import {
   SkipForward,
   Sparkles,
   Waves,
+  Zap,
 } from "lucide-react";
 import {
   FACE_SAMPLE_INTERVAL_MS,
@@ -73,6 +75,14 @@ const GLASS_CARD =
 const ACCENT_GRADIENT = "bg-gradient-to-r from-cyan-400 to-violet-500";
 const ACCENT_TEXT_GRADIENT =
   "bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-400 bg-clip-text text-transparent";
+
+// The four mood quadrants, used for the cycling hero headline + mood strip.
+const MOODS = [
+  { key: "relaxed", label: "Calm", accent: "#22d3ee", Icon: Waves },
+  { key: "happy", label: "Energy", accent: "#34d399", Icon: Sparkles },
+  { key: "tense", label: "Tension", accent: "#fb923c", Icon: Zap },
+  { key: "sad_low", label: "Melancholy", accent: "#a78bfa", Icon: Moon },
+];
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -1559,6 +1569,16 @@ function SetupScreen({
   const spotifyStepComplete = spotifyAuth.authenticated && spotifyPlayer.ready;
   const physiologyReady = !physiology.connected || physiology.status === "ready";
 
+  // Cycling hero mood; hovering the strip pins a mood and pauses the cycle.
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const [hoverMood, setHoverMood] = useState(null);
+  useEffect(() => {
+    if (hoverMood) return undefined;
+    const id = window.setInterval(() => setCycleIndex((value) => (value + 1) % MOODS.length), 2600);
+    return () => window.clearInterval(id);
+  }, [hoverMood]);
+  const activeMood = MOODS.find((mood) => mood.key === hoverMood) ?? MOODS[cycleIndex];
+
   const spotifyStatusText = !spotifyAuth.authenticated
     ? spotifyAuth.error || "Sign in with Spotify Premium. Your music plays right in this browser."
     : spotifyPlayer.ready
@@ -1583,17 +1603,73 @@ function SetupScreen({
 
   return (
     <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl animate-fade-in flex-col justify-center gap-10 px-4 py-12 sm:px-6">
+      {/* mood-tinted ambient glow that follows the active mood */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed left-1/2 top-1/3 -z-10 size-[680px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[150px]"
+        style={{
+          background: `radial-gradient(circle, ${activeMood.accent}33, transparent 65%)`,
+          transition: "background 1.2s ease",
+        }}
+      />
+
       <div className="flex flex-col items-center gap-8 text-center">
         <BrandMark compact />
         <div>
-          <h1 className="mx-auto max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl">
-            Music{" "}
-            <span className={ACCENT_TEXT_GRADIENT}>tuned to your state of mind.</span>
+          <h1 className="mx-auto max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-6xl">
+            Music tuned
+            <br />
+            to your{" "}
+            <span className="relative inline-block align-bottom">
+              <span
+                key={activeMood.key}
+                className="relative z-10 inline-block animate-fade-in"
+                style={{ color: activeMood.accent }}
+              >
+                {activeMood.label}
+              </span>
+              <span
+                key={`${activeMood.key}-bar`}
+                aria-hidden="true"
+                className="absolute -bottom-1 left-0 right-0 h-3 origin-left animate-highlight-wipe rounded-full sm:h-4"
+                style={{
+                  background: `linear-gradient(90deg, ${activeMood.accent}cc, ${activeMood.accent}33)`,
+                }}
+              />
+            </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-slate-400">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-slate-400">
             Two short listening blocks from a curated set of {songCount} tracks. Your expression and
             optional heart-rate signals stay local in this browser — only your ratings are saved.
           </p>
+        </div>
+
+        {/* interactive mood strip */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          {MOODS.map((mood) => {
+            const isActive = mood.key === activeMood.key;
+            return (
+              <button
+                className={`group flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                  isActive
+                    ? "border-white/20 bg-white/[0.08] text-white"
+                    : "border-white/8 bg-white/[0.02] text-slate-400 hover:text-slate-200"
+                }`}
+                key={mood.key}
+                onMouseEnter={() => setHoverMood(mood.key)}
+                onMouseLeave={() => setHoverMood(null)}
+                onFocus={() => setHoverMood(mood.key)}
+                onBlur={() => setHoverMood(null)}
+                type="button"
+              >
+                <mood.Icon
+                  className="size-4 transition-transform duration-300 group-hover:scale-110"
+                  style={{ color: isActive ? mood.accent : undefined }}
+                />
+                {mood.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -1816,10 +1892,35 @@ function mean(values) {
   return values.length ? values.reduce((total, value) => total + value, 0) / values.length : 0;
 }
 
+// Animate a number from 0 to target once on mount.
+function useCountUp(target, duration = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(target * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
 function ResultsChart({ ratings }) {
   const byMode = (mode) => ratings.filter((rating) => rating.block_mode === mode);
   const vibe = byMode("vibe");
   const random = byMode("random");
+
+  // Trigger the grow-in transition one frame after mount.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const stats = {
     vibe: {
@@ -1832,6 +1933,9 @@ function ResultsChart({ ratings }) {
     },
   };
   const fitDelta = stats.vibe.fit - stats.random.fit;
+  const vibeCount = useCountUp(stats.vibe.fit);
+  const randomCount = useCountUp(stats.random.fit);
+  const deltaCount = useCountUp(fitDelta);
 
   // Grouped bars: Vibe vs Random, each with Mood-fit (primary) + Liking (control).
   const groups = [
@@ -1841,14 +1945,14 @@ function ResultsChart({ ratings }) {
   const barFor = (value) => `${(clamp(value, 0, 5) / 5) * 100}%`;
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <p className="text-sm leading-6 text-slate-300">
         Mood-fit · Vibe{" "}
-        <span className="font-semibold text-white">{stats.vibe.fit.toFixed(1)}</span> vs Random{" "}
-        <span className="font-semibold text-white">{stats.random.fit.toFixed(1)}</span>{" "}
-        <span className={fitDelta >= 0 ? "text-cyan-300" : "text-rose-300"}>
+        <span className="font-semibold tabular-nums text-white">{vibeCount.toFixed(1)}</span> vs Random{" "}
+        <span className="font-semibold tabular-nums text-white">{randomCount.toFixed(1)}</span>{" "}
+        <span className={`tabular-nums ${fitDelta >= 0 ? "text-cyan-300" : "text-rose-300"}`}>
           ({fitDelta >= 0 ? "+" : ""}
-          {fitDelta.toFixed(1)})
+          {deltaCount.toFixed(1)})
         </span>
       </p>
 
@@ -1857,8 +1961,8 @@ function ResultsChart({ ratings }) {
           <div key={group.label}>
             <div className="flex h-44 items-end justify-center gap-4 rounded-2xl border border-white/10 bg-[#070a18] p-4">
               {[
-                { key: "fit", label: "Mood-fit", value: group.data.fit, gradient: "from-cyan-400 to-violet-500" },
-                { key: "like", label: "Liking", value: group.data.like, gradient: "from-slate-500 to-slate-400" },
+                { key: "fit", label: "Mood-fit", value: group.data.fit, gradient: "from-cyan-400 to-violet-500", glow: "rgba(34,211,238,0.45)" },
+                { key: "like", label: "Liking", value: group.data.like, gradient: "from-slate-500 to-slate-400", glow: "rgba(148,163,184,0.3)" },
               ].map((bar) => (
                 <div key={bar.key} className="flex h-full w-16 flex-col items-center justify-end">
                   <span className="mb-1 text-sm font-semibold text-white">
@@ -1866,8 +1970,12 @@ function ResultsChart({ ratings }) {
                   </span>
                   <div className="flex w-full flex-1 items-end">
                     <div
-                      className={`w-full rounded-t-lg bg-gradient-to-t ${bar.gradient} transition-all`}
-                      style={{ height: barFor(bar.value) }}
+                      className={`w-full rounded-t-lg bg-gradient-to-t ${bar.gradient}`}
+                      style={{
+                        height: shown ? barFor(bar.value) : "0%",
+                        boxShadow: `0 0 24px ${bar.glow}`,
+                        transition: "height 1s cubic-bezier(0.22, 1, 0.36, 1)",
+                      }}
                     />
                   </div>
                   <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">
