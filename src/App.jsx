@@ -7,7 +7,6 @@ import {
   Clock3,
   Download,
   HeartPulse,
-  Moon,
   Music2,
   Pause,
   Play,
@@ -16,7 +15,6 @@ import {
   SkipForward,
   Sparkles,
   Waves,
-  Zap,
 } from "lucide-react";
 import {
   FACE_SAMPLE_INTERVAL_MS,
@@ -76,12 +74,12 @@ const ACCENT_GRADIENT = "bg-gradient-to-r from-cyan-400 to-violet-500";
 const ACCENT_TEXT_GRADIENT =
   "bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-400 bg-clip-text text-transparent";
 
-// The four mood quadrants, used for the cycling hero headline + mood strip.
+// The four mood quadrants the hero headline cycles through.
 const MOODS = [
-  { key: "relaxed", label: "Calm", accent: "#22d3ee", Icon: Waves },
-  { key: "happy", label: "Energy", accent: "#34d399", Icon: Sparkles },
-  { key: "tense", label: "Tension", accent: "#fb923c", Icon: Zap },
-  { key: "sad_low", label: "Melancholy", accent: "#a78bfa", Icon: Moon },
+  { key: "relaxed", label: "Calm", accent: "#22d3ee" },
+  { key: "happy", label: "Energy", accent: "#34d399" },
+  { key: "tense", label: "Tension", accent: "#fb923c" },
+  { key: "sad_low", label: "Melancholy", accent: "#a78bfa" },
 ];
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -1584,15 +1582,13 @@ function SetupScreen({
   const spotifyStepComplete = spotifyAuth.authenticated && spotifyPlayer.ready;
   const physiologyReady = !physiology.connected || physiology.status === "ready";
 
-  // Cycling hero mood; hovering the strip pins a mood and pauses the cycle.
+  // The hero headline cycles through the four moods on its own.
   const [cycleIndex, setCycleIndex] = useState(0);
-  const [hoverMood, setHoverMood] = useState(null);
   useEffect(() => {
-    if (hoverMood) return undefined;
-    const id = window.setInterval(() => setCycleIndex((value) => (value + 1) % MOODS.length), 2600);
+    const id = window.setInterval(() => setCycleIndex((value) => (value + 1) % MOODS.length), 2800);
     return () => window.clearInterval(id);
-  }, [hoverMood]);
-  const activeMood = MOODS.find((mood) => mood.key === hoverMood) ?? MOODS[cycleIndex];
+  }, []);
+  const activeMood = MOODS[cycleIndex];
 
   const spotifyStatusText = !spotifyAuth.authenticated
     ? spotifyAuth.error || "Sign in with Spotify Premium. Your music plays right in this browser."
@@ -1638,17 +1634,21 @@ function SetupScreen({
             <span className="relative inline-block align-bottom">
               <span
                 key={activeMood.key}
-                className="relative z-10 inline-block animate-fade-in"
-                style={{ color: activeMood.accent }}
+                className="relative z-10 inline-block animate-word-in"
+                style={{
+                  color: activeMood.accent,
+                  textShadow: `0 0 36px ${activeMood.accent}66`,
+                }}
               >
                 {activeMood.label}
               </span>
               <span
                 key={`${activeMood.key}-bar`}
                 aria-hidden="true"
-                className="absolute -bottom-1 left-0 right-0 h-3 origin-left animate-highlight-wipe rounded-full sm:h-4"
+                className="absolute -bottom-1 left-0 right-0 h-3 origin-left animate-highlight-wipe rounded-full blur-[1px] sm:h-4"
                 style={{
-                  background: `linear-gradient(90deg, ${activeMood.accent}cc, ${activeMood.accent}33)`,
+                  background: `linear-gradient(90deg, ${activeMood.accent}, ${activeMood.accent}22)`,
+                  boxShadow: `0 6px 24px ${activeMood.accent}55`,
                 }}
               />
             </span>
@@ -1657,34 +1657,6 @@ function SetupScreen({
             Two short listening blocks from a curated set of {songCount} tracks. Your expression and
             optional heart-rate signals stay local in this browser — only your ratings are saved.
           </p>
-        </div>
-
-        {/* interactive mood strip */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          {MOODS.map((mood) => {
-            const isActive = mood.key === activeMood.key;
-            return (
-              <button
-                className={`group flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                  isActive
-                    ? "border-white/20 bg-white/[0.08] text-white"
-                    : "border-white/8 bg-white/[0.02] text-slate-400 hover:text-slate-200"
-                }`}
-                key={mood.key}
-                onMouseEnter={() => setHoverMood(mood.key)}
-                onMouseLeave={() => setHoverMood(null)}
-                onFocus={() => setHoverMood(mood.key)}
-                onBlur={() => setHoverMood(null)}
-                type="button"
-              >
-                <mood.Icon
-                  className="size-4 transition-transform duration-300 group-hover:scale-110"
-                  style={{ color: isActive ? mood.accent : undefined }}
-                />
-                {mood.label}
-              </button>
-            );
-          })}
         </div>
       </div>
 
