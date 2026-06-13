@@ -1349,6 +1349,17 @@ function usePhysiologySensor() {
 function AuroraBackground() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden">
+      {/* faint grid for depth, masked to fade toward the edges */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
+        }}
+      />
       <div className="absolute -left-48 -top-48 size-[560px] rounded-full bg-cyan-400/12 blur-[150px] animate-aurora" />
       <div className="absolute -right-40 top-1/4 size-[520px] rounded-full bg-violet-500/14 blur-[150px] animate-aurora-slow" />
       <div className="absolute -bottom-56 left-1/3 size-[620px] rounded-full bg-indigo-500/10 blur-[160px] animate-aurora" />
@@ -1514,7 +1525,9 @@ function HeartRateCurve({ physiology, summary }) {
 
 function SignalCard({ children, label, icon, status }) {
   return (
-    <div className={`${GLASS_CARD} flex flex-col gap-3 p-4`}>
+    <div
+      className={`${GLASS_CARD} flex flex-col gap-3 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_30px_90px_rgba(34,211,238,0.12)]`}
+    >
       <div className="flex items-center justify-between gap-2">
         <SectionLabel icon={icon}>{label}</SectionLabel>
         {status ? (
@@ -1530,7 +1543,9 @@ function SignalCard({ children, label, icon, status }) {
 
 function SetupStep({ children, complete, index, title }) {
   return (
-    <div className={`${GLASS_CARD} p-5`}>
+    <div
+      className={`${GLASS_CARD} p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_30px_90px_rgba(139,92,246,0.12)]`}
+    >
       <div className="flex items-start gap-4">
         <div
           className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
