@@ -31,6 +31,7 @@ import {
   summarizePhysiologyMeasurements,
 } from "./physiologyModel.js";
 import { EMOTION_QUADRANTS, buildDemoLibrary } from "./spotifyLibrary.js";
+import heroListener from "./assets/hero-listener.webp";
 
 const TRACKS_PER_BLOCK = 5;
 const LISTENING_WINDOW_SECONDS = 60;
@@ -1413,84 +1414,23 @@ function WaveGlyph({ size = 40 }) {
 // Original hero illustration: a front-facing listener wearing headphones with
 // sound waves radiating from each ear cup. Sits semi-transparent behind the
 // headline as an atmospheric backdrop (the app reads your face + plays music).
+// Hero backdrop: the listener artwork anchored to the right (brain.fm style),
+// with dark gradients fading it into the page so the headline stays readable.
 function HeroArtwork() {
-  const earY = 259;
-  const waves = [0, 1, 2];
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed left-1/2 top-[40%] -z-10 w-[min(84vw,540px)] -translate-x-1/2 -translate-y-1/2 opacity-[0.16] sm:opacity-[0.4]"
-    >
-      <svg
-        className="h-auto w-full animate-fade-in"
-        fill="none"
-        style={{ animationDelay: "120ms" }}
-        viewBox="0 0 760 620"
-      >
-        <defs>
-          <linearGradient id="heroFigure" x1="0" x2="0.35" y1="0" y2="1">
-            <stop offset="0%" stopColor="#67e8f9" />
-            <stop offset="45%" stopColor="#38bdf8" />
-            <stop offset="100%" stopColor="#a78bfa" />
-          </linearGradient>
-          <radialGradient id="heroHalo" cx="50%" cy="40%" r="58%">
-            <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.5" />
-            <stop offset="55%" stopColor="#a78bfa" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="heroWave" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#22d3ee" />
-            <stop offset="100%" stopColor="#a78bfa" />
-          </linearGradient>
-        </defs>
-
-        {/* halo glow behind the head */}
-        <ellipse cx="380" cy="245" fill="url(#heroHalo)" rx="320" ry="300" />
-
-        {/* sound waves flanking each ear cup */}
-        {waves.map((i) => {
-          const h = 44 + i * 22;
-          const d = 26 + i * 22;
-          const opacity = 0.55 - i * 0.15;
-          return (
-            <g key={i} opacity={opacity}>
-              <path
-                d={`M 190 ${earY - h} Q ${190 - d} ${earY} 190 ${earY + h}`}
-                stroke="url(#heroWave)"
-                strokeLinecap="round"
-                strokeWidth="6"
-              />
-              <path
-                d={`M 570 ${earY - h} Q ${570 + d} ${earY} 570 ${earY + h}`}
-                stroke="url(#heroWave)"
-                strokeLinecap="round"
-                strokeWidth="6"
-              />
-            </g>
-          );
-        })}
-
-        {/* shoulders */}
-        <path
-          d="M150 610 C 178 472, 272 416, 380 416 C 488 416, 582 472, 610 610 Z"
-          fill="url(#heroFigure)"
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-y-0 right-0 flex items-center">
+        <img
+          alt=""
+          className="h-[46vh] w-auto max-w-none animate-fade-in opacity-[0.32] sm:h-[76vh] sm:opacity-90 lg:h-[88vh]"
+          src={heroListener}
+          style={{ animationDelay: "120ms" }}
         />
-        {/* neck */}
-        <rect fill="url(#heroFigure)" height="100" rx="34" width="74" x="343" y="352" />
-        {/* head */}
-        <ellipse cx="380" cy="240" fill="url(#heroFigure)" rx="135" ry="150" />
-        {/* headphone band over the top */}
-        <path
-          d="M223 210 A 165 178 0 0 1 537 210"
-          fill="none"
-          stroke="url(#heroFigure)"
-          strokeLinecap="round"
-          strokeWidth="26"
-        />
-        {/* ear cups */}
-        <rect fill="#a5f3fc" height="108" opacity="0.92" rx="26" width="52" x="196" y="205" />
-        <rect fill="#c4b5fd" height="108" opacity="0.92" rx="26" width="52" x="512" y="205" />
-      </svg>
+      </div>
+      {/* darken the left/text side and melt the edges into the background */}
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.92)_26%,rgba(5,6,15,0.45)_52%,transparent_84%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#05060f] to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#05060f] to-transparent" />
     </div>
   );
 }
