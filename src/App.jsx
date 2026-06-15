@@ -1429,8 +1429,9 @@ function HeroArtwork() {
           style={{ animationDelay: "120ms" }}
         />
       </div>
-      {/* keep the text side readable and melt the top/bottom edges into the page */}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.72)_24%,transparent_62%)]" />
+      {/* sink the artwork back, especially behind the headline/text on the left */}
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.95)_34%,rgba(5,6,15,0.55)_58%,transparent_84%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(52%_58%_at_38%_43%,rgba(5,6,15,0.78)_0%,rgba(5,6,15,0.3)_45%,transparent_72%)]" />
       <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#05060f] to-transparent" />
       <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#05060f] to-transparent" />
     </div>
