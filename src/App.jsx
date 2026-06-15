@@ -1424,15 +1424,16 @@ function HeroArtwork() {
       <div className="absolute inset-y-0 right-0 flex items-center justify-end">
         <img
           alt=""
-          className="h-[48vh] w-auto max-h-[788px] max-w-none animate-fade-in opacity-40 sm:h-[80vh] sm:opacity-100"
+          className="h-[44vh] w-auto max-h-[760px] max-w-none animate-fade-in opacity-[0.18] sm:h-[72vh] sm:opacity-[0.38]"
           src={heroListener}
           style={{ animationDelay: "120ms" }}
         />
       </div>
-      {/* fade the left/text side and the edges out to black */}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.97)_22%,rgba(5,6,15,0.55)_48%,transparent_78%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#05060f] to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#05060f] to-transparent" />
+      {/* dissolve the artwork softly into the background on every edge */}
+      <div className="absolute inset-0 bg-[radial-gradient(68%_78%_at_72%_48%,transparent_26%,rgba(5,6,15,0.65)_70%,#05060f_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.82)_26%,transparent_70%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#05060f] to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#05060f] to-transparent" />
     </div>
   );
 }
@@ -1694,7 +1695,7 @@ function SetupScreen({
             : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
 
   return (
-    <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center gap-12 px-4 py-12 sm:px-6">
+    <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-12 px-4 py-12 sm:px-6">
       {/* mood-tinted ambient glow that follows the active mood — two breathing
           layers so the hue keeps radiating outward behind the headline */}
       <div
@@ -1717,12 +1718,12 @@ function SetupScreen({
 
       <HeroArtwork />
 
-      <div className="relative z-10 flex flex-col items-center gap-8 text-center lg:items-start lg:text-left">
+      <div className="relative z-10 flex flex-col items-center gap-8 text-center">
         <div className="animate-rise-up">
           <BrandMark compact />
         </div>
         <div>
-          <h1 className="mx-auto max-w-2xl text-4xl font-bold leading-[1.04] tracking-tight text-white sm:text-6xl lg:mx-0 lg:max-w-xl lg:text-7xl">
+          <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-[1.04] tracking-tight text-white sm:text-7xl lg:text-8xl">
             <span className="block animate-rise-up" style={{ animationDelay: "150ms" }}>
               Music tuned
             </span>
@@ -1755,7 +1756,7 @@ function SetupScreen({
       </div>
 
       <div
-        className="mx-auto grid w-full max-w-2xl animate-rise-up gap-3 lg:mx-0"
+        className="mx-auto grid w-full max-w-2xl animate-rise-up gap-3"
         style={{ animationDelay: "720ms" }}
       >
         <SetupStep complete={spotifyStepComplete} index={1} title="Connect Spotify">
@@ -1824,7 +1825,7 @@ function SetupScreen({
       </div>
 
       <div
-        className="mx-auto flex w-full max-w-2xl animate-rise-up flex-col items-center gap-4 lg:mx-0 lg:items-start"
+        className="flex animate-rise-up flex-col items-center gap-4"
         style={{ animationDelay: "880ms" }}
       >
         <PrimaryButton className="w-full sm:w-auto sm:min-w-64" disabled={!setupReady} onClick={onStart}>
