@@ -1635,6 +1635,14 @@ function SetupStep({ children, complete, index, title }) {
   );
 }
 
+function SpotifyGlyph({ className = "" }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.623.623 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 11-.277-1.215c3.808-.87 7.076-.495 9.712 1.116a.623.623 0 01.207.856zm1.223-2.722a.78.78 0 01-1.072.257c-2.688-1.652-6.786-2.131-9.965-1.166a.78.78 0 11-.452-1.494c3.632-1.102 8.147-.568 11.232 1.327a.78.78 0 01.257 1.076zm.105-2.835c-3.223-1.914-8.54-2.09-11.618-1.156a.935.935 0 11-.542-1.79c3.533-1.072 9.405-.865 13.116 1.338a.936.936 0 01.319 1.283.934.934 0 01-1.275.325z" />
+    </svg>
+  );
+}
+
 // Accent "Enable" pill used to sell the physiological signals. `pulse` adds a
 // living heartbeat to the icon (used for the heart-rate sensor).
 function EnableButton({ accent, children, icon: Icon, pulse = false, ...props }) {
@@ -1826,20 +1834,29 @@ function SetupScreen({
         className="mx-auto flex w-full max-w-2xl animate-rise-up flex-col gap-6"
         style={{ animationDelay: "720ms" }}
       >
-        <SetupStep complete={spotifyStepComplete} index={1} title="Connect Spotify">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span>{spotifyStatusText}</span>
-            {!spotifyAuth.authenticated ? (
-              <GhostButton className="shrink-0" onClick={onConnectSpotify}>
-                Connect
-              </GhostButton>
-            ) : (
-              <GhostButton className="shrink-0" onClick={onDisconnectSpotify}>
-                Switch account
-              </GhostButton>
-            )}
-          </div>
-        </SetupStep>
+        <SignalFeatureCard
+          accent="#1db954"
+          active={spotifyStepComplete}
+          description={spotifyStatusText}
+          icon={SpotifyGlyph}
+          statusText={spotifyStatusText}
+          tag="Required"
+          title="Connect Spotify"
+        >
+          {!spotifyAuth.authenticated ? (
+            <EnableButton accent="#1db954" icon={SpotifyGlyph} onClick={onConnectSpotify}>
+              Connect Spotify
+            </EnableButton>
+          ) : (
+            <button
+              className="text-sm font-semibold text-slate-400 underline-offset-4 transition hover:text-white hover:underline"
+              onClick={onDisconnectSpotify}
+              type="button"
+            >
+              Switch account
+            </button>
+          )}
+        </SignalFeatureCard>
 
         {/* Sell the two on-device physiological signals */}
         <div>
