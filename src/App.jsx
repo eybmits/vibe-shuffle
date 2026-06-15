@@ -1419,18 +1419,17 @@ function WaveGlyph({ size = 40 }) {
 function HeroArtwork() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-y-0 right-0 flex items-center">
+      {/* artwork anchored to the top-right, capped to (under) its native size */}
+      <div className="absolute -top-4 right-0 w-[72vw] max-w-[320px] sm:-top-6 sm:w-[52vw] sm:max-w-[520px] lg:max-w-[600px]">
         <img
           alt=""
-          className="h-[46vh] w-auto max-w-none animate-fade-in opacity-[0.32] sm:h-[76vh] sm:opacity-90 lg:h-[88vh]"
+          className="h-auto w-full animate-fade-in opacity-40 sm:opacity-95"
           src={heroListener}
           style={{ animationDelay: "120ms" }}
         />
+        {/* fade the artwork's edges out to black so it melts into the corner */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_62%_72%_at_70%_40%,transparent_42%,rgba(5,6,15,0.6)_66%,#05060f_90%)]" />
       </div>
-      {/* darken the left/text side and melt the edges into the background */}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.92)_26%,rgba(5,6,15,0.45)_52%,transparent_84%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#05060f] to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#05060f] to-transparent" />
     </div>
   );
 }
