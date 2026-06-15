@@ -1898,18 +1898,9 @@ function SetupScreen({
               title="Heart rate & HRV"
             >
               {physiology.status === "idle" || physiology.status === "error" ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <EnableButton accent="#fb7185" icon={HeartPulse} onClick={onConnectHeartSensor} pulse>
-                    Enable sensor
-                  </EnableButton>
-                  <button
-                    className="text-sm font-semibold text-slate-400 underline-offset-4 transition hover:text-white hover:underline"
-                    onClick={onStartMockHeartSensor}
-                    type="button"
-                  >
-                    Try demo
-                  </button>
-                </div>
+                <EnableButton accent="#fb7185" icon={HeartPulse} onClick={onConnectHeartSensor} pulse>
+                  Enable sensor
+                </EnableButton>
               ) : physiology.connected ? (
                 <button
                   className="text-sm font-semibold text-slate-400 underline-offset-4 transition hover:text-white hover:underline"
@@ -1932,9 +1923,6 @@ function SetupScreen({
           Begin session
           <SkipForward className="size-4" />
         </PrimaryButton>
-        <p className="text-xs text-slate-500">
-          {BLOCK_COUNT * TRACKS_PER_BLOCK} tracks · one minute each · two quick ratings after each
-        </p>
       </div>
     </div>
   );
