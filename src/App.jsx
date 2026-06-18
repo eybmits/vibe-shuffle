@@ -1353,7 +1353,7 @@ function AuroraBackground() {
         style={{
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
+          backgroundSize: "22px 22px",
           maskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
         }}
