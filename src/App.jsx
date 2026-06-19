@@ -1470,13 +1470,16 @@ function SectionLabel({ children, icon: Icon }) {
   );
 }
 
-function PrimaryButton({ children, className = "", ...props }) {
+function PrimaryButton({ children, className = "", tone = "white", ...props }) {
+  const base =
+    "inline-flex items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold uppercase tracking-[0.12em] text-[#05060f] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-none disabled:bg-white/10 disabled:text-white/35 disabled:shadow-none disabled:hover:translate-y-0";
+  const tones = {
+    white:
+      "bg-white shadow-[0_16px_50px_rgba(255,255,255,0.18)] hover:shadow-[0_22px_60px_rgba(255,255,255,0.3)]",
+    accent: `${ACCENT_GRADIENT} shadow-[0_16px_50px_rgba(34,211,238,0.25)] hover:shadow-[0_20px_60px_rgba(139,92,246,0.35)]`,
+  };
   return (
-    <button
-      className={`inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-[0.12em] text-[#05060f] shadow-[0_16px_50px_rgba(255,255,255,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(255,255,255,0.3)] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35 disabled:shadow-none disabled:hover:translate-y-0 ${className}`}
-      type="button"
-      {...props}
-    >
+    <button className={`${base} ${tones[tone]} ${className}`} type="button" {...props}>
       {children}
     </button>
   );
@@ -2088,7 +2091,7 @@ function SetupScreen({
                 Switch account
               </button>
             )}
-            <PrimaryButton className="w-full" disabled={!setupReady} onClick={onStart}>
+            <PrimaryButton className="w-full" disabled={!setupReady} onClick={onStart} tone="accent">
               Begin session
               <ArrowRight className="size-4" />
             </PrimaryButton>
