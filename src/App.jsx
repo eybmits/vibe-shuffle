@@ -1732,22 +1732,35 @@ function SignalMetric({ badge, badgeStyle, label, value, valueClass = "text-whit
   );
 }
 
-// A small static ECG/heartbeat sparkline.
-function EcgLine({ color }) {
+// A polished ECG sparkline: clean QRS complexes with soft P/T waves, a stroke
+// that fades in at both edges, and a gentle glow.
+function EcgLine({ color = "#34d399" }) {
+  const d =
+    "M0,30 H14 q4,-6 8,0 H26 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H94 q4,-6 8,0 H106 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H174 q4,-6 8,0 H186 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H240";
   return (
     <svg
       aria-hidden="true"
-      className="my-1 h-8 w-full"
+      className="my-1.5 h-10 w-full"
       fill="none"
       preserveAspectRatio="none"
-      viewBox="0 0 200 40"
+      viewBox="0 0 240 56"
     >
-      <polyline
-        points="0,20 28,20 36,9 44,31 52,20 92,20 100,13 108,27 116,20 152,20 160,7 168,33 176,20 200,20"
-        stroke={color}
+      <defs>
+        <linearGradient id="ecgStroke" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+          <stop offset="16%" stopColor={color} stopOpacity="1" />
+          <stop offset="84%" stopColor={color} stopOpacity="1" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.15" />
+        </linearGradient>
+      </defs>
+      <path
+        d={d}
+        stroke="url(#ecgStroke)"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="2"
+        strokeWidth="2.5"
+        style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
