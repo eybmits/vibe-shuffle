@@ -1795,7 +1795,7 @@ function SignalPreviewCard({ accent, action, active, children, eyebrow, icon: Ic
           <span className="text-lg font-semibold leading-tight text-white">{title}</span>
         </div>
         <div className="mt-4 space-y-1">{children}</div>
-        {action ? <div className="mt-5">{action}</div> : null}
+        {action ? <div className="mt-auto pt-5">{action}</div> : null}
       </div>
     </div>
   );
