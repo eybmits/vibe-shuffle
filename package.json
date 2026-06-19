@@ -24,6 +24,7 @@
     "test:expression": "node --test src/expressionModel.test.js",
     "test:physiology": "node --test src/physiologyModel.test.js",
     "test": "npm run test:expression && npm run test:physiology",
+    "paper": "latexmk -pdf -interaction=nonstopmode -halt-on-error -output-directory=paper/build paper/vibe_shuffle.tex && cp paper/build/vibe_shuffle.pdf public/paper.pdf",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0"
   },

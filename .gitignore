@@ -10,6 +10,9 @@ node_modules/
 dist/
 build/
 
+# LaTeX build artifacts (the paper source lives in paper/, the PDF is committed to public/)
+paper/build/
+
 # Large local-only data artifacts used to generate src/demoTracks.js (not needed at runtime)
 data/spotify_tracks_dataset.csv
 data/spotify_12m_tracks_features.csv

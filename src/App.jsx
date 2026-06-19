@@ -1723,7 +1723,7 @@ function TopNav() {
         <div className="flex items-center gap-5 sm:gap-8">
           <a
             className={linkClass}
-            href="https://github.com/eybmits/vibe_shuffle/blob/main/docs/experiment_protocol.md"
+            href={`${import.meta.env.BASE_URL}paper.pdf`}
             rel="noreferrer"
             target="_blank"
           >
