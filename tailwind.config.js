@@ -76,6 +76,10 @@ export default {
           "36%": { transform: "scale(1.14)" },
           "50%": { transform: "scale(1)" },
         },
+        "drift-x": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "soft-pulse": "soft-pulse 3s ease-in-out infinite",
@@ -92,6 +96,8 @@ export default {
         eq: "eq 1.2s ease-in-out infinite",
         "pulse-ring": "pulse-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite",
         heartbeat: "heartbeat 2s ease-in-out infinite",
+        "drift-x": "drift-x 28s linear infinite",
+        "drift-x-slow": "drift-x 46s linear infinite",
       },
     },
   },

@@ -33,7 +33,6 @@ import {
   summarizePhysiologyMeasurements,
 } from "./physiologyModel.js";
 import { EMOTION_QUADRANTS, buildDemoLibrary } from "./spotifyLibrary.js";
-import heroListener from "./assets/hero-listener.webp";
 
 const TRACKS_PER_BLOCK = 5;
 const LISTENING_WINDOW_SECONDS = 60;
@@ -1361,8 +1360,22 @@ function AuroraBackground() {
         }}
       />
       <div className="absolute -left-48 -top-48 size-[560px] rounded-full bg-cyan-400/12 blur-[150px] animate-aurora" />
-      <div className="absolute -right-40 top-1/4 size-[520px] rounded-full bg-violet-500/14 blur-[150px] animate-aurora-slow" />
+      <div className="absolute -right-44 top-1/4 size-[560px] rounded-full bg-violet-500/14 blur-[150px] animate-aurora-slow" />
       <div className="absolute -bottom-56 left-1/3 size-[620px] rounded-full bg-indigo-500/10 blur-[160px] animate-aurora" />
+      <div className="absolute -bottom-40 right-1/4 size-[460px] rounded-full bg-fuchsia-500/8 blur-[150px] animate-breathe" />
+
+      {/* subtle drifting sound waves near the bottom edge */}
+      <div className="absolute inset-x-0 bottom-0 h-[40%] [mask-image:linear-gradient(to_top,black,transparent)]">
+        <div className="absolute bottom-6 left-0 h-full w-[200%] animate-drift-x opacity-[0.12]">
+          <SignalWave color="#22d3ee" />
+        </div>
+        <div
+          className="absolute bottom-0 left-0 h-full w-[200%] animate-drift-x-slow opacity-[0.08]"
+          style={{ animationDelay: "-9s" }}
+        >
+          <SignalWave color="#8b5cf6" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1413,30 +1426,26 @@ function WaveGlyph({ size = 40 }) {
   );
 }
 
-// Original hero illustration: a front-facing listener wearing headphones with
-// sound waves radiating from each ear cup. Sits semi-transparent behind the
-// headline as an atmospheric backdrop (the app reads your face + plays music).
-// Hero backdrop: the listener artwork anchored to the right (brain.fm style),
-// with dark gradients fading it into the page so the headline stays readable.
-function HeroArtwork() {
+// A seamless, slowly drifting sine wave used as a subtle ambient backdrop. The
+// path holds four periods across a 1440-wide viewBox, so a -50% horizontal
+// translate loops without a visible seam.
+function SignalWave({ color }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* large artwork bleeding off the right edge (brain.fm style), vertically
-          centred and capped to its native size so it never upscales */}
-      <div className="absolute inset-y-0 right-0 flex items-center justify-end">
-        <img
-          alt=""
-          className="h-[44vh] w-auto max-h-[740px] max-w-none animate-fade-in opacity-30 sm:h-[66vh] sm:opacity-[0.55]"
-          src={heroListener}
-          style={{ animationDelay: "120ms" }}
-        />
-      </div>
-      {/* sink the artwork back, especially behind the headline/text on the left */}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,#05060f_0%,rgba(5,6,15,0.95)_34%,rgba(5,6,15,0.55)_58%,transparent_84%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(52%_58%_at_38%_43%,rgba(5,6,15,0.78)_0%,rgba(5,6,15,0.3)_45%,transparent_72%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#05060f] to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#05060f] to-transparent" />
-    </div>
+    <svg
+      aria-hidden="true"
+      className="h-full w-full"
+      fill="none"
+      preserveAspectRatio="none"
+      viewBox="0 0 1440 200"
+    >
+      <path
+        d="M0,120 q90,-44 180,0 q90,44 180,0 q90,-44 180,0 q90,44 180,0 q90,-44 180,0 q90,44 180,0 q90,-44 180,0 q90,44 180,0"
+        stroke={color}
+        strokeLinecap="round"
+        strokeWidth="2"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
   );
 }
 
@@ -1939,8 +1948,6 @@ function SetupScreen({
       />
 
       <TopNav />
-
-      <HeroArtwork />
 
       <div className="relative z-10 flex flex-col items-center gap-8 text-center">
         <div>
