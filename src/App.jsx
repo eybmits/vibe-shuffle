@@ -1741,37 +1741,33 @@ function SignalMetric({ badge, badgeStyle, label, value, valueClass = "text-whit
   );
 }
 
-// A polished ECG sparkline: clean QRS complexes with soft P/T waves, a stroke
-// that fades in at both edges, and a gentle glow.
+// A live ECG sparkline: clean QRS complexes with soft P/T waves that scroll
+// left like a heart monitor. The path holds 6 beats across a 480-wide viewBox
+// rendered at 200% width; translating it -50% reveals the identical second half,
+// so the scroll loops seamlessly. A fixed mask fades the window's edges.
 function EcgLine({ color = "#34d399" }) {
   const d =
-    "M0,30 H14 q4,-6 8,0 H26 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H94 q4,-6 8,0 H106 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H174 q4,-6 8,0 H186 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H240";
+    "M0,30 H14 q4,-6 8,0 H26 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H94 q4,-6 8,0 H106 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H174 q4,-6 8,0 H186 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H254 q4,-6 8,0 H266 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H334 q4,-6 8,0 H346 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H414 q4,-6 8,0 H426 l3,5 l4,-26 l4,32 l3,-11 q8,-9 16,0 H480";
   return (
-    <svg
-      aria-hidden="true"
-      className="my-1.5 h-10 w-full"
-      fill="none"
-      preserveAspectRatio="none"
-      viewBox="0 0 240 56"
-    >
-      <defs>
-        <linearGradient id="ecgStroke" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
-          <stop offset="16%" stopColor={color} stopOpacity="1" />
-          <stop offset="84%" stopColor={color} stopOpacity="1" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.15" />
-        </linearGradient>
-      </defs>
-      <path
-        d={d}
-        stroke="url(#ecgStroke)"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.5"
-        style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+    <div className="my-1.5 h-10 w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+      <svg
+        aria-hidden="true"
+        className="h-full w-[200%] animate-ecg-scroll"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 480 56"
+      >
+        <path
+          d={d}
+          stroke={color}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2.5"
+          style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
   );
 }
 

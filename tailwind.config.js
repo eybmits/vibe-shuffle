@@ -98,6 +98,7 @@ export default {
         heartbeat: "heartbeat 2s ease-in-out infinite",
         "drift-x": "drift-x 28s linear infinite",
         "drift-x-slow": "drift-x 46s linear infinite",
+        "ecg-scroll": "drift-x 4s linear infinite",
       },
     },
   },
