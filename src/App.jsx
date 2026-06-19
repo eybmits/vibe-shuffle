@@ -1424,7 +1424,7 @@ function HeroArtwork() {
       <div className="absolute inset-y-0 right-0 flex items-center justify-end">
         <img
           alt=""
-          className="h-[50vh] w-auto max-h-[860px] max-w-none animate-fade-in opacity-30 sm:h-[78vh] sm:opacity-[0.55]"
+          className="h-[44vh] w-auto max-h-[740px] max-w-none animate-fade-in opacity-30 sm:h-[66vh] sm:opacity-[0.55]"
           src={heroListener}
           style={{ animationDelay: "120ms" }}
         />
