@@ -181,8 +181,7 @@
      That gives a fixed, balanced pool of \textbf{100 songs} --- 25 per corner.};
 
   % ---- Part B: the validation experiment ----
-  \node[font=\Large\bfseries, text=song!55!black, below=9mm of a3] (vhead) {Validation};
-  \node[result, below=5mm of vhead] (b1)
+  \node[result, below=of a3] (b1)
     {\head{Your mood right now lands you in one corner}
      Your face sets the \emph{valence} (positive\,$\leftrightarrow$\,negative);
      your heartbeat sets the \emph{energy} (low\,$\leftrightarrow$\,high).
@@ -199,9 +198,9 @@
      compare against.};
 
   \node[box, below=42mm of b1] (pick)
-    {\head{Pick one song (skipping ones just played)}
-     It plays for 60 seconds, then you rate it. This repeats, alternating
-     Vibe and Random blocks.};
+    {\head{Validation}
+     A song plays for 60 s and you rate it; this repeats across alternating
+     Vibe and Random blocks, so the two conditions can be compared.};
 
   \node[num, left=3mm of a1] {1};
   \node[num, left=3mm of a2] {2};
@@ -210,8 +209,7 @@
   \draw[arrow] (a1) -- (a2);
   \draw[arrow] (a2) -- (c2.north -| a2);
   \draw[arrow] (c2.south -| a3) -- (a3);
-  \draw[arrow] (a3) -- (vhead);
-  \draw[arrow] (vhead) -- (b1);
+  \draw[arrow] (a3) -- (b1);
   \draw[arrow] (b1) -- (vibe);
   \draw[arrow] (b1) -- (rand);
   \draw[arrow] (vibe) -- (pick);
