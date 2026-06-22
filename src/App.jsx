@@ -2421,24 +2421,12 @@ function IntermissionOverlay({ completedTrials, totalTrials, onContinue }) {
       <section
         className={`${GLASS_CARD} w-full max-w-lg animate-scale-in bg-[#0a0d1d]/80 p-8 text-center sm:p-10`}
       >
-        <SectionLabel icon={CheckCircle2}>First round complete</SectionLabel>
-        <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-[2.6rem] sm:leading-[1.05]">
+        <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-[2.6rem] sm:leading-[1.05]">
           Halfway there
         </h2>
         <p className="mx-auto mt-4 max-w-sm text-sm leading-6 text-slate-400">
           You have rated the first {completedTrials} of {totalTrials} tracks. Take a short
-          breather — the second round plays the same two selection methods again, in the
-          opposite order.
-        </p>
-
-        <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
-          <div
-            className={`h-full rounded-full ${ACCENT_GRADIENT}`}
-            style={{ width: `${(completedTrials / totalTrials) * 100}%` }}
-          />
-        </div>
-        <p className="mt-2 text-xs uppercase tracking-[0.18em] text-slate-500">
-          {completedTrials}/{totalTrials} rated
+          breather.
         </p>
 
         <PrimaryButton className="mt-8 w-full" onClick={onContinue} tone="accent">
