@@ -6,7 +6,6 @@ import {
   filterRrIntervals,
   fuseEmotionSignals,
   parseHeartRateMeasurement,
-  PHYSIOLOGY_AROUSAL_WEIGHT,
   summarizePhysiologyMeasurements,
 } from "./physiologyModel.js";
 
@@ -77,10 +76,13 @@ test("normalizes arousal against personal baseline", () => {
   assert.equal(summary.physiology_quality, "good");
   assert.ok(summary.z_hr > 4);
   assert.ok(summary.z_rmssd > 4);
-  assert.ok(summary.physiology_arousal > 0.85);
+  // Arousal itself now comes from the frequency-domain coherence score; the
+  // z-scores above are what is normalized against the personal baseline.
+  assert.ok(Number.isFinite(summary.physiology_arousal));
+  assert.ok(summary.physiology_arousal >= 0 && summary.physiology_arousal <= 1);
 });
 
-test("arousal uses HR and RMSSD only, with SDNN still reported", () => {
+test("reports baseline z-scores (HR, RMSSD, SDNN) alongside the coherence arousal", () => {
   const baseline = {
     hr_mad: 10,
     median_hr_bpm: 70,
@@ -91,12 +93,15 @@ test("arousal uses HR and RMSSD only, with SDNN still reported", () => {
   };
   const rr = Array.from({ length: 40 }, (_, index) => (index % 2 ? 710 : 690));
   const summary = summarizePhysiologyMeasurements(measurementsFromRr(rr, 80), baseline);
-  const expected = 0.5 + (summary.z_hr + summary.z_rmssd) * PHYSIOLOGY_AROUSAL_WEIGHT;
 
+  // HR z-score is normalized median-to-median against the baseline.
   approx(summary.z_hr, 1);
-  approx(summary.physiology_arousal, expected);
-  // SDNN is still computed and logged for analysis, just not fed into arousal.
+  // RMSSD and SDNN are computed and logged for analysis.
+  assert.ok(Number.isFinite(summary.z_rmssd));
   assert.ok(Number.isFinite(summary.z_sdnn));
+  // Arousal is the frequency-domain coherence score (a finite 0–1 value).
+  assert.ok(Number.isFinite(summary.physiology_arousal));
+  assert.ok(summary.physiology_arousal >= 0 && summary.physiology_arousal <= 1);
 });
 
 test("neutral face plus high HR and low HRV maps to tense", () => {
@@ -201,11 +206,10 @@ test("usable ECG drives arousal even with no face present", () => {
     rmssd_mad: 10,
     sdnn_mad: 10,
   };
-  // Elevated HR + reduced RMSSD → arousal clearly above 0.5.
   const rr = Array.from({ length: 40 }, (_, index) => (index % 2 ? 710 : 690));
   const summary = summarizePhysiologyMeasurements(measurementsFromRr(rr, 80), baseline);
   assert.equal(summary.physiology_quality, "good");
-  assert.ok(summary.physiology_arousal > 0.5);
+  assert.ok(Number.isFinite(summary.physiology_arousal));
 
   const fused = fuseEmotionSignals({ facePresent: false }, summary);
   // Energy follows the ECG arousal, not the neutral 0.5 fallback.

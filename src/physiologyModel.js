@@ -223,8 +223,9 @@ export function summarizePhysiologyMeasurements(
         ? "good"
         : "low";
 
-  // Existing baseline logic...
-  const zHr = baseline && Number.isFinite(metrics.hr_bpm_mean) ? (metrics.hr_bpm_mean - baseline.median_hr_bpm) / baseline.hr_mad : null;
+  // Baseline z-scores (logged, and the time-domain fallback for arousal). HR is
+  // compared median-to-median to avoid a mean-vs-median skew that biases z_hr.
+  const zHr = baseline && Number.isFinite(metrics.hr_bpm_median) ? (metrics.hr_bpm_median - baseline.median_hr_bpm) / baseline.hr_mad : null;
   const zRmssd = baseline && Number.isFinite(metrics.rmssd_ms) ? (baseline.median_rmssd_ms - metrics.rmssd_ms) / baseline.rmssd_mad : null;
   const zSdnn = baseline && Number.isFinite(metrics.sdnn_ms) ? (baseline.median_sdnn_ms - metrics.sdnn_ms) / baseline.sdnn_mad : null;
 
