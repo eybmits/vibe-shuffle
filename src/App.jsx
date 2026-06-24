@@ -240,13 +240,16 @@ function buildBpmScale(values, baseline) {
 // Plot geometry in the SVG's own units. The SVG fills its box with
 // preserveAspectRatio="none", so any (x, y) here maps to (x/PLOT.w, y/PLOT.h) of
 // the container — which lets us drop crisp HTML axis labels at matching percentages.
+// Margins are symmetric (30/30 horizontal, 22/22 vertical) so the framed grid is
+// centered in the card, including the label-less "no sensor" placeholder; the
+// gutters just host the axis labels when a live signal is present.
 const HR_PLOT = {
   width: 320,
   height: 168,
-  left: 34,
-  right: 312,
-  top: 12,
-  bottom: 144,
+  left: 30,
+  right: 290,
+  top: 22,
+  bottom: 146,
 };
 
 const PLACEHOLDER_HR_SAMPLES = [66, 67, 66, 68, 67, 69, 71, 72, 70, 71, 73, 72].map(
