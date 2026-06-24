@@ -204,14 +204,28 @@ function createSmoothPath(points) {
   return d.join(" ");
 }
 
-// A stable, nicely-rounded BPM axis that zooms to the live signal. We snap the
-// window to multiples of a "nice" step — finer (5 bpm) when the range is tight so
-// beat-to-beat oscillations fill the plot, coarser when it is wide — and hug the
-// data with only a small margin so the trace doesn't sit in a thin band.
+// The BPM axis. When a resting baseline exists we CENTER the window on it, so the
+// resting pulse sits in the vertical middle and the trace reads as arousal moving
+// above (faster pulse / lower HRV) or below (calmer) rest — the point pushes up
+// and down around the baseline. The radius adapts to the largest deviation (with
+// headroom) and never collapses below a floor, so a near-rest trace still has room
+// to move both ways. Without a baseline (warm-up/placeholder) we fall back to a
+// data-driven zoom that simply hugs the visible values.
 function buildBpmScale(values, baseline) {
-  const all = Number.isFinite(baseline) ? [...values, baseline] : values;
-  const lo = Math.min(...all);
-  const hi = Math.max(...all);
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+
+  if (Number.isFinite(baseline)) {
+    const maxDev = Math.max(8, Math.abs(lo - baseline), Math.abs(hi - baseline));
+    const step = maxDev <= 14 ? 5 : maxDev <= 30 ? 10 : maxDev <= 60 ? 20 : 30;
+    const radius = Math.max(step * 2, Math.ceil((maxDev * 1.18) / step) * step);
+    const min = Math.max(0, baseline - radius);
+    const max = baseline + radius;
+    const ticks = [];
+    for (let bpm = Math.ceil(min / step) * step; bpm <= max + 0.5; bpm += step) ticks.push(bpm);
+    return { max, min, step, ticks };
+  }
+
   const dataSpan = hi - lo;
   const step = dataSpan <= 16 ? 5 : dataSpan <= 45 ? 10 : dataSpan <= 90 ? 20 : 30;
   let min = Math.floor((lo - step * 0.25) / step) * step;
@@ -3412,11 +3426,17 @@ export default function App() {
                 </div>
                 <div className="rounded-xl bg-white/[0.05] px-2 py-2.5">
                   <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Arousal
+                    vs rest
                   </div>
                   <div className="mt-1 text-sm font-semibold text-white">
-                    {Number.isFinite(physiologySummary.physiology_arousal)
-                      ? `${Math.round(physiologySummary.physiology_arousal * 100)}%`
+                    {Number.isFinite(physiologySummary.hr_bpm_mean) &&
+                    Number.isFinite(physiologySummary.baseline_hr_bpm)
+                      ? (() => {
+                          const delta = Math.round(
+                            physiologySummary.hr_bpm_mean - physiologySummary.baseline_hr_bpm,
+                          );
+                          return `${delta >= 0 ? "+" : "−"}${Math.abs(delta)} bpm`;
+                        })()
                       : "—"}
                   </div>
                 </div>
