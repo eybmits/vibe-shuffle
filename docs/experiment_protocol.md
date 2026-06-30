@@ -16,9 +16,9 @@ The app implements a blinded, counterbalanced validation protocol comparing
 
   Counterbalancing is **across participants**: roughly half get each protocol.
 - **Participant number**: entered at setup. It pre-selects the suggested protocol
-  (number ≤ 10 → Protokoll 1, > 10 → Protokoll 2), which the experimenter can
-  override via the masked toggle. The session is also tagged with `protocol_id`
-  (`VS-<timestamp>`).
+  (odd number → Protokoll 1, even number → Protokoll 2), which the experimenter
+  can override via the masked toggle. The session is also tagged with
+  `protocol_id` (`VS-<timestamp>`).
 - **Listening window**: each track plays for **60 seconds**, then the rating
   prompt opens. The participant can also rate early ("Rate now").
 - **Blinding**: the condition (random vs vibe) is never shown to the participant.

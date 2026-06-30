@@ -73,9 +73,10 @@ const BLOCK_COUNT = BLOCKS_PER_RUN * RUN_COUNT; // 2 blocks → 10 trials total
 //   Protocol 1 = Random→Vibe (A→B)   |   Protocol 2 = Vibe→Random (B→A)
 const PROTOCOLS = { 1: ["random", "vibe"], 2: ["vibe", "random"] };
 const PROTOCOL_LABELS = { 1: "Protocol 1", 2: "Protocol 2" };
-// Suggested protocol from the participant number: first 10 → 1, the rest → 2.
+// Suggested protocol from the participant number: odd → 1, even → 2. Alternating
+// keeps the two orders balanced even if recruitment stops earlier than planned.
 const defaultProtocolKey = (number) =>
-  Number(number) > 0 && Number(number) <= 10 ? 1 : 2;
+  Number(number) > 0 && Number(number) % 2 === 1 ? 1 : 2;
 
 function buildSessionPlan(protocolKey) {
   return PROTOCOLS[protocolKey] ?? PROTOCOLS[1];
@@ -333,32 +334,45 @@ function rankSongs(songs, mode, mood, currentSongId, seed, recentIds) {
   const available = songs.filter((song) => song.id !== currentSongId);
   const isAdaptiveMode = mode === "vibe";
   // Vibe = random draw restricted to the mood-congruent quadrant; Random = random
-  // draw from the whole pool. Both are random; the only manipulated variable is
-  // the sector constraint. A large recent penalty avoids near-term repeats.
+  // draw from the whole pool. A large recent penalty avoids near-term repeats.
   const vibePool = available.filter((song) => song.quadrant === mood.tag);
   const pool = isAdaptiveMode && vibePool.length ? vibePool : available;
 
   return pool
     .map((song) => {
+      const randomJitter = deterministicScore(song.id, seed);
+
+      if (!isAdaptiveMode) {
+        const recentIdx = recentIds.lastIndexOf(song.id);
+        const recency = recentIdx !== -1 ? recentIds.length - recentIdx : 0;
+        const recentPenalty = recency > 0 ? 0.6 / recency : 0;
+
+        return {
+          ...song,
+          score: randomJitter + recentPenalty,
+          fit: null,
+        };
+      }
+
       // 1. Calculate Euclidean Distance (0.0 to ~1.41)
       const distance = Math.hypot(song.valence - mood.valence, song.energy - mood.energy);
 
       // 2. Soft Decay Recency Penalty
-      // Find how long ago it was played. 
+      // Find how long ago it was played.
       // If it was the very last song played (index = length - 1), recency = 1.
       // If it was 8 songs ago (index = 0), recency = 8.
       const recentIdx = recentIds.lastIndexOf(song.id);
-      const recency = recentIdx !== -1 ? (recentIds.length - recentIdx) : 0;
-      
+      const recency = recentIdx !== -1 ? recentIds.length - recentIdx : 0;
+
       // The penalty drops off exponentially. (e.g., 0.6 / 1 = 0.6 penalty. 0.6 / 8 = 0.075 penalty)
-      const recentPenalty = recency > 0 ? (0.6 / recency) : 0;
+      const recentPenalty = recency > 0 ? 0.6 / recency : 0;
 
       // 3. Jitter (Tiny randomness so ties/close songs shuffle slightly)
       // deterministicScore returns 0.0 to 1.0. We multiply by 0.15 so it's a minor factor.
-      const randomJitter = deterministicScore(song.id, seed) * 0.15;
+      const distanceJitter = randomJitter * 0.15;
 
       // Final Score: Distance is the main driver, heavily penalized if played recently, slightly jittered.
-      const finalScore = distance + recentPenalty + randomJitter;
+      const finalScore = distance + recentPenalty + distanceJitter;
 
       return {
         ...song,
