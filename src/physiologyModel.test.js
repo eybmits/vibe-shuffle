@@ -6,6 +6,7 @@ import {
   filterRrIntervals,
   fuseEmotionSignals,
   parseHeartRateMeasurement,
+  PHYSIOLOGY_WINDOW_MS,
   summarizePhysiologyMeasurements,
 } from "./physiologyModel.js";
 
@@ -65,6 +66,10 @@ test("marks HRV window low quality when RR count is too small", () => {
 
   assert.equal(summary.physiology_quality, "low");
   assert.equal(summary.physiology_arousal, null);
+});
+
+test("live physiology window matches one listening trial", () => {
+  assert.equal(PHYSIOLOGY_WINDOW_MS, 60_000);
 });
 
 test("normalizes arousal against personal baseline", () => {

@@ -33,6 +33,12 @@ that session. If a real BLE sensor does not provide enough usable RR intervals
 for that personal baseline, HRV arousal stays disabled instead of substituting a
 mock or global reference.
 
+The live physiology estimate uses a rolling **60 s** window, matched to the
+listening trial length. A sudden change will start to affect the estimate after
+enough new RR intervals arrive, but the old state is only fully replaced after
+roughly one minute. The diagnostic heart-rate chart is plotted as **bpm vs
+rest**, so the personal baseline is the `0` line.
+
 A separate frequency-domain `physiology_coherence` value is exported as an
 experimental diagnostic of rhythmic regularity. It is not mapped onto the
 arousal axis because coherence is not the same construct as baseline-relative

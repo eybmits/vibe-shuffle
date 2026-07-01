@@ -208,13 +208,8 @@ function createSmoothPath(points) {
   return d.join(" ");
 }
 
-// The BPM axis. When a resting baseline exists we CENTER the window on it, so the
-// resting pulse sits in the vertical middle and the trace reads as arousal moving
-// above (faster pulse / lower HRV) or below (calmer) rest — the point pushes up
-// and down around the baseline. The radius adapts to the largest deviation (with
-// headroom) and never collapses below a floor, so a near-rest trace still has room
-// to move both ways. Without a baseline (warm-up/placeholder) we fall back to a
-// data-driven zoom that simply hugs the visible values.
+// Absolute-BPM fallback axis for warm-up/placeholder states before a personal
+// baseline exists.
 function buildBpmScale(values, baseline) {
   const lo = Math.min(...values);
   const hi = Math.max(...values);
@@ -239,6 +234,27 @@ function buildBpmScale(values, baseline) {
   const ticks = [];
   for (let bpm = min; bpm <= max + 0.5; bpm += step) ticks.push(bpm);
   return { max, min, step, ticks };
+}
+
+function buildDeltaBpmScale(values) {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const maxDev = Math.max(5, Math.abs(lo), Math.abs(hi));
+  const step = maxDev <= 8 ? 2 : maxDev <= 20 ? 5 : maxDev <= 40 ? 10 : 20;
+  const radius = Math.ceil((maxDev * 1.18) / step) * step;
+  const ticks = [];
+  for (let bpm = -radius; bpm <= radius + 0.5; bpm += step) ticks.push(bpm);
+  return { max: radius, min: -radius, step, ticks };
+}
+
+// Baseline-relative diagnostic axis. Once a resting baseline exists, the chart
+// plots HR - baseline so the resting line is y=0 and deviations visibly move
+// above/below rest instead of showing absolute BPM.
+function formatDeltaBpm(value) {
+  if (!Number.isFinite(value)) return "";
+  if (Math.abs(value) < 0.5) return "0";
+  const rounded = Math.round(value);
+  return rounded > 0 ? `+${rounded}` : `${rounded}`;
 }
 
 // Plot geometry in the SVG's own units. The SVG fills its box with
@@ -273,19 +289,24 @@ function buildHeartRateCurve(samples, baseline) {
   const placeholder = valid.length < 2;
   const source = placeholder ? PLACEHOLDER_HR_SAMPLES : valid;
   const values = source.map((sample) => Number(sample.heartRateBpm));
+  const useBaselineDelta = !placeholder && Number.isFinite(baseline);
+  const plotValues = useBaselineDelta ? values.map((value) => value - baseline) : values;
 
   const { left, right, top, bottom } = HR_PLOT;
   const plotW = right - left;
   const plotH = bottom - top;
-  const scale = buildBpmScale(values, placeholder ? null : baseline);
+  const scale = useBaselineDelta
+    ? buildDeltaBpmScale(plotValues)
+    : buildBpmScale(values, placeholder ? null : baseline);
   const range = Math.max(1, scale.max - scale.min);
-  const toY = (bpm) => bottom - ((bpm - scale.min) / range) * plotH;
+  const toY = (value) => bottom - ((value - scale.min) / range) * plotH;
   const xStep = values.length > 1 ? plotW / (values.length - 1) : 0;
 
-  const points = values.map((value, index) => ({
-    value,
+  const points = plotValues.map((plotValue, index) => ({
+    delta: useBaselineDelta ? plotValue : null,
+    value: values[index],
     x: Number((left + index * xStep).toFixed(2)),
-    y: Number(toY(value).toFixed(2)),
+    y: Number(toY(plotValue).toFixed(2)),
   }));
 
   const path = createSmoothPath(points);
@@ -296,7 +317,11 @@ function buildHeartRateCurve(samples, baseline) {
       ? (last.timestamp - first.timestamp) / 1000
       : Math.max(1, values.length - 1);
 
-  const yTicks = scale.ticks.map((bpm) => ({ bpm, y: Number(toY(bpm).toFixed(2)) }));
+  const yTicks = scale.ticks.map((value) => ({
+    label: useBaselineDelta ? formatDeltaBpm(value) : `${value}`,
+    value,
+    y: Number(toY(value).toFixed(2)),
+  }));
   const xTicks = [0, 0.5, 1].map((fraction) => ({
     fraction,
     x: Number((left + fraction * plotW).toFixed(2)),
@@ -305,15 +330,19 @@ function buildHeartRateCurve(samples, baseline) {
   const gridX = [0.25, 0.5, 0.75].map((fraction) => Number((left + fraction * plotW).toFixed(2)));
 
   const baselineY =
-    Number.isFinite(baseline) && baseline >= scale.min && baseline <= scale.max
-      ? Number(toY(baseline).toFixed(2))
+    useBaselineDelta
+      ? Number(toY(0).toFixed(2))
+      : Number.isFinite(baseline) && baseline >= scale.min && baseline <= scale.max
+        ? Number(toY(baseline).toFixed(2))
       : null;
+  const areaBaseY = baselineY ?? bottom;
 
   return {
-    areaPath: `${path} L ${right} ${bottom} L ${left} ${bottom} Z`,
+    areaPath: `${path} L ${right} ${areaBaseY} L ${left} ${areaBaseY} Z`,
     baselineBpm: Number.isFinite(baseline) ? Math.round(baseline) : null,
     baselineY,
     current: values.at(-1),
+    currentDelta: useBaselineDelta ? values.at(-1) - baseline : null,
     gridX,
     lastPoint: points.at(-1),
     path,
@@ -1362,7 +1391,7 @@ function usePhysiologySensor() {
         current.currentSummary,
       );
       const nextHeartRateHistory = Number.isFinite(nextMeasurement.heartRateBpm)
-        ? [...(current.heartRateHistory ?? []), nextMeasurement].slice(-48)
+        ? [...(current.heartRateHistory ?? []), nextMeasurement].slice(-60)
         : (current.heartRateHistory ?? []);
       sampleIdRef.current += 1;
 
@@ -1753,7 +1782,7 @@ function HeartRateCurve({ physiology, summary }) {
         {/* Coordinate grid: horizontal lines per BPM tick, vertical time divisions */}
         <g stroke="#ffffff" strokeOpacity="0.06" vectorEffect="non-scaling-stroke">
           {curve.yTicks.map((tick) => (
-            <line key={`gy-${tick.bpm}`} x1={left} x2={right} y1={tick.y} y2={tick.y} />
+            <line key={`gy-${tick.value}`} x1={left} x2={right} y1={tick.y} y2={tick.y} />
           ))}
           {curve.gridX.map((x) => (
             <line key={`gx-${x}`} x1={x} x2={x} y1={top} y2={bottom} />
@@ -1816,11 +1845,11 @@ function HeartRateCurve({ physiology, summary }) {
       {hasLiveSamples
         ? curve.yTicks.map((tick) => (
             <span
-              key={`yl-${tick.bpm}`}
+              key={`yl-${tick.value}`}
               className="pointer-events-none absolute -translate-y-1/2 text-right text-[8px] font-medium tabular-nums tracking-tight text-slate-500"
               style={{ top: pct(tick.y, H), left: 0, width: pct(left - 4, W) }}
             >
-              {tick.bpm}
+              {tick.label}
             </span>
           ))
         : null}
@@ -1853,7 +1882,7 @@ function HeartRateCurve({ physiology, summary }) {
           className="pointer-events-none absolute -translate-y-1/2 rounded bg-white/[0.06] px-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-slate-400"
           style={{ top: pct(curve.baselineY, H), right: pct(W - right + 2, W) }}
         >
-          rest {curve.baselineBpm}
+          0 · rest {curve.baselineBpm}
         </span>
       ) : null}
 
