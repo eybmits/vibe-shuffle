@@ -60,6 +60,8 @@ Mood-fit is the primary outcome; liking is the control. Asking both lets the
 analysis separate "did not fit my mood" from "I just don't like this song".
 The categorical mood self-report is an additional validation/sanity-check field
 for comparing the participant's own label with the detected mood-space position.
+Its five choices are position-randomized on each rating prompt to reduce fixed
+position bias.
 
 ## Outcome & export
 

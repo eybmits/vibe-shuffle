@@ -97,6 +97,33 @@ const SELF_REPORTED_MOOD_OPTIONS = [
   },
 ];
 
+function randomizedMoodOptions(previousOrder = []) {
+  const originalKeys = SELF_REPORTED_MOOD_OPTIONS.map((option) => option.key);
+  const previousKeys = previousOrder.map((option) => option.key);
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const shuffled = [...SELF_REPORTED_MOOD_OPTIONS];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+
+    const movesEveryDefaultPosition = shuffled.every(
+      (option, index) => option.key !== originalKeys[index],
+    );
+    const differsFromPreviousOrder =
+      previousKeys.length !== shuffled.length ||
+      shuffled.some((option, index) => option.key !== previousKeys[index]);
+
+    if (movesEveryDefaultPosition && differsFromPreviousOrder) return shuffled;
+  }
+
+  const offset = Math.floor(Math.random() * (SELF_REPORTED_MOOD_OPTIONS.length - 1)) + 1;
+  return SELF_REPORTED_MOOD_OPTIONS.map(
+    (_, index) => SELF_REPORTED_MOOD_OPTIONS[(index + offset) % SELF_REPORTED_MOOD_OPTIONS.length],
+  );
+}
+
 const BLOCKS_PER_RUN = 2; // one Random block + one Vibe block = the A/B loop
 const RUN_COUNT = 1; // each participant runs the loop once, in ONE fixed order
 const BLOCK_COUNT = BLOCKS_PER_RUN * RUN_COUNT; // 2 blocks → 10 trials total
@@ -2645,10 +2672,10 @@ function LikertScale({ highLabel, lowLabel, onSelect, value }) {
   );
 }
 
-function MoodChoiceGrid({ onSelect, value }) {
+function MoodChoiceGrid({ onSelect, options, value }) {
   return (
     <div className="mt-6 grid gap-2 sm:grid-cols-2">
-      {SELF_REPORTED_MOOD_OPTIONS.map((option) => {
+      {options.map((option) => {
         const active = value === option.key;
         return (
           <button
@@ -2678,6 +2705,7 @@ function RatingModal({ isLastTrial, onSubmit, open, song }) {
   const [likeScore, setLikeScore] = useState(null);
   const [fitScore, setFitScore] = useState(null);
   const [selfReportedMood, setSelfReportedMood] = useState("");
+  const [moodOptions, setMoodOptions] = useState(() => randomizedMoodOptions());
 
   // Reset to step 1 whenever a new track's rating opens.
   useEffect(() => {
@@ -2686,6 +2714,7 @@ function RatingModal({ isLastTrial, onSubmit, open, song }) {
       setLikeScore(null);
       setFitScore(null);
       setSelfReportedMood("");
+      setMoodOptions((currentOptions) => randomizedMoodOptions(currentOptions));
     }
   }, [open, song?.id]);
 
@@ -2742,7 +2771,11 @@ function RatingModal({ isLastTrial, onSubmit, open, song }) {
         </p>
 
         {onMood ? (
-          <MoodChoiceGrid onSelect={setSelfReportedMood} value={selfReportedMood} />
+          <MoodChoiceGrid
+            onSelect={setSelfReportedMood}
+            options={moodOptions}
+            value={selfReportedMood}
+          />
         ) : (
           <LikertScale
             highLabel={question.highLabel}
