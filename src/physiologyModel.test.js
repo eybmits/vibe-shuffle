@@ -367,3 +367,14 @@ test("head motion adds to arousal on top of a usable ECG", () => {
   approx(still.energy, 0.55);
   assert.ok(moving.energy > still.energy, `moving ${moving.energy} should exceed still ${still.energy}`);
 });
+
+test("strong camera movement can lift energy even when ECG is calm", () => {
+  const physiology = { physiology_arousal: 0.28, physiology_quality: "good", rr_count: 40 };
+  const fused = fuseEmotionSignals(
+    { facePresent: true, energy: 0.9, valence: 0.72, tag: "happy" },
+    physiology,
+  );
+
+  assert.ok(fused.energy > 0.6, `energy was ${fused.energy}`);
+  assert.equal(fused.tag, "happy");
+});

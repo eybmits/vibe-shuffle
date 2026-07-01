@@ -57,11 +57,13 @@ meaningful as a **trend**, not as one instantaneous value.
 ## Signal-fusion rationale
 
 Face = valence, ECG = arousal (both directions), motion = additive arousal
-boost. Autonomic signals (HR/HRV) track arousal well but cannot separate
-positive from negative valence; facial expression is the more direct valence
-signal. Without a usable ECG, the camera/motion channel carries arousal but can
-only raise it (stillness is ambiguous), so the lower half of the arousal axis is
-reliably reachable only with a sensor.
+boost. Strong visible movement (dancing, swaying, repeated head motion) can move
+the energy axis upward even when HRV is near neutral or slightly calm. Autonomic
+signals (HR/HRV) track arousal well but cannot separate positive from negative
+valence; facial expression is the more direct valence signal. Without a usable
+ECG, the camera/motion channel carries arousal but can only raise it (stillness
+is ambiguous), so the lower half of the arousal axis is reliably reachable only
+with a sensor.
 
 ## Exported data
 

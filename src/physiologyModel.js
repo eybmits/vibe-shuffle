@@ -16,8 +16,10 @@ export const RMSSD_AROUSAL_WEIGHT = 0.35;
 export const CONTRADICTORY_RMSSD_DAMPING = 0.2;
 export const AROUSAL_Z_DEADBAND = 0.25;
 export const AROUSAL_Z_LIMIT = 3;
-// How strongly head motion adds to arousal on top of a usable ECG.
-export const ECG_MOTION_BOOST = 0.6;
+// How strongly visible movement adds to arousal on top of a usable ECG.
+// Strong dancing/head movement should be able to move the energy axis upward
+// even when baseline-relative HRV is near neutral or slightly calm.
+export const ECG_MOTION_BOOST = 1.0;
 
 const clamp = (value, min = 0, max = 1) => Math.min(Math.max(value, min), max);
 

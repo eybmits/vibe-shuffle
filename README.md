@@ -27,8 +27,8 @@ Live demo: https://eybmits.github.io/vibe-shuffle/
     drives arousal **both up and down** (HR↑ / RMSSD↓ → higher arousal) against
     a 120 s personal baseline.
   - **Body/head motion → arousal boost.** Movement in the camera (nodding,
-    swaying) adds to arousal on top of the ECG. Without an ECG it carries
-    arousal alone (upward only).
+    swaying, dancing) adds a strong upward arousal boost on top of the ECG.
+    Without an ECG it carries arousal alone (upward only).
   - **Fusion:** face = valence axis, ECG = arousal base (both directions),
     motion adds on top. State maps to one of four quadrants
     (Energetic / Calm / Tense / Melancholic) at the 0.5 thresholds.

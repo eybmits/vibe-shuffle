@@ -37,9 +37,11 @@ heart-rate sensor ──► HR/RR packets ──► physiologyModel ──► ar
   intrinsically noisy (≈ ±0.11), so arousal reads as a trend, not a precise
   instantaneous value.
 - **Fusion** (`fuseEmotionSignals`): face sets valence; a usable ECG sets the
-  arousal base (both directions); head motion adds to arousal on top. Without a
-  usable ECG, the face/motion channel carries arousal (upward only). With no
-  face and no ECG, both axes center at 0.5.
+  arousal base (both directions); visible movement/head motion adds a strong
+  upward arousal boost on top, so dancing can move the energy axis even when
+  HRV is near neutral or slightly calm. Without a usable ECG, the face/motion
+  channel carries arousal (upward only). With no face and no ECG, both axes
+  center at 0.5.
 - **Quadrants**: valence × arousal split at 0.5 into Energetic / Calm / Tense /
   Melancholic (internal tags `happy` / `relaxed` / `tense` / `sad_low`).
 
