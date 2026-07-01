@@ -28,7 +28,7 @@ import {
 } from "./expressionModel.js";
 import {
   PHYSIOLOGY_BASELINE_SECONDS,
-  PHYSIOLOGY_WINDOW_MS,
+  PHYSIOLOGY_LIVE_WINDOW_MS,
   createPhysiologyBaseline,
   fuseEmotionSignals,
   parseHeartRateMeasurement,
@@ -1349,7 +1349,7 @@ function usePhysiologySensor() {
   const applyMeasurement = useCallback((measurement, source) => {
     const now = measurement.timestamp ?? Date.now();
     const nextMeasurement = { ...measurement, timestamp: now };
-    const cutoff = now - PHYSIOLOGY_WINDOW_MS;
+    const cutoff = now - PHYSIOLOGY_LIVE_WINDOW_MS;
 
     measurementsRef.current = [...measurementsRef.current, nextMeasurement].filter(
       (item) => item.timestamp >= cutoff,
@@ -1389,6 +1389,7 @@ function usePhysiologySensor() {
         measurementsRef.current,
         nextBaseline,
         current.currentSummary,
+        { allowFastHrArousal: true },
       );
       const nextHeartRateHistory = Number.isFinite(nextMeasurement.heartRateBpm)
         ? [...(current.heartRateHistory ?? []), nextMeasurement].slice(-60)
@@ -1430,7 +1431,12 @@ function usePhysiologySensor() {
       baseline,
       baselineProgress: 1,
       connected: true,
-      currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, baseline),
+      currentSummary: summarizePhysiologyMeasurements(
+        measurementsRef.current,
+        baseline,
+        null,
+        { allowFastHrArousal: true },
+      ),
       error: "",
       baselineIssue: "",
       heartRateHistory: baselineMeasurements.slice(-32),
@@ -1463,7 +1469,12 @@ function usePhysiologySensor() {
           ...current,
           baseline: null,
           baselineIssue: physiologyQualityMessage(realSummary),
-          currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, null),
+          currentSummary: summarizePhysiologyMeasurements(
+            measurementsRef.current,
+            null,
+            null,
+            { allowFastHrArousal: true },
+          ),
           status: current.status === "ready" ? "ready" : "baselining",
         };
       }
@@ -1482,7 +1493,12 @@ function usePhysiologySensor() {
         baseline,
         baselineIssue: "",
         baselineProgress: 1,
-        currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, baseline),
+        currentSummary: summarizePhysiologyMeasurements(
+          measurementsRef.current,
+          baseline,
+          null,
+          { allowFastHrArousal: true },
+        ),
         status: "ready",
       };
     });

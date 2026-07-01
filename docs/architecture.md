@@ -31,11 +31,11 @@ heart-rate sensor ──► HR/RR packets ──► physiologyModel ──► ar
   the RMSSD/SDNN baselines take a **robust median across short chunks**. SDNN is
   logged but excluded from the short-window estimate. A frequency-domain
   `physiology_coherence` diagnostic is exported for later analysis, but it does
-  not drive the arousal axis. The live estimate uses a rolling 60 s window, so
-  near-baseline physiology stays near neutral and sudden changes phase in over
-  the following seconds rather than switching instantly. A single 60 s window is
-  intrinsically noisy (≈ ±0.11), so arousal reads as a trend, not a precise
-  instantaneous value.
+  not drive the arousal axis. The live mood dot uses a rolling 8 s HR window for
+  fast +bpm/-bpm feedback, while the saved trial physiology summary uses the
+  60 s listening window with RMSSD when enough RR intervals are available. A
+  single 60 s window is intrinsically noisy (≈ ±0.11), so the saved arousal
+  readout is a trend, not a precise instantaneous value.
 - **Fusion** (`fuseEmotionSignals`): face sets valence; a usable ECG sets the
   arousal base (both directions); visible movement/head motion adds a strong
   upward arousal boost on top, so dancing can move the energy axis even when

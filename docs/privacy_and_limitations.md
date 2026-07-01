@@ -21,11 +21,13 @@ The optional sensor uses Web Bluetooth and the standard
 HRV needs RR intervals in the packets; devices that expose only bpm are logged
 but not used for HRV. Arousal is computed from baseline-normalized HR as the
 primary signal, with RMSSD as secondary evidence (lower RMSSD can raise
-arousal, higher RMSSD can lower it). Short-window RMSSD is damped when it
-conflicts with a calm/low-HR signal, and the estimate can move **both** above
-and below neutral. Head/body motion adds to arousal on top of the ECG. HR/HRV is
-an experimental arousal signal, not a standalone emotion classifier, and the
-weights are pilot values, not validated clinical coefficients.
+arousal, higher RMSSD can lower it). The live mood dot uses a short
+baseline-relative HR window for fast feedback while the RR/RMSSD window is still
+building. Short-window RMSSD is damped when it conflicts with a calm/low-HR
+signal, and the estimate can move **both** above and below neutral. Head/body
+motion adds to arousal on top of the ECG. HR/HRV is an experimental arousal
+signal, not a standalone emotion classifier, and the weights are pilot values,
+not validated clinical coefficients.
 
 No population/global RMSSD threshold is used for arousal. The live HR/RMSSD
 window is compared only with the participant's own calibration baseline from
@@ -33,11 +35,11 @@ that session. If a real BLE sensor does not provide enough usable RR intervals
 for that personal baseline, HRV arousal stays disabled instead of substituting a
 mock or global reference.
 
-The live physiology estimate uses a rolling **60 s** window, matched to the
-listening trial length. A sudden change will start to affect the estimate after
-enough new RR intervals arrive, but the old state is only fully replaced after
-roughly one minute. The diagnostic heart-rate chart is plotted as **bpm vs
-rest**, so the personal baseline is the `0` line.
+The live mood-sector feedback uses a rolling **8 s** HR window so +bpm/-bpm
+changes move the y-axis quickly. The saved trial physiology summary uses a
+rolling **60 s** HR/RMSSD window, matched to the listening trial length. The
+diagnostic heart-rate chart is plotted as **bpm vs rest**, so the personal
+baseline is the `0` line.
 
 A separate frequency-domain `physiology_coherence` value is exported as an
 experimental diagnostic of rhythmic regularity. It is not mapped onto the

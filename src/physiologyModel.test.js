@@ -5,6 +5,7 @@ import {
   createPhysiologyBaseline,
   filterRrIntervals,
   fuseEmotionSignals,
+  PHYSIOLOGY_LIVE_WINDOW_MS,
   parseHeartRateMeasurement,
   PHYSIOLOGY_WINDOW_MS,
   summarizePhysiologyMeasurements,
@@ -68,8 +69,12 @@ test("marks HRV window low quality when RR count is too small", () => {
   assert.equal(summary.physiology_arousal, null);
 });
 
-test("live physiology window matches one listening trial", () => {
+test("trial physiology window matches one listening trial", () => {
   assert.equal(PHYSIOLOGY_WINDOW_MS, 60_000);
+});
+
+test("live mood feedback uses a short HR window", () => {
+  assert.equal(PHYSIOLOGY_LIVE_WINDOW_MS, 8_000);
 });
 
 test("normalizes arousal against personal baseline", () => {
@@ -220,6 +225,39 @@ test("missing RR intervals do not drive HRV-based selection", () => {
   assert.equal(fused.selectionSignalSource, "window_average");
   assert.equal(fused.energy, 0.5);
   assert.equal(fused.tag, "happy");
+});
+
+test("fast live HR feedback can move arousal before RR window is complete", () => {
+  const baseline = {
+    hr_mad: 4,
+    median_hr_bpm: 70,
+    median_rmssd_ms: 30,
+    median_sdnn_ms: 20,
+    rmssd_mad: 10,
+    sdnn_mad: 10,
+  };
+  const measurements = Array.from({ length: 6 }, (_, index) => ({
+    heartRateBpm: 82,
+    rrIntervalsMs: [],
+    timestamp: 1_700_000_000_000 + index * 1000,
+  }));
+
+  const defaultSummary = summarizePhysiologyMeasurements(measurements, baseline);
+  const liveSummary = summarizePhysiologyMeasurements(measurements, baseline, null, {
+    allowFastHrArousal: true,
+  });
+
+  assert.equal(defaultSummary.physiology_arousal, null);
+  assert.equal(liveSummary.physiology_quality, "bpm_only");
+  assert.equal(liveSummary.physiology_arousal_source, "fast_hr");
+  assert.ok(liveSummary.physiology_arousal > 0.5);
+
+  const fused = fuseEmotionSignals(
+    { confidence: 0.7, energy: 0.5, facePresent: true, tag: "happy", valence: 0.8 },
+    liveSummary,
+  );
+  assert.ok(fused.energy > 0.5);
+  assert.equal(fused.selectionSignalSource, "face_window_plus_fast_hr_arousal");
 });
 
 test("missing face centers valence but ECG still drives arousal", () => {

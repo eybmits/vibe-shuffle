@@ -2,6 +2,9 @@
 // out the settling period, while staying practical for participants.
 export const PHYSIOLOGY_BASELINE_SECONDS = 120;
 export const PHYSIOLOGY_WINDOW_MS = 60_000;
+// Short display/control window for the live mood dot. The saved trial summary
+// still uses PHYSIOLOGY_WINDOW_MS; this one is only for fast HR feedback.
+export const PHYSIOLOGY_LIVE_WINDOW_MS = 8_000;
 export const MIN_HRV_RR_COUNT = 20;
 export const VALID_RR_MIN_MS = 300;
 export const VALID_RR_MAX_MS = 2000;
@@ -217,8 +220,8 @@ export function createPhysiologyBaseline(measurements) {
   const hrValues = heartRates.length ? heartRates : rr.map((interval) => 60000 / interval);
   // RMSSD/SDNN baselines use the median across short chunks on purpose: a
   // transient artifact during the 120 s calibration corrupts only one chunk, so
-  // the median stays robust. (The live window, a single 60 s read, uses one
-  // whole-window RMSSD — a slightly different estimator, accepted for robustness.)
+  // the median stays robust. (The saved trial summary, a single 60 s read, uses
+  // one whole-window RMSSD — a slightly different estimator, accepted for robustness.)
   const rrChunks = chunk(rr, MIN_HRV_RR_COUNT);
   const rmssdValues = rrChunks.map((items) => rmssd(items)).filter(Number.isFinite);
   const sdnnValues = rrChunks.map((items) => standardDeviation(items)).filter(Number.isFinite);
@@ -240,6 +243,7 @@ export function summarizePhysiologyMeasurements(
   measurements,
   baseline = null,
   fallbackSummary = null,
+  options = {},
 ) {
   if (!measurements.length && fallbackSummary) return fallbackSummary;
 
@@ -288,11 +292,22 @@ export function summarizePhysiologyMeasurements(
     ? calculateCoherenceScore(filteredRrIntervals)
     : null;
   const hasBaselineArousal = Number.isFinite(zHr) || Number.isFinite(zRmssd);
-  const arousalEvidence = combineArousalEvidence(zHr, zRmssd);
+  const usesFastHrArousal =
+    Boolean(options.allowFastHrArousal) &&
+    quality !== "good" &&
+    baseline &&
+    hasHeartRate &&
+    Number.isFinite(zHr);
+  const arousalEvidence = combineArousalEvidence(zHr, usesFastHrArousal ? null : zRmssd);
   const physiologyArousal =
-    quality === "good" && baseline && hasBaselineArousal
+    ((quality === "good" && baseline && hasBaselineArousal) || usesFastHrArousal)
       ? clamp(0.5 + (arousalEvidence ?? 0) * PHYSIOLOGY_AROUSAL_SCALE)
       : null;
+  const physiologyArousalSource = physiologyArousal == null
+    ? null
+    : usesFastHrArousal
+      ? "fast_hr"
+      : "hr_rmssd";
 
   return {
     ...metrics,
@@ -300,6 +315,7 @@ export function summarizePhysiologyMeasurements(
     baseline_rmssd_ms: baseline?.median_rmssd_ms ?? null,
     ecg_connected: hasHeartRate,
     physiology_arousal: roundNullable(physiologyArousal),
+    physiology_arousal_source: physiologyArousalSource,
     physiology_coherence: roundNullable(physiologyCoherence),
     physiology_quality: quality,
     z_hr: roundNullable(zHr),
@@ -511,12 +527,14 @@ function quadrantFromAxes(valence, energy) {
 
 export function fuseEmotionSignals(faceSummary, physiologySummary) {
   const physiologyUsable =
-    physiologySummary?.physiology_quality === "good" &&
+    (physiologySummary?.physiology_quality === "good" ||
+      physiologySummary?.physiology_arousal_source === "fast_hr") &&
     Number.isFinite(physiologySummary?.physiology_arousal);
   const facePresent = Boolean(faceSummary?.facePresent);
   const faceTag = faceSummary?.tag ?? "relaxed";
   const faceConfidence = Number(faceSummary?.confidence ?? 0);
   const physiologyArousal = physiologySummary?.physiology_arousal;
+  const fastHrArousal = physiologySummary?.physiology_arousal_source === "fast_hr";
 
   // ECG owns the arousal axis and works independently of the camera: even with
   // no face, a usable ECG still drives energy up AND down. Only fall back to
@@ -548,8 +566,12 @@ export function fuseEmotionSignals(faceSummary, physiologySummary) {
 
   const selectionSignalSource = physiologyUsable
     ? facePresent
-      ? "face_window_plus_ecg_arousal"
-      : "ecg_arousal_only"
+      ? fastHrArousal
+        ? "face_window_plus_fast_hr_arousal"
+        : "face_window_plus_ecg_arousal"
+      : fastHrArousal
+        ? "fast_hr_arousal_only"
+        : "ecg_arousal_only"
     : "window_average";
 
   return {

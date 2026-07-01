@@ -25,7 +25,8 @@ Live demo: https://eybmits.github.io/vibe-shuffle/
     negative face approaches 0.10).
   - **Heart-rate sensor → arousal.** An optional Web Bluetooth ECG/HR sensor
     drives arousal **both up and down** (HR↑ / RMSSD↓ → higher arousal) against
-    a 120 s personal baseline.
+    a 120 s personal baseline. The live mood dot uses fast 8 s HR feedback;
+    saved trial physiology uses the 60 s listening window with RMSSD.
   - **Body/head motion → arousal boost.** Movement in the camera (nodding,
     swaying, dancing) adds a strong upward arousal boost on top of the ECG.
     Without an ECG it carries arousal alone (upward only).
