@@ -38,9 +38,10 @@ The app implements a blinded, counterbalanced validation protocol comparing
 - **Random block**: the next track is chosen deterministically at random from
   the pool (a per-session seed makes the order differ every run).
 - **Vibe block**: the next track is the one whose (valence, arousal) is closest
-  to the participant's fused state over the just-finished window, filtered to
-  the matching quadrant when possible, with a penalty for recently played
-  tracks.
+  to the participant's recent end-of-track fused state (last ~20 s), filtered
+  to the matching quadrant when possible, with a penalty for recently played
+  tracks. This is the adaptive selection state; the exported trial row still
+  saves the full 60 s listening-window summary for analysis.
 
 The participant's state is the fusion of facial valence and (optional)
 heart-rate arousal plus head-motion; see `architecture.md`.

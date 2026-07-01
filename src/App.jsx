@@ -38,6 +38,7 @@ import { EMOTION_QUADRANTS, buildDemoLibrary } from "./spotifyLibrary.js";
 
 const TRACKS_PER_BLOCK = 5;
 const LISTENING_WINDOW_SECONDS = 60;
+const NEXT_SONG_SELECTION_WINDOW_MS = 20_000;
 const CALIBRATION_SECONDS = 14;
 const MEDIAPIPE_VERSION = "0.10.35";
 
@@ -102,6 +103,20 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 // Fresh seed per session/restart so song selection never repeats an order.
 const randomSeed = () => Math.floor(Math.random() * 1_000_000) + 1;
+
+function recentSamplesByAge(samples, windowMs) {
+  if (!samples.length) return [];
+  const latestTimestamp = samples.reduce((latest, sample) => {
+    const timestamp = Number(sample?.timestamp);
+    return Number.isFinite(timestamp) ? Math.max(latest, timestamp) : latest;
+  }, -Infinity);
+
+  if (!Number.isFinite(latestTimestamp)) return samples;
+  return samples.filter((sample) => {
+    const timestamp = Number(sample?.timestamp);
+    return Number.isFinite(timestamp) && latestTimestamp - timestamp <= windowMs;
+  });
+}
 
 function createProtocolId() {
   const compactTimestamp = new Date()
@@ -2952,11 +2967,29 @@ export default function App() {
     return summarizeExpressionSamples(expressionWindowRef.current, face);
   }
 
+  function currentSelectionWindowSummary() {
+    const fullSummary = currentWindowSummary();
+    return summarizeExpressionSamples(
+      recentSamplesByAge(expressionWindowRef.current, NEXT_SONG_SELECTION_WINDOW_MS),
+      fullSummary,
+    );
+  }
+
   function currentPhysiologySummary() {
     return summarizePhysiologyMeasurements(
       physiologyWindowRef.current,
       physiology.baseline,
       physiology.currentSummary,
+    );
+  }
+
+  function currentSelectionPhysiologySummary() {
+    const fullSummary = currentPhysiologySummary();
+    return summarizePhysiologyMeasurements(
+      recentSamplesByAge(physiologyWindowRef.current, NEXT_SONG_SELECTION_WINDOW_MS),
+      physiology.baseline,
+      fullSummary,
+      { allowFastHrArousal: true },
     );
   }
 
@@ -3187,7 +3220,10 @@ export default function App() {
   function advanceProtocol(latestRatings) {
     if (protocolComplete) return;
 
-    const selectionFusion = fuseEmotionSignals(currentWindowSummary(), currentPhysiologySummary());
+    const selectionFusion = fuseEmotionSignals(
+      currentSelectionWindowSummary(),
+      currentSelectionPhysiologySummary(),
+    );
     const selectionMood = signalStateToMood(selectionFusion);
     const rankedSongs = rankSongs(
       songs,

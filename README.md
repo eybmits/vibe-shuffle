@@ -33,9 +33,10 @@ Live demo: https://eybmits.github.io/vibe-shuffle/
   - **Fusion:** face = valence axis, ECG = arousal base (both directions),
     motion adds on top. State maps to one of four quadrants
     (Energetic / Calm / Tense / Melancholic) at the 0.5 thresholds.
-- The **Vibe** block ranks the next track by distance to the measured state in
-  the valence/arousal plane; the **Random** block picks deterministically at
-  random. Both draw from the same 100-track pool.
+- The **Vibe** block ranks the next track by distance to the participant's
+  recent end-of-track state (last ~20 s) in the valence/arousal plane; the
+  **Random** block picks deterministically at random. Both draw from the same
+  100-track pool. The CSV still saves the full 60 s trial summary.
 - After each track, **two sequential 7-point ratings**: (1) how much you like
   the song, (2) how well it fit your current mood. Separating liking from
   mood-fit lets the analysis check whether a low fit is just low liking.

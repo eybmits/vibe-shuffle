@@ -38,6 +38,8 @@ mock or global reference.
 The live mood-sector feedback uses a rolling **8 s** HR window so +bpm/-bpm
 changes move the y-axis quickly. The saved trial physiology summary uses a
 rolling **60 s** HR/RMSSD window, matched to the listening trial length. The
+Vibe block's next-song choice uses the recent end-of-track state (last ~20 s)
+so adaptation follows where the participant is at the end of the song. The
 diagnostic heart-rate chart is plotted as **bpm vs rest**, so the personal
 baseline is the `0` line.
 
