@@ -238,6 +238,37 @@ test("ECG arousal moves below 0.5 when HR drops and HRV rises", () => {
   assert.ok(fused.energy < 0.5);
 });
 
+test("lower HR dampens contradictory low-RMSSD arousal", () => {
+  const baseline = {
+    hr_mad: 4,
+    median_hr_bpm: 74,
+    median_rmssd_ms: 60,
+    median_sdnn_ms: 40,
+    rmssd_mad: 6,
+    sdnn_mad: 8,
+  };
+  // Similar to a live window with HR slightly below rest but RMSSD also below
+  // baseline. The RMSSD drop is arousing evidence, but it should not dominate
+  // a calm/low-HR signal enough to enter the high-arousal half.
+  const rr = Array.from({ length: 40 }, (_, index) => (index % 2 ? 879 : 833));
+  const summary = summarizePhysiologyMeasurements(measurementsFromRr(rr, 72), baseline);
+
+  assert.equal(summary.physiology_quality, "good");
+  assert.ok(summary.z_hr < 0);
+  assert.ok(summary.z_rmssd > 0);
+  assert.ok(
+    summary.physiology_arousal < 0.55,
+    `arousal was ${summary.physiology_arousal}`,
+  );
+
+  const fused = fuseEmotionSignals(
+    { confidence: 0.6, energy: 0.5, facePresent: true, tag: "relaxed", valence: 0.7 },
+    summary,
+  );
+  assert.ok(fused.energy < 0.55, `fused energy was ${fused.energy}`);
+  assert.equal(fused.tag, "relaxed");
+});
+
 test("coherence does not override baseline-relative arousal", () => {
   const baseline = {
     hr_mad: 10,

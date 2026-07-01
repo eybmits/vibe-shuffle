@@ -6,9 +6,16 @@ export const MIN_HRV_RR_COUNT = 20;
 export const VALID_RR_MIN_MS = 300;
 export const VALID_RR_MAX_MS = 2000;
 export const ECTOPIC_DELTA_RATIO = 0.3;
-// Arousal is driven by HR (up) and RMSSD (down) only. SDNN needs ~5 min to be
+// Arousal is driven by HR (up) with RMSSD as secondary evidence (down RMSSD ->
+// higher arousal). Short-window RMSSD is noisy, so it is down-weighted and
+// damped when it conflicts with a calm/low-HR signal. SDNN needs ~5 min to be
 // valid, so it is still logged but excluded from the short-window estimate.
-export const PHYSIOLOGY_AROUSAL_WEIGHT = 0.22;
+export const PHYSIOLOGY_AROUSAL_SCALE = 0.18;
+export const HR_AROUSAL_WEIGHT = 0.75;
+export const RMSSD_AROUSAL_WEIGHT = 0.35;
+export const CONTRADICTORY_RMSSD_DAMPING = 0.2;
+export const AROUSAL_Z_DEADBAND = 0.25;
+export const AROUSAL_Z_LIMIT = 3;
 // How strongly head motion adds to arousal on top of a usable ECG.
 export const ECG_MOTION_BOOST = 0.6;
 
@@ -35,6 +42,29 @@ function robustScale(values, floor) {
   const deviations = values.map((value) => Math.abs(value - center));
   const mad = median(deviations);
   return Math.max((mad ?? 0) * 1.4826, floor);
+}
+
+function arousalZ(value) {
+  if (!Number.isFinite(value)) return null;
+  const magnitude = Math.abs(value);
+  if (magnitude <= AROUSAL_Z_DEADBAND) return 0;
+  return Math.sign(value) * Math.min(magnitude - AROUSAL_Z_DEADBAND, AROUSAL_Z_LIMIT);
+}
+
+function combineArousalEvidence(zHr, zRmssd) {
+  const hr = arousalZ(zHr);
+  const rmssd = arousalZ(zRmssd);
+
+  if (!Number.isFinite(hr) && !Number.isFinite(rmssd)) return null;
+
+  const hrEvidence = (hr ?? 0) * HR_AROUSAL_WEIGHT;
+  const rmssdWeight =
+    Number.isFinite(rmssd) && rmssd > 0 && Number.isFinite(hr) && hr <= 0
+      ? RMSSD_AROUSAL_WEIGHT * CONTRADICTORY_RMSSD_DAMPING
+      : RMSSD_AROUSAL_WEIGHT;
+  const rmssdEvidence = (rmssd ?? 0) * rmssdWeight;
+
+  return hrEvidence + rmssdEvidence;
 }
 
 function standardDeviation(values) {
@@ -256,9 +286,10 @@ export function summarizePhysiologyMeasurements(
     ? calculateCoherenceScore(filteredRrIntervals)
     : null;
   const hasBaselineArousal = Number.isFinite(zHr) || Number.isFinite(zRmssd);
+  const arousalEvidence = combineArousalEvidence(zHr, zRmssd);
   const physiologyArousal =
     quality === "good" && baseline && hasBaselineArousal
-      ? clamp(0.5 + ((zHr ?? 0) + (zRmssd ?? 0)) * PHYSIOLOGY_AROUSAL_WEIGHT)
+      ? clamp(0.5 + (arousalEvidence ?? 0) * PHYSIOLOGY_AROUSAL_SCALE)
       : null;
 
   return {

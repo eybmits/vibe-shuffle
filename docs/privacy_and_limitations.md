@@ -19,11 +19,13 @@ continuous valence. Face cues drive the **valence** axis only.
 The optional sensor uses Web Bluetooth and the standard
 [Bluetooth Heart Rate Service](https://www.bluetooth.com/specifications/specs/heart-rate-service-1-0/).
 HRV needs RR intervals in the packets; devices that expose only bpm are logged
-but not used for HRV. Arousal is computed from baseline-normalized HR (up) and
-RMSSD (down) over a 120 s personal baseline, and can move **both** above and
-below neutral. Head/body motion adds to arousal on top of the ECG. HR/HRV is an
-experimental arousal signal, not a standalone emotion classifier, and the weights
-are pilot values, not validated clinical coefficients.
+but not used for HRV. Arousal is computed from baseline-normalized HR as the
+primary signal, with RMSSD as secondary evidence (lower RMSSD can raise
+arousal, higher RMSSD can lower it). Short-window RMSSD is damped when it
+conflicts with a calm/low-HR signal, and the estimate can move **both** above
+and below neutral. Head/body motion adds to arousal on top of the ECG. HR/HRV is
+an experimental arousal signal, not a standalone emotion classifier, and the
+weights are pilot values, not validated clinical coefficients.
 
 A separate frequency-domain `physiology_coherence` value is exported as an
 experimental diagnostic of rhythmic regularity. It is not mapped onto the
