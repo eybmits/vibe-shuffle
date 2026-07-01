@@ -27,6 +27,12 @@ and below neutral. Head/body motion adds to arousal on top of the ECG. HR/HRV is
 an experimental arousal signal, not a standalone emotion classifier, and the
 weights are pilot values, not validated clinical coefficients.
 
+No population/global RMSSD threshold is used for arousal. The live HR/RMSSD
+window is compared only with the participant's own calibration baseline from
+that session. If a real BLE sensor does not provide enough usable RR intervals
+for that personal baseline, HRV arousal stays disabled instead of substituting a
+mock or global reference.
+
 A separate frequency-domain `physiology_coherence` value is exported as an
 experimental diagnostic of rhythmic regularity. It is not mapped onto the
 arousal axis because coherence is not the same construct as baseline-relative

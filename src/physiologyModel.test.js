@@ -83,6 +83,37 @@ test("normalizes arousal against personal baseline", () => {
   assert.ok(summary.physiology_coherence >= 0 && summary.physiology_coherence <= 1);
 });
 
+test("same RMSSD is interpreted relative to the personal baseline", () => {
+  const lowRmssdBaseline = {
+    hr_mad: 4,
+    median_hr_bpm: 70,
+    median_rmssd_ms: 20,
+    median_sdnn_ms: 20,
+    rmssd_mad: 6,
+    sdnn_mad: 8,
+  };
+  const highRmssdBaseline = {
+    ...lowRmssdBaseline,
+    median_rmssd_ms: 70,
+  };
+  const liveRr = Array.from({ length: 40 }, (_, index) => (index % 2 ? 890 : 850));
+
+  const aboveOwnBaseline = summarizePhysiologyMeasurements(
+    measurementsFromRr(liveRr, 70),
+    lowRmssdBaseline,
+  );
+  const belowOwnBaseline = summarizePhysiologyMeasurements(
+    measurementsFromRr(liveRr, 70),
+    highRmssdBaseline,
+  );
+
+  assert.equal(aboveOwnBaseline.rmssd_ms, belowOwnBaseline.rmssd_ms);
+  assert.ok(aboveOwnBaseline.z_rmssd < 0);
+  assert.ok(belowOwnBaseline.z_rmssd > 0);
+  assert.ok(aboveOwnBaseline.physiology_arousal < 0.5);
+  assert.ok(belowOwnBaseline.physiology_arousal > 0.5);
+});
+
 test("reports baseline z-scores and coherence alongside z-score arousal", () => {
   const baseline = {
     hr_mad: 10,

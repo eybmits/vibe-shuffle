@@ -1420,15 +1420,25 @@ function usePhysiologySensor() {
     }, 600);
   }, [applyMeasurement, stopMock]);
 
-  // Testing shortcut: finish the baseline immediately instead of waiting the
-  // full 120 s. Uses whatever real data has accumulated if it is already usable,
-  // otherwise falls back to a mock baseline so a skip always yields a baseline.
+  // Testing shortcut: finish the baseline immediately only when accumulated
+  // real data is already usable. A real BLE participant must never fall back to
+  // the mock baseline; the mock source is kept only for local demo/testing.
   const skipBaseline = useCallback(() => {
     setState((current) => {
       if (current.baseline) return current;
       const realMeasurements = baselineMeasurementsRef.current;
-      const realUsable =
-        summarizePhysiologyMeasurements(realMeasurements).physiology_quality === "good";
+      const realSummary = summarizePhysiologyMeasurements(realMeasurements);
+      const realUsable = realSummary.physiology_quality === "good";
+      if (!realUsable && current.source !== "mock") {
+        return {
+          ...current,
+          baseline: null,
+          baselineIssue: physiologyQualityMessage(realSummary),
+          currentSummary: summarizePhysiologyMeasurements(measurementsRef.current, null),
+          status: current.status === "ready" ? "ready" : "baselining",
+        };
+      }
+
       const measurements = realUsable ? realMeasurements : createMockBaselineMeasurements();
       const baseline = createPhysiologyBaseline(measurements);
       if (!realUsable) {
@@ -2306,7 +2316,7 @@ function SetupScreen({
             {physiology.connected ? (
               <>
                 <p className="text-sm leading-6 text-slate-300">{physiologyStatusText}</p>
-                {physiology.status === "baselining" ? (
+                {physiology.status === "baselining" && physiology.source === "mock" ? (
                   <button
                     className="mt-2 text-xs font-semibold text-slate-500 underline-offset-4 transition hover:text-slate-300 hover:underline"
                     onClick={physiology.skipBaseline}
