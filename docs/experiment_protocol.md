@@ -27,9 +27,11 @@ The app implements a blinded, counterbalanced validation protocol comparing
   above is the **experimenter's key** and lives only in this doc and the CSV, not
   in the participant UI.
 - **Participant view**: production sessions should keep **Participant view**
-  enabled. This hides the mood sector, camera preview, heart-rate/HRV chart,
-  protocol selector, and Vibe-vs-Random result chart from the participant while
-  preserving the same internal signal collection and CSV export.
+  enabled before pressing **Begin session**. The setup screen still shows the
+  styled signal cards and protocol selector for the experimenter. After the
+  session starts, Participant view hides the mood sector, camera preview,
+  heart-rate/HRV chart, protocol/order label, and Vibe-vs-Random result chart
+  while preserving the same internal signal collection and CSV export.
 
 ## Selection
 

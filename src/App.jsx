@@ -2088,14 +2088,14 @@ function SignalPreviewCard({ accent, action, active, children, eyebrow, icon: Ic
 
 // brain.fm-style top navigation: brand mark on the left, content links on the
 // right. Links open the project docs/source in a new tab.
-function TopNav({ participantView = false }) {
+function TopNav() {
   const linkClass =
     "text-sm font-medium text-slate-300 transition hover:text-white";
   return (
     <header className="absolute inset-x-0 top-0 z-20 animate-rise-up">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-6 sm:px-6">
         <BrandMark compact />
-        <div className={`${participantView ? "hidden" : "flex"} items-center gap-5 sm:gap-8`}>
+        <div className="flex items-center gap-5 sm:gap-8">
           <a
             className={linkClass}
             href={`${import.meta.env.BASE_URL}paper.pdf`}
@@ -2190,20 +2190,8 @@ function SetupScreen({
           : physiology.status === "waiting"
             ? "Sensor is paired. Waiting for live heart-rate packets."
           : physiology.error || "Optional: connect a BLE ECG/heart-rate sensor.";
-  const participantSensorStatus =
-    physiology.status === "ready"
-      ? "Sensor ready."
-      : physiology.status === "baselining"
-        ? `Sensor setup ${Math.round(physiology.baselineProgress * 100)}% complete.`
-        : physiology.status === "connecting"
-          ? "Connecting sensor."
-          : physiology.status === "waiting"
-            ? "Waiting for sensor signal."
-            : physiology.error || "Optional sensor input.";
-
   return (
     <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-12 px-4 py-12 sm:px-6">
-      <HiddenCameraFeed active={participantView && cameraReady} face={face} />
       {/* mood-tinted ambient glow that follows the active mood — two breathing
           layers so the hue keeps radiating outward behind the headline */}
       <div
@@ -2224,51 +2212,38 @@ function SetupScreen({
         }}
       />
 
-      <TopNav participantView={participantView} />
+      <TopNav />
 
       <div className="relative z-10 flex flex-col items-center gap-8 text-center">
         <div>
           <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-[1.04] tracking-tight text-white sm:text-7xl lg:text-8xl">
-            {participantView ? (
-              <>
-                <span className="block animate-rise-up" style={{ animationDelay: "150ms" }}>
-                  Music listening
+            <span className="block animate-rise-up" style={{ animationDelay: "150ms" }}>
+              Music tuned
+            </span>
+            <span className="block animate-rise-up" style={{ animationDelay: "320ms" }}>
+              to your{" "}
+              <span className="relative inline-block align-bottom">
+                <span
+                  className="relative z-10 inline-block animate-word-in"
+                  key={activeMood.key}
+                  style={{
+                    color: activeMood.accent,
+                    textShadow: `0 0 24px ${activeMood.accent}aa, 0 0 60px ${activeMood.accent}55`,
+                  }}
+                >
+                  {activeMood.label}
                 </span>
-                <span className="block animate-rise-up" style={{ animationDelay: "320ms" }}>
-                  session
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="block animate-rise-up" style={{ animationDelay: "150ms" }}>
-                  Music tuned
-                </span>
-                <span className="block animate-rise-up" style={{ animationDelay: "320ms" }}>
-                  to your{" "}
-                  <span className="relative inline-block align-bottom">
-                    <span
-                      className="relative z-10 inline-block animate-word-in"
-                      key={activeMood.key}
-                      style={{
-                        color: activeMood.accent,
-                        textShadow: `0 0 24px ${activeMood.accent}aa, 0 0 60px ${activeMood.accent}55`,
-                      }}
-                    >
-                      {activeMood.label}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="absolute -bottom-1 left-0 right-0 h-3 origin-left animate-highlight-wipe rounded-full blur-[1px] sm:h-4 lg:h-5"
-                      key={`${activeMood.key}-bar`}
-                      style={{
-                        background: `linear-gradient(90deg, ${activeMood.accent}, ${activeMood.accent}22)`,
-                        boxShadow: `0 6px 30px ${activeMood.accent}66`,
-                      }}
-                    />
-                  </span>
-                </span>
-              </>
-            )}
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-1 left-0 right-0 h-3 origin-left animate-highlight-wipe rounded-full blur-[1px] sm:h-4 lg:h-5"
+                  key={`${activeMood.key}-bar`}
+                  style={{
+                    background: `linear-gradient(90deg, ${activeMood.accent}, ${activeMood.accent}22)`,
+                    boxShadow: `0 6px 30px ${activeMood.accent}66`,
+                  }}
+                />
+              </span>
+            </span>
           </h1>
         </div>
       </div>
@@ -2326,14 +2301,12 @@ function SetupScreen({
             active={physiology.connected}
             eyebrow="Physical signals"
             icon={HeartPulse}
-            title={participantView ? "Sensor input" : "Heart Rate Variability"}
+            title="Heart Rate Variability"
           >
             {physiology.connected ? (
               <>
-                <p className="text-sm leading-6 text-slate-300">
-                  {participantView ? participantSensorStatus : physiologyStatusText}
-                </p>
-                {!participantView && physiology.status === "baselining" ? (
+                <p className="text-sm leading-6 text-slate-300">{physiologyStatusText}</p>
+                {physiology.status === "baselining" ? (
                   <button
                     className="mt-2 text-xs font-semibold text-slate-500 underline-offset-4 transition hover:text-slate-300 hover:underline"
                     onClick={physiology.skipBaseline}
@@ -2343,11 +2316,6 @@ function SetupScreen({
                   </button>
                 ) : null}
               </>
-            ) : participantView ? (
-              <div className="flex min-h-36 flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
-                <HeartPulse className="mx-auto size-8 text-rose-200/80" />
-                <p className="mt-3 text-sm leading-6 text-slate-300">Optional sensor input.</p>
-              </div>
             ) : (
               <>
                 <SignalMetric
@@ -2382,14 +2350,9 @@ function SetupScreen({
             active={cameraReady}
             eyebrow="Emotional signals"
             icon={ScanFace}
-            title={participantView ? "Camera input" : "Facial Expression"}
+            title="Facial Expression"
           >
-            {cameraReady && participantView ? (
-              <div className="flex h-32 w-full flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-center">
-                <CheckCircle2 className="size-8 text-cyan-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-200">Camera ready</p>
-              </div>
-            ) : cameraReady ? (
+            {cameraReady ? (
               <div className="h-32 w-full overflow-hidden rounded-xl border border-white/10 bg-black/50">
                 <video
                   aria-label="Local camera preview"
@@ -2452,29 +2415,27 @@ function SetupScreen({
                   value={participantNumber}
                 />
               </label>
-              {!participantView ? (
-                <div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Protocol
-                  </span>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {[1, 2].map((key) => (
-                      <button
-                        className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                          protocolKey === key
-                            ? "border-cyan-400/60 bg-cyan-400/15 text-white"
-                            : "border-white/10 bg-white/[0.04] text-slate-300 hover:text-white"
-                        }`}
-                        key={key}
-                        onClick={() => onProtocolKeyChange(key)}
-                        type="button"
-                      >
-                        {PROTOCOL_LABELS[key]}
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Protocol
+                </span>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[1, 2].map((key) => (
+                    <button
+                      className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                        protocolKey === key
+                          ? "border-cyan-400/60 bg-cyan-400/15 text-white"
+                          : "border-white/10 bg-white/[0.04] text-slate-300 hover:text-white"
+                      }`}
+                      key={key}
+                      onClick={() => onProtocolKeyChange(key)}
+                      type="button"
+                    >
+                      {PROTOCOL_LABELS[key]}
+                    </button>
+                  ))}
                 </div>
-              ) : null}
+              </div>
             </div>
             <PrimaryButton
               className="w-full"
