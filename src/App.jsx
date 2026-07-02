@@ -485,10 +485,19 @@ function deterministicScore(id, seed) {
 }
 
 function rankSongs(songs, mode, mood, currentSongId, seed, recentIds) {
-  const available = songs.filter((song) => song.id !== currentSongId);
+  // Hard-exclude every track already played this session (plus the one
+  // currently playing) so a song can never repeat within a run. The old
+  // approach only applied a soft score penalty to recent tracks, which meant
+  // a repeat was merely unlikely, not impossible. Fall back to allowing
+  // repeats only if the catalog is ever fully exhausted (won't happen with
+  // 100 tracks and a 10-track run).
+  const playedIds = new Set(recentIds);
+  if (currentSongId) playedIds.add(currentSongId);
+  const unplayed = songs.filter((song) => !playedIds.has(song.id));
+  const available = unplayed.length ? unplayed : songs.filter((song) => song.id !== currentSongId);
   const isAdaptiveMode = mode === "vibe";
   // Vibe = random draw restricted to the mood-congruent quadrant; Random = random
-  // draw from the whole pool. A large recent penalty avoids near-term repeats.
+  // draw from the whole pool.
   const vibePool = available.filter((song) => song.quadrant === mood.tag);
   const pool = isAdaptiveMode && vibePool.length ? vibePool : available;
 
