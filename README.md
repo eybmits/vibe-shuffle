@@ -9,7 +9,7 @@ after each track, and exports one auditable CSV row per trial.
 
 - **Run the study app:** https://eybmits.github.io/vibe-shuffle/
 - **Read or clone the source:** https://github.com/eybmits/vibe-shuffle
-- **Review the software paper:** [`public/paper.pdf`](public/paper.pdf)
+- **Paper template (work in progress):** [`public/paper.pdf`](public/paper.pdf)
 
 The live website is the quickest access point for an allowlisted Spotify
 Premium account. The GitHub repository is the canonical access point for code,
@@ -162,8 +162,8 @@ LaTeX is optional and needed only to regenerate the committed PDFs.
 | `src/studyCatalog.js` | Fixed 100-track catalog with embedded features. |
 | `src/*.test.js` | Deterministic unit and contract tests. |
 | `docs/` | Methodology, protocol, data dictionary, privacy, setup, deployment. |
-| `paper/` | LaTeX source for the software paper. |
-| `public/paper.pdf` | Paper included in the deployed site. |
+| `paper/` | Minimal ACM LaTeX template for the work-in-progress paper. |
+| `public/paper.pdf` | Work-in-progress paper template included in the deployed site. |
 
 ## Documentation
 

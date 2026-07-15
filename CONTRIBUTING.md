@@ -28,7 +28,8 @@ material.
    blinding, rating, or analysis logic changes.
 6. Update `docs/music_catalog.md` and its integrity test when the stimulus set
    changes.
-7. Rebuild the committed paper or flowchart PDF when its source changes.
+7. Rebuild the committed work-in-progress paper template or flowchart PDF when
+   its source changes.
 
 ## Scientific claim boundary
 
