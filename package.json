@@ -31,7 +31,6 @@
     "test:selection": "node --test src/songSelection.test.js",
     "test": "npm run test:catalog && npm run test:data && npm run test:expression && npm run test:physiology && npm run test:selection",
     "paper": "cd paper && latexmk -pdf -interaction=nonstopmode -halt-on-error -output-directory=build main.tex && cp build/main.pdf ../public/paper.pdf",
-    "flowcharts": "cd docs && latexmk -pdf -interaction=nonstopmode -halt-on-error -output-directory=build flowcharts.tex && cp build/flowcharts.pdf flowcharts.pdf",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check": "npm test && npm run build"

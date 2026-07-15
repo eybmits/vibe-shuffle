@@ -1,31 +1,12 @@
 .DS_Store
 .idea/
 .vscode/
-__pycache__/
-*.py[cod]
 node_modules/
-.npm-cache/
 .env
 .env.local
 .env.*.local
-.venv/
 dist/
 build/
+tmp/
 *.zip
-
-# Presentation-only material is maintained outside the software release.
-animations/
-presentation_assets/
-
-# LaTeX build artifacts (the paper source lives in paper/, the PDF is committed to public/)
 paper/build/
-paper/chars.txt
-
-# LaTeX build artifacts for the flowchart diagrams (docs/flowcharts.pdf is committed)
-docs/build/
-
-# Large local-only source datasets used to assemble src/studyCatalog.js.
-data/spotify_tracks_dataset.csv
-data/spotify_12m_tracks_features.csv
-data/spotify_12m.zip
-public/feature-lookup.json

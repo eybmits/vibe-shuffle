@@ -139,7 +139,7 @@ const BLOCK_COUNT = BLOCKS_PER_RUN * RUN_COUNT; // 2 blocks → 10 trials total
 // Within-participant crossover with order counterbalanced across participants.
 // Each participant completes both conditions in one fixed order. The two masked
 // protocols map to the orders; this mapping is the experimenter's key and is
-// NEVER shown to the participant (see docs/experiment_protocol.md):
+// never shown to the participant:
 //   Protocol 1 = Random→Vibe (A→B)   |   Protocol 2 = Vibe→Random (B→A)
 const PROTOCOLS = { 1: ["random", "vibe"], 2: ["vibe", "random"] };
 const PROTOCOL_LABELS = { 1: "Protocol 1", 2: "Protocol 2" };
@@ -2121,8 +2121,7 @@ function SignalPreviewCard({ accent, action, active, children, eyebrow, icon: Ic
   );
 }
 
-// brain.fm-style top navigation: brand mark on the left, content links on the
-// right. Links open the project docs/source in a new tab.
+// Top navigation with links to the paper, privacy summary, and source.
 function TopNav() {
   const linkClass =
     "text-sm font-medium text-slate-300 transition hover:text-white";
@@ -2141,7 +2140,7 @@ function TopNav() {
           </a>
           <a
             className={`hidden sm:inline ${linkClass}`}
-            href="https://github.com/eybmits/vibe-shuffle/blob/main/docs/privacy_and_limitations.md"
+            href="https://github.com/eybmits/vibe-shuffle#privacy"
             rel="noreferrer"
             target="_blank"
           >
