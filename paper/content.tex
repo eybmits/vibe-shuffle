@@ -1,0 +1,231 @@
+\section{Introduction}
+
+People use music to maintain or change how they feel, and emotional fit affects
+listening satisfaction~\cite{juslin2008}. Most streaming recommenders, however,
+learn long-term taste rather than react to a listener's current state. Affective
+computing offers facial and autonomic signals, but these measurements are noisy,
+privacy-sensitive, and easy to overinterpret.
+
+Vibe Shuffle is a browser-based research prototype for testing a narrow claim:
+does a transparent state-adaptive song policy produce higher perceived mood fit
+than Random selection from the same controlled pool? The prototype represents
+both listener and song in Russell's Valence--Arousal space~\cite{russell1980,
+posner2005}. It does not claim to recover objective or clinical emotion.
+
+The contribution is an auditable end-to-end artifact: client-side signal
+processing, a frozen 100-track catalog, an explicit nearest-track policy, a
+participant-blinded crossover protocol, and a row-level CSV audit trail. Raw
+camera frames and heart-rate notifications are not uploaded by the application;
+derived measurements and pseudonymous study metadata are exported only through
+a deliberate local download.
+
+\section{Methodology}
+
+\subsection{System overview}
+
+Vibe Shuffle is a React/Vite single-page application without an application
+backend. A camera channel supplies horizontal Valence, an optional Bluetooth
+Heart Rate Service channel supplies vertical Arousal, and a 60\,s listening
+window is summarized into one listener coordinate. The next song is selected
+from a fixed catalog and played with Spotify's Web Playback SDK. The participant
+then supplies ratings before the protocol advances.
+
+MediaPipe and Spotify remain external dependencies: model assets, authentication,
+and playback require network traffic. Signal inference and CSV construction occur
+in the browser.
+
+\subsection{Facial display and Valence}
+
+At a target interval of 120\,ms, MediaPipe Face Landmarker~\cite{mediapipe2019}
+returns 52 blendshape activations. The application reduces smile, cheek-squint,
+frown, brow, eye, jaw, and mouth cues to custom \emph{Happy}, \emph{Sad}, and
+\emph{Tense} display scores. MediaPipe does not output these emotion labels; the
+mapping is a hand-specified, FACS-inspired heuristic in the application source.
+
+A 14\,s calibration captures the participant's current facial reference. A slow
+running baseline and exponential smoothing reduce resting-morphology and
+single-frame effects. If $\bar H$, $\bar S$, and $\bar T$ are the mean
+baseline-relative rule scores for a listening window, Valence is
+
+\begin{equation}
+V=\operatorname{clip}_{[0.05,0.95]}
+\left[0.5+1.05\left(\bar H-0.55\bar S-0.45\bar T\right)\right].
+\end{equation}
+
+No detected face sets $V=0.5$. Whole-frame movement and rhythmic head motion
+currently add positive evidence to the facial channel. This encodes an
+exploratory engagement assumption, not an established affect measurement, and
+is treated as a limitation.
+
+\subsection{Cardiac signal and Arousal}
+
+The optional sensor exposes BPM and, when available, RR intervals: elapsed time
+between successive cardiac beats. The application rejects RR values outside
+300--2000\,ms and values that differ by more than 30\% from the previous accepted
+interval. RMSSD measures short-term variability,
+
+\begin{equation}
+\operatorname{RMSSD}=\sqrt{\frac{1}{n-1}
+\sum_{i=1}^{n-1}(RR_{i+1}-RR_i)^2}.
+\end{equation}
+
+At least 20 accepted RR intervals are required for the full HR/RMSSD estimate.
+A 120\,s personal baseline stores median HR and median chunk-level RMSSD. Robust
+spread is $\max(1.4826\operatorname{MAD},4\,\mathrm{BPM})$ for HR and
+$\max(1.4826\operatorname{MAD},6\,\mathrm{ms})$ for RMSSD. The baseline-relative
+scores are
+
+\begin{align}
+z_{HR} &= \frac{\operatorname{median}(HR_w)-\operatorname{median}(HR_b)}{s_{HR}},\\
+z_{RMSSD} &= \frac{\operatorname{median}(RMSSD_b)-RMSSD_w}{s_{RMSSD}}.
+\end{align}
+
+Positive $z_{HR}$ and $z_{RMSSD}$ therefore both represent higher-Arousal
+evidence. A deadband discards $|z|\leq0.25$ and caps larger magnitudes at three
+spread units. With this transform $D$, the implemented physiological coordinate
+is
+
+\begin{equation}
+A_{phys}=\operatorname{clip}_{[0,1]}
+\left[0.5+0.18\left(0.75D(z_{HR})+0.35D(z_{RMSSD})\right)\right].
+\end{equation}
+
+When RMSSD suggests higher Arousal but HR is at or below baseline, the RMSSD
+weight is multiplied by 0.2. This conservative conflict rule limits unstable
+short-window HRV. SDNN and a rhythm-coherence value are exported as diagnostics
+but do not drive Arousal. The application receives processed RR data, not a raw
+ECG waveform, and cannot identify every motion artifact.
+
+\subsection{Fusion and windowing}
+
+Facial display supplies $V$. Usable physiology supplies the Arousal base;
+positive camera movement can add upward Arousal. Without usable physiology,
+camera motion supplies upward-only Arousal. Without a face, $V=0.5$; without
+either usable signal, the coordinate is $(0.5,0.5)$.
+
+During confirmed playback, every change to the live fused state appends a point
+to the trial buffer. At rating time, the application takes the arithmetic mean
+of all valid buffered positions. The sampling is event-driven rather than fixed-
+rate and the mean is not time-weighted. The export therefore includes the sample
+count and actual listening duration so this approximation can be audited.
+
+Splitting both axes at 0.5 yields four recommendation quadrants: Energetic
+(high $V$, high $A$), Calm (high $V$, low $A$), Tense (low $V$, high $A$), and
+Melancholic (low $V$, low $A$).
+
+\subsection{Study catalog}
+
+The frozen catalog contains 100 real Spotify track IDs and historical Valence,
+Energy, Instrumentalness, and popularity values from the public Kaggle Spotify
+Tracks Dataset~\cite{spotifydataset}. High-popularity entries were de-duplicated,
+manually curated, and frozen at 25 tracks per quadrant. The final artifact is
+enforced by a catalog integrity test; the repository does not claim a fully
+automatic generator for the curatorial choices.
+
+Song Valence supplies the horizontal coordinate and song Energy is treated as
+the catalog-side counterpart of listener Arousal. This is a modeling assumption:
+musical Energy and physiological Arousal are related constructs, not identical
+measurements. The current catalog is mainstream rather than instrumental-only.
+
+\begin{table}[t]
+\caption{Fixed catalog classification.}
+\label{tab:quadrants}
+\begin{tabularx}{\linewidth}{@{}lXr@{}}
+\toprule
+Label & Rule & Tracks \\
+\midrule
+Energetic & $V_s\geq0.5,\ E_s\geq0.5$ & 25 \\
+Calm & $V_s\geq0.5,\ E_s<0.5$ & 25 \\
+Tense & $V_s<0.5,\ E_s\geq0.5$ & 25 \\
+Melancholic & $V_s<0.5,\ E_s<0.5$ & 25 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Track selection}
+
+Both conditions hard-exclude the current and previously played tracks. Random
+ranks every remaining track with a deterministic pseudorandom score from track
+ID and session seed; measured signals are logged but ignored.
+
+Vibe maps the listener target $(V,A)$ to its quadrant, keeps unplayed tracks in
+that quadrant, and minimizes Euclidean distance,
+
+\begin{equation}
+s^*=\arg\min_{s\in Q(V,A)}
+\sqrt{(V_s-V)^2+(E_s-A)^2}.
+\end{equation}
+
+The seed resolves only an exact distance tie. If the quadrant is exhausted, the
+method falls back to all remaining tracks. The first track uses the setup-time
+coordinate; subsequent Vibe selections use the mean coordinate from the
+preceding trial. The CSV records target, source, distance, and quadrant match.
+
+\subsection{Validation protocol}
+
+Every participant completes both conditions in a participant-blinded crossover:
+one five-track Random block and one five-track Vibe block. Protocol 1 uses
+Random--Vibe; Protocol 2 uses Vibe--Random. Odd/even participant numbers suggest
+alternating orders, which the experimenter can override before start. This is
+within-participant comparison with order counterbalanced across participants,
+not double blinding.
+
+Each track plays for up to 60\,s. An early \emph{Rate now} action is preserved in
+the export. The mandatory prompt collects 7-point liking, 7-point mood fit, and
+a categorical current-mood report. Mood fit is the primary outcome; liking is a
+control for general song preference.
+
+The proposed participant-level analysis averages the five mood-fit ratings per
+condition and evaluates the paired Vibe-minus-Random differences. With a small
+sample and ordinal responses, an exact paired Wilcoxon or paired permutation
+test is the robust primary option; a paired $t$-test is a sensitivity analysis
+when the difference distribution is sufficiently regular. Early and low-quality
+trials should be handled by a rule fixed before inspecting the condition result.
+
+\section{Artifact Output}
+
+One local CSV row is created per rated track. It contains protocol and song
+metadata, both ratings, categorical self-report, listening duration, fused state,
+expression summaries, HR/RR/HRV summaries, selection audit fields, and quality
+flags. Non-finite numeric values become blank cells rather than textual
+\texttt{NaN} values.
+
+The repository intentionally includes no participant dataset. This paper
+documents the implemented system and analysis plan; it does not report an
+inferential participant result.
+
+\section{Discussion}
+
+The artifact isolates the policy comparison by holding the song pool, playback
+path, rating questions, and exposure count constant. Its transparent rules make
+failures auditable and provide a concrete basis for an HCI study of implicit
+adaptation.
+
+The limits are substantial. Facial movement is not a direct readout of felt
+emotion~\cite{barrett2019}; the custom weights were not learned from labeled
+affect; HR/HRV reflects many non-emotional influences; and the personal baseline
+captures relative change rather than absolute initial mood. Motion contributes
+to both Valence and Arousal and can confound the two channels. The event-driven
+window mean is not time-weighted. The fixed balanced catalog aids control but
+limits ecological and catalog-scale generalization. Spotify Premium,
+Development-mode allowlisting, browser permissions, and BLE support constrain
+deployment.
+
+The privacy claim is also bounded. The application has no study-data upload
+endpoint and does not export raw frames or packets, but GitHub, MediaPipe, and
+Spotify still receive ordinary service traffic. Exported participant numbers and
+timestamps are pseudonymous, not anonymous, and require appropriate research-
+data handling.
+
+Future work should validate the mapping against a separate labeled dataset,
+compare motion ablations, use a time-weighted fusion window, prespecify artifact
+handling, and evaluate the recommendation effect with a larger sample and a
+catalog not manually balanced by quadrant.
+
+\section{Conclusion}
+
+Vibe Shuffle is an open, browser-based testbed for comparing a transparent
+state-adaptive music policy with Random selection under controlled stimuli. It
+does not solve emotion recognition; it makes one rule-based recommendation
+hypothesis explicit, measurable, and falsifiable through participant-rated mood
+fit.
