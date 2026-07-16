@@ -10,3 +10,23 @@ build/
 tmp/
 *.zip
 paper/build/
+
+# LaTeX auxiliaries outside the dedicated build directory
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Python analysis environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Private human-subject analysis inputs are not public repository material
+paper/analysis/private/
+paper/analysis/*.csv

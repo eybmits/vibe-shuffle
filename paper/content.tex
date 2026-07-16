@@ -1,0 +1,197 @@
+\section{Motivation}
+
+Music is more than background sound. People use it to regulate arousal and mood, to understand themselves, and to connect with others. In a large survey, mood and arousal regulation emerged as one of the central functions of everyday listening~\cite{schaefer2013}. Music can evoke emotion through several mechanisms, including memory, expectation, rhythm, and learned association~\cite{juslin2008}. These effects make music a promising material for interactive systems: changing the next track is a familiar, low-effort intervention, and a listener can immediately judge whether the choice feels appropriate.
+
+Most music recommenders are good at learning stable taste from listening history, similarity, or item features. Momentary need is harder. Music preference depends on context, activity, intention, and emotional state, yet these factors remain difficult to represent and evaluate~\cite{schedl2018}. A track that is welcome during exercise may be distracting during rest; a sad-sounding song may either support a current mood or be unwanted. This creates an opportunity for a recommender that reacts to the current situation rather than only to past behavior.
+
+Physiological computing offers passive, rapidly changing input. A camera can describe visible facial movement, and a wearable can report heart rate and the timing between beats. Neither channel directly reveals emotion. Facial movements vary with anatomy, culture, lighting, pose, and deliberate expression, and the same movement can occur in different emotional states~\cite{barrett2019}. Heart rate and heart-rate variability (HRV) are influenced by respiration, posture, movement, medication, fitness, and many other processes. They have no one-to-one mapping to a psychological state~\cite{quigley2024}. The design problem is therefore not simply ``detect the emotion and play the correct song.'' It is to build a cautious, inspectable mapping and test whether the resulting behavior is useful to people.
+
+Vibe Shuffle addresses that narrower question: \emph{Does a transparent, affect-adaptive selection policy produce higher participant-rated mood fit than random selection from the same fixed catalog?} The project uses the Valence--Arousal model as a common language for listener state and music. Valence describes a positive-to-negative dimension; arousal describes an activated-to-calm dimension~\cite{russell1980,posner2005}. This two-dimensional model is simple enough to explain in the interface and flexible enough to describe four broad musical regions. It is not treated as a complete theory of emotion.
+
+The main gap addressed by the project is evaluative. Many affective systems focus on classifier accuracy or demonstrate that a signal can be processed. That does not establish that an adaptation improves the experience. Vibe Shuffle instead makes recommendation quality the target: the participant's mood-fit rating is the primary outcome, while liking is measured separately so that a familiar or generally preferred song is not automatically interpreted as a better mood match. The random condition, fixed catalog, equal exposure count, and within-participant design create a direct policy comparison.
+
+This work contributes an open browser prototype, an explicit signal-to-selection pipeline, a controlled ten-trial protocol, and an exploratory evaluation with 15 participants. Following reporting guidance for cardiac studies~\cite{quigley2024}, physiological HCI experiments~\cite{putze2022}, and proxy-based sensing research~\cite{fiedler2020}, we distinguish observed signals, derived features, inferred coordinates, system actions, and human outcomes. That separation is important: the study evaluates whether one recommendation rule felt more fitting, not whether the system discovered anyone's true emotion.
+
+\section{Concept Overview}
+
+\subsection{From a mood map to an auditable study tool}
+
+The concept places both the listener and every song on a square map. The horizontal axis is Valence and the vertical axis is Arousal. Splitting both axes at the middle yields four regions: Energetic (positive and activated), Calm (positive and low activation), Tense (negative and activated), and Melancholic (negative and low activation). During a Vibe trial, the application estimates the listener's recent position and chooses an unplayed track near it. During a Random trial, it ignores the estimate and chooses from the same remaining catalog using a session-seeded pseudorandom order.
+
+The system adapts only between tracks. It does not change volume, tempo, or playback while a song is playing. This keeps the interaction understandable and avoids interpreting every short signal fluctuation as a command. After listening for up to 60 seconds, the participant rates liking, mood fit, and current mood. Those responses close the loop: sensing drives a recommendation, but the person judges whether that recommendation worked.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{pipeline_overview.pdf}
+  \caption{Vibe Shuffle's signal and selection loop. (A) Personal baselines turn camera and cardiac observations into one listener position. (B) The actual 100-track catalog occupies Valence--Energy space; for the illustrative listener at $(0.64, 0.77)$, ``As It Was'' at $(0.66, 0.73)$ is nearest in the Energetic quadrant. Raw sensor data remain in browser memory.}
+  \Description{Panel A shows camera blendshapes and movement producing Valence after a 14-second face baseline, while heart rate and RR intervals produce Arousal after a 120-second cardiac baseline. The channels converge on a listener point. Panel B is a two-dimensional map of 100 colored song points split into Tense, Energetic, Melancholic, and Calm quadrants. An illustrative listener marker is connected to the nearest song.}
+  \label{fig:pipeline}
+\end{figure*}
+
+\subsection{Ideation and refinement}
+
+The repository does not preserve a dated prototype history, so we report artifact-supported refinements rather than inventing a chronology. The four-quadrant map made the space visible and testable. Personal calibration, smoothing, a margin between expressions, and sustained observations reduced brittle frame-by-frame facial decisions. Because facial motion alone cannot represent below-baseline activation, optional cardiac input supplies relative Arousal while camera motion remains a fallback and exploratory engagement cue.
+
+The study design freezes a 100-track catalog with 25 tracks per quadrant. Random selection supplies a baseline policy, two masked protocols counterbalance block order, and participant view hides condition names and diagnostics. Playback must be confirmed before timing starts; early rating, selection targets, and quality fields are recorded for audit.
+
+The intended use is research, not autonomous mood management. Local processing, explicit fallbacks, and traceable rules keep the interaction inspectable when sensors are missing or noisy and are easier to evaluate with only 15 participants than a high-capacity model.
+
+\section{Signal \& Pipeline}
+
+\subsection{What is measured and what it can represent}
+
+Table~\ref{tab:signalmeaning} separates the project's three evidence levels. The webcam measures blendshape activations and movement, not happiness or sadness. The Bluetooth device supplies processed beats, not an application-accessible electrocardiogram (ECG). Ratings are the only direct reports of participant experience. This distinction follows the general requirement to state the auxiliary assumptions that connect an observable proxy to an unobservable construct~\cite{fiedler2020}.
+
+\begin{table}[t]
+  \caption{Measurement and interpretation boundaries.}
+  \label{tab:signalmeaning}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}YY@{}}
+    \toprule
+    Source & Direct observation & Use in Vibe Shuffle \\
+    \midrule
+    Camera & Facial blendshapes and visible movement & Relative Valence and movement-based Arousal cues \\
+    Heart sensor & Device-produced BPM and RR intervals & Baseline-relative Arousal evidence \\
+    Participant & Fit, liking, and current-mood responses & Evaluation outcome and reflection \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The facial and cardiac channels are complementary. Visible facial cues are more naturally connected to positive-versus-negative expression, whereas cardiac change provides information about activation. Neither is specific enough to identify an emotion alone. Keeping the axes separate makes the assumptions easier to inspect: the face primarily controls Valence, and usable cardiac data primarily controls Arousal.
+
+\subsection{Facial cues and movement}
+
+The browser requests a camera stream and runs MediaPipe Face Landmarker locally~\cite{lugaresi2019}. The installed Tasks Vision package is version 0.10.35, and the application targets one face. Approximately every 120 ms, the model returns facial blendshape activations. The application combines selected smile, cheek, brow, eye, jaw, frown, and mouth cues into three continuous rule scores: happiness, sadness, and tension. Relaxed is the fallback when no active score is strong enough. MediaPipe does not produce these project labels; Vibe Shuffle's own rule layer does.
+
+The constants were chosen empirically during prototyping. Smiling and cheek activation raise happiness; a downturned mouth supported by brow or frown cues raises sadness; and lowered brows, pressed lips, wide eyes, or an open jaw raise tension. The open source contains every weight, but the important point is that these are hand-tuned heuristics, not parameters learned from labeled emotional data.
+
+At session start, a 14-second camera calibration captures a personal resting reference. The system subtracts most of that reference from later active scores, smooths successive frames, and normally requires three consistent samples before changing the discrete expression label. A very slow baseline continues to adapt throughout the session. These steps reduce single-frame noise and differences in resting facial appearance, but they can also absorb a sustained state into the baseline.
+
+Nose-tip displacement and vertical reversals summarize head motion and possible nodding, while luminance differences in a downscaled frame estimate broader movement over roughly 3.2 seconds. Movement raises Arousal and adds positive evidence. This exploratory ``vibing'' assumption can double-count activity or react to lighting and camera motion. We therefore log movement separately and treat it as a limitation.
+
+\subsection{Heart rate and beat intervals}
+
+The optional wearable connects through the standard Bluetooth Heart Rate Service. The application reads beats per minute (BPM) and, when a device provides them, RR intervals: elapsed milliseconds between successive beats. It has no access to the raw cardiac waveform or the device's peak-detection process. We therefore avoid calling the input ECG. The exact wearable model, whether it senses cardiac electrical activity or pulse waves, its placement and packet cadence, and independent validation were not included in the supplied study archive. Cardiac reporting guidelines identify these as necessary details~\cite{quigley2024}; they must be recorded in a future study and cannot be reconstructed from the web application.
+
+RR preprocessing is intentionally simple. Values outside 300--2000 ms are rejected. A value is also rejected when it differs by more than 30\% from the previous accepted interval. The application does not interpolate rejected intervals. It records accepted, rejected, and total counts plus an artifact rate. At least 20 accepted intervals are required before the full HRV estimate is marked usable. This threshold is an engineering quality rule, not a clinical standard, and the current quality label does not impose a maximum artifact-rate threshold.
+
+The main variability feature is root mean square of successive differences (RMSSD), which grows as neighboring beat intervals vary more. SDNN, pNN20, and an experimental coherence value are diagnostic only. A 120-second rest provides personal median heart rate, median RMSSD, and robust estimates of ordinary variation; current values are compared with these references rather than population norms.
+
+Respiration was not recorded. Consequently, RMSSD is not interpreted as a pure measure of respiratory sinus arrhythmia, vagal activity, stress, or a specific emotion. Quigley et al. recommend respiration-aware interpretation and careful reporting of movement, posture, speaking, context, signal loss, and participant characteristics~\cite{quigley2024}. The available analysis file contains none of those contextual variables. RMSSD is therefore secondary, noisy evidence in a baseline-relative interaction rule.
+
+\subsection{Windowing, storage, and privacy}
+
+The live display uses an eight-second cardiac window and can temporarily react to heart rate before enough RR intervals are available. During confirmed playback, changes in the fused position are added to the current trial buffer. At rating time, the application averages all valid buffered positions. The buffer is event-driven, not sampled at exact regular intervals, so this arithmetic mean is not a time-weighted 60-second average. The exported sample count and actual listening duration expose that approximation.
+
+Processing and CSV creation occur in the browser. Raw frames, landmarks, and Bluetooth notifications remain in memory. The CSV stores derived expression and cardiac summaries, song and protocol fields, timestamps, ratings, diagnostics, and a pseudonymous participant number, but no image, landmark set, or raw waveform. There is no study backend, and no analytics service is used. Spotify, MediaPipe, and GitHub Pages still receive ordinary traffic. Exports are pseudonymous, not anonymous.
+
+\section{Inference \& Adaptation}
+
+\subsection{Turning proxies into two readable axes}
+
+Facial scores are converted to Valence with one deliberately simple relation. If $H$, $S$, and $T$ denote the window's baseline-relative happiness, sadness, and tension scores, then
+
+\begin{equation}
+V \approx \operatorname{clip}_{[0.05,0.95]}
+\left(0.5 + 1.05(H - 0.55S - 0.45T)\right).
+\end{equation}
+
+In words, Valence starts in the middle, rises mainly with happiness, and falls with sadness or tension. The constants were chosen empirically so moderate expressions remain near the center and clear expressions can approach the ends. They are not fitted psychological coefficients. With no detected face, Valence is set to 0.5.
+
+Cardiac Arousal is also centered at 0.5. The system calculates a robust relative heart-rate rise and a robust relative RMSSD fall from the personal baseline. Small changes are ignored, and very large changes are capped. In simplified form,
+
+\begin{equation}
+A_{heart} \approx \operatorname{clip}_{[0,1]}
+\left(0.5 + 0.18(0.75z_{HR}+0.35z_{RMSSD})\right).
+\end{equation}
+
+Here $z_{HR}$ means heart rate above the person's baseline, while $z_{RMSSD}$ means RMSSD below baseline. Heart rate receives the larger weight because short-window RMSSD is unstable. When RMSSD alone suggests activation but heart rate is calm, its influence is strongly reduced. Again, the weights are transparent engineering choices. They operationalize interaction behavior; they do not claim a validated physiological arousal scale.
+
+Fusion follows a fixed division of labor. A detected face supplies Valence. Cardiac evidence sets the Arousal base, and visible movement can add upward Arousal. Without usable cardiac data, camera movement supplies Arousal but can only move it upward from neutral. Without a face, Valence remains 0.5. Without either channel, the position returns to the center. These fallbacks allow the study to continue but create meaningfully different sensing conditions, which future analyses should report rather than pooling without checks.
+
+\subsection{From the position to the next track}
+
+The catalog contains 100 Spotify tracks, 25 in each Valence--Energy quadrant. Historical song features come from a public Spotify Tracks dataset~\cite{spotifydataset}. Song Energy is used as the catalog-side counterpart of listener Arousal. That is a convenient alignment, not proof that an audio feature and physiological activation are the same construct. The catalog is balanced by quadrant count but not by genre, language, artist, familiarity, or popularity.
+
+Both study conditions exclude the current and every previously heard track. Random assigns each remaining track a reproducible pseudorandom score. Vibe first keeps tracks in the listener's current quadrant, then chooses the one with the smallest straight-line distance between song and listener coordinates. A session seed resolves an exact tie. If a quadrant is empty, Vibe falls back to all remaining tracks, although 25 tracks per region make that unlikely in a ten-trial session.
+
+This adaptation is appropriate to the research question for three reasons. First, only the selection policy changes; playback, questions, catalog, and exposure count stay constant. Second, every decision can be explained as ``same region, then nearest unplayed track.'' Third, adaptation occurs after a listening window, when there is enough evidence to average and when changing the song is expected.
+
+Two timing details narrow the claim. The first track is chosen from the setup-time signal; the first adaptive track can therefore be selected before the 14-second facial calibration snapshot is complete. Later selections use the mean state measured during the preceding song. Vibe consequently matches the next track to a recent state that music may already have influenced, not to an untouched pre-song mood. The CSV records target coordinates, source, distance, and quadrant match so this chain can be audited.
+
+\section{User Study \& Reflection}
+
+\subsection{Design and evaluation plan}
+
+The application implements a participant-blinded, within-participant crossover. Every participant hears one five-track Random block and one five-track Vibe block. Protocol 1 uses Random then Vibe; Protocol 2 reverses the order. Odd and even participant numbers suggest alternating protocols, and the experimenter can override the suggestion. Participants see only a protocol number, not the condition label. This is participant blinding, not double blinding, because the experimenter and exported CSV can reveal order.
+
+Each track plays for up to 60 seconds. Participants can choose \emph{Rate now}; actual duration and an early-trial flag are recorded. After every song, the fixed prompt sequence asks (1) liking from 1 to 7, (2) mood fit from 1 to 7, and (3) current mood as Energetic, Calm, Tense, Melancholic, or Neutral. Mood-option positions are randomized. Mood fit is the primary outcome, and liking is secondary.
+
+The supplied results report contains 15 complete participant/session rows~\cite{viberesults2026}. Each row averages five Vibe and five Random ratings, giving 75 ratings per condition and outcome. The participant, not the individual trial, is the inferential unit. For each outcome we analyzed the 15 paired differences, defined as Vibe minus Random. The results sheet specifies directional alternatives and one-sided tests at $\alpha=.05$, but no dated preregistration was supplied; the inference is therefore described as exploratory rather than preregistered confirmatory work.
+
+We report means, participant-level standard deviations, paired mean differences with two-sided 95\% confidence intervals, a directional paired $t$-test, and a directional Wilcoxon signed-rank sensitivity check. The confidence interval emphasizes effect uncertainty, while the rank test reduces dependence on a normal difference distribution. We independently recalculated all values from the 15 rows. The source's liking Wilcoxon result rounded tied ranks; conventional average ranks give $W^+=58.5$ and $p=.353$ rather than 59 and .341. This correction does not change the conclusion.
+
+\begin{table*}[t]
+  \centering
+  \caption{Participant-level condition means and paired comparisons ($N=15$). Confidence intervals are two-sided; $p$-values are one-sided for the stated Vibe $>$ Random alternatives.}
+  \label{tab:results}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    Outcome & Vibe $M$ (SD) & Random $M$ (SD) & Mean difference [95\% CI] & $t(14)$, $p$ & $W^+$, $p$ & Cohen's $d_z$ \\
+    \midrule
+    Mood fit & 4.71 (0.99) & 4.15 (1.30) & $+0.56$ [$-0.21$, $1.33$] & 1.56, .070 & 74.0, .088 & 0.40 \\
+    Liking & 4.56 (1.18) & 4.47 (0.77) & $+0.09$ [$-0.52$, $0.71$] & 0.32, .375 & 58.5, .353 & 0.08 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\subsection{The adaptive condition showed a modest but uncertain fit advantage}
+
+Mood fit averaged 4.71 under Vibe and 4.15 under Random. The mean paired increase was 0.56 rating points, with a 95\% confidence interval from $-0.21$ to $1.33$. The directional paired test did not reach the .05 threshold, $t(14)=1.56$, $p=.070$, and the signed-rank check agreed, $W^+=74.0$, $p=.088$. The standardized paired effect was $d_z=0.40$. Eight participants rated Vibe higher on average, one tied, and six rated it lower.
+
+The result is directionally consistent with the concept but not evidence that Vibe is statistically superior. The interval includes zero and spans from a small disadvantage to a large practical benefit. The participant lines in Figure~\ref{fig:results} also show substantial heterogeneity: several people improved by more than one point, while others preferred Random. This variation is important for a recommender. A single average can hide differences in genre taste, familiarity, comfort with sensing, starting mood, and signal quality.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{study_results.pdf}
+  \caption{Paired estimation plots for mood fit (A--B) and liking (C--D). Left panels connect each participant's Random and Vibe means. Right panels show all paired differences, a bootstrap distribution of the mean, and the mean with a $t$-based 95\% confidence interval. Vibe was directionally higher for fit, but both intervals include zero.}
+  \Description{Four panels show participant-level paired ratings and Vibe-minus-Random differences. Mood fit has an average positive difference of 0.56 with an interval from minus 0.21 to 1.33. Liking has a difference of 0.09 with an interval from minus 0.52 to 0.71.}
+  \label{fig:results}
+\end{figure*}
+
+\subsection{Liking was effectively unchanged at this sample size}
+
+Liking averaged 4.56 under Vibe and 4.47 under Random. The paired increase was only 0.09 points, with a 95\% CI from $-0.52$ to $0.71$, $t(14)=0.32$, $p=.375$, and $W^+=58.5$, $p=.353$. Eight participants were higher, one tied, and six were lower, but positive and negative differences were similar in magnitude. The near-zero standardized effect, $d_z=0.08$, suggests that the fit pattern was not simply a broad increase in song liking. At the same time, the interval is too wide to establish equivalence. A larger study would be needed to argue that liking truly stays unchanged.
+
+\subsection{Data quality and threats to validity}
+
+The analysis confirms complete 5/5 condition means but contains no raw trial rows, preventing audits of within-session variance, exposure, sensor fallbacks, artifact rates, or quality flags. Three filenames repeat ``P1''; recruitment records must confirm that they are distinct people. The archive also lacks recruitment, compensation, demographics, inclusion criteria, and health variables. Consent, ethics procedure, listening setup, room conditions, and the exact sensor model are also missing. These are reporting gaps, not proof that controls were absent.
+
+With 15 paired observations, estimates are sensitive to a few participants and cannot resolve heterogeneity or order effects. One-sided tests should not be treated as strong confirmation without preregistration; no multiplicity plan or power analysis was provided.
+
+The block design creates fatigue, learning, and carryover risks without a washout or protocol-specific estimates. Heard tracks are excluded across the session, so the second block draws from a smaller remaining pool. Conditions share a catalog, not the same exact songs; artist, genre, language, familiarity, popularity, and quadrant-colored covers may affect ratings independently of adaptation.
+
+Facial rules were tested computationally, not against labeled affect. Lighting, pose, occlusion, morphology, culture, and deliberate display may change their output. Movement can raise facial Valence, Arousal, heart rate, and RR artifacts at once, double-counting one behavior. Cardiac values also depend on respiration, posture, fitness, medication, contact, and vendor processing. The window is short for HRV, respiration and raw peaks are unavailable, and optional sensing gives participants different information sources.
+
+The event-driven buffer is unweighted by time, and its eight-second live state can differ from a final one-minute HR/RMSSD summary. The first choice can precede calibration. Mood is reported after the song may have changed it, early rating creates unequal exposure, and participant blinding does not hide order from the experimenter.
+
+\subsection{Reflection and changes for the next iteration}
+
+No systematic feedback log supports claims of participant-driven redesign. The evidence instead suggests preserving trial-level exports and exclusions; starting adaptation only after baselines; using time-weighted fusion; separating movement from facial Valence; recording sensor, respiration, posture, context, and signal loss; balancing music and protocol factors; and validating signal mappings separately before retesting recommendation utility.
+
+Before another study, repair the automatic final download's undefined value and the neutral center's inconsistent labels. Unit tests cover numerical models but not sensors, Spotify, or the complete flow; a ten-trial end-to-end export should become a release gate.
+
+Overall, the study supports investigation, not deployment. A stronger study should be preregistered, powered for a meaningful paired effect, and ask for whom and under which sensing conditions adaptation helps.
+
+\section{Conclusion \& Future Work}
+
+Vibe Shuffle turns affective music selection into a transparent HCI study. A browser compares facial cues and optional heart-rate/RR data with personal baselines, places the listener in Valence--Arousal space, and selects the nearest unplayed song in the matching quadrant. Random selection provides the comparison; raw sensor data stay local while derived values are exported.
+
+Among 15 participants, adaptive selection increased mean mood fit by 0.56 points and liking by 0.09. Neither directional test reached $\alpha=.05$, and both intervals included zero. The evidence permits a useful fit benefit but also little or no average improvement; it does not validate the emotion mapping, liking equivalence, or clinical interpretation.
+
+Future work should validate predefined facial and cardiac features separately, with repeated self-report, respiration, and context. A larger preregistered crossover can then test the frozen policy with protocol order, sensor availability, exclusions, and sensitivity analyses. Personalized calibration, user control over matching versus changing mood, time-weighted fusion, stronger RR checks, balanced music, and end-to-end tests are promising extensions.
+
+Possible uses include focus and exercise, relaxation and games, and accessibility. They require visible uncertainty, an easy opt-out, no sensitive inference claims, and adaptation subordinate to the listener. Physiological input becomes useful not as mind reading, but when its assumptions are visible and its effect on experience is tested.
+
+\section{Contribution Statement}
+
+Felix Hajuj, Markus Baumann, and Miriam Janner jointly contributed to the project concept, study execution, interpretation, and report review. Markus Baumann additionally implemented and tested the repository version, reproduced the participant-level statistics, and prepared the visual analysis. The supplied repository and analysis archive do not preserve a reliable finer-grained record of individual writing, recruitment, data-collection, or design roles; the three authors should confirm and, if needed, refine this statement before submission.

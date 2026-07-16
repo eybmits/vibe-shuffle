@@ -2136,7 +2136,7 @@ function TopNav() {
             rel="noreferrer"
             target="_blank"
           >
-            Paper (WIP)
+            Final report
           </a>
           <a
             className={`hidden sm:inline ${linkClass}`}

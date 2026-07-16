@@ -1,0 +1,4 @@
+# Preserve upstream template files verbatim; their original whitespace is part
+# of the vendored distribution.
+paper/acmart.cls whitespace=-trailing-space
+paper/ACM-Reference-Format.bst whitespace=-trailing-space

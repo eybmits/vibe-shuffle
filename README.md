@@ -5,7 +5,9 @@ selection with affect-adaptive music selection. Each participant completes both
 conditions, rates every track, and exports one CSV row per trial.
 
 - **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
-- **Paper:** Work in progress - [`public/paper.pdf`](public/paper.pdf)
+- **Final report:** [`public/paper.pdf`](public/paper.pdf)
+- **Report source:** [`paper/`](paper/)
+- **Study documentation:** [`docs/STUDY.md`](docs/STUDY.md)
 - **Live application:** https://eybmits.github.io/vibe-shuffle/
 
 ## Research question
@@ -16,6 +18,23 @@ when both conditions use the same fixed track pool?
 The prototype evaluates recommendation quality. It does not claim to infer an
 objective or clinical emotion.
 
+## Study result
+
+Fifteen participants each rated five Vibe-selected and five randomly selected
+tracks. Mood fit was descriptively higher under Vibe, but the uncertainty
+interval included zero and the directional test did not reach the stated
+threshold. Liking was nearly unchanged.
+
+| Outcome | Vibe M | Random M | Paired difference [95% CI] | One-sided p |
+| --- | ---: | ---: | ---: | ---: |
+| Mood fit | 4.71 | 4.15 | +0.56 [-0.21, 1.33] | .070 |
+| Liking | 4.56 | 4.47 | +0.09 [-0.52, 0.71] | .375 |
+
+These results are promising but inconclusive. See the
+[final report](public/paper.pdf) and the
+[study documentation](docs/STUDY.md) for the paired analysis, assumptions, and
+limitations.
+
 ## How it works
 
 1. MediaPipe facial blendshapes are mapped to a baseline-relative Valence score
@@ -25,8 +44,8 @@ objective or clinical emotion.
    estimate Arousal.
 3. The signals are fused into a Valence-Arousal coordinate during each listening
    window.
-4. Random mode uses a reproducible seeded order. Vibe mode selects the closest
-   unplayed track from the matching Valence-Energy quadrant.
+4. Random mode uses a session-seeded pseudorandom ranking. Vibe mode selects the
+   closest unplayed track from the matching Valence-Energy quadrant.
 5. The participant rates liking and mood fit on seven-point scales and reports
    their current mood.
 
@@ -49,6 +68,15 @@ Spotify Tracks Dataset. Both experimental conditions use this same catalog.
 The exported CSV records protocol and track metadata, ratings, listening time,
 derived signal summaries, selection details, and data-quality flags.
 Condition-level mean mood-fit scores are compared within each participant.
+
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [`docs/STUDY.md`](docs/STUDY.md) | Concept, signals, pipeline, adaptation, protocol, results, privacy, limitations, and known implementation issues |
+| [`docs/REPORTING_CHECKLIST.md`](docs/REPORTING_CHECKLIST.md) | Reporting-standard coverage and facts the team must still confirm |
+| [`paper/README.md`](paper/README.md) | Report build, source layout, character count, and data-availability boundary |
+| [`paper/analysis/README.md`](paper/analysis/README.md) | Statistical method, corrected rank result, and aggregate analysis record |
 
 ## Privacy
 
@@ -113,7 +141,7 @@ Secret to this repository.
 | `npm run build` | Create the production build in `dist/`. |
 | `npm run check` | Run the complete test and build gate. |
 | `npm run preview` | Preview the production build. |
-| `npm run paper` | Rebuild the work-in-progress PDF. |
+| `npm run paper` | Rebuild the final report and copy it to `public/paper.pdf`. |
 
 Pushes to `main` run the test/build workflow and deploy the application through
 GitHub Pages.
@@ -129,8 +157,11 @@ GitHub Pages.
 | `src/experimentData.js` | CSV generation and data-quality checks. |
 | `src/studyCatalog.js` | Fixed 100-track study catalog. |
 | `src/*.test.js` | Deterministic tests for the study logic. |
-| `paper/main.tex` | Minimal work-in-progress paper title page. |
-| `public/paper.pdf` | Paper title page served by the application. |
+| `paper/main.tex` and `paper/content.tex` | Complete final-report source in the seminar template. |
+| `paper/figures/` | Vector and raster versions of the pipeline and study-results figures. |
+| `paper/analysis/` | Aggregate statistical record and analysis documentation. |
+| `docs/` | Readable study documentation and reporting checklist. |
+| `public/paper.pdf` | Final project report served by the application. |
 
 ## Limitations
 
@@ -138,7 +169,10 @@ Vibe Shuffle is an experimental interaction system, not a validated emotion
 classifier or medical device. Facial rules, physiological coefficients,
 signal-quality thresholds, and the mapping from musical Energy to listener
 Arousal require independent validation. The fixed catalog improves experimental
-control but limits generalization.
+control but limits generalization. The small crossover study is compatible with
+both a modest disadvantage and a meaningful fit benefit. Detailed threats to
+validity and two known implementation issues are documented in
+[`docs/STUDY.md`](docs/STUDY.md#main-threats-to-validity).
 
 ## License
 

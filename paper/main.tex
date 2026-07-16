@@ -1,13 +1,100 @@
-\documentclass[11pt]{article}
+% Use the content.tex file to enter your content.
+
+\documentclass[sigconf, nonacm, screen=True, review=False, anonymous=False, authordraft=False]{acmart}
+
+% BasicTeX installations may lack the optional scalable ACM fonts.  Disabling
+% microtype's font expansion keeps the official class usable in that setting.
+\microtypesetup{expansion=false}
+
+%%% START ADDITIONAL PACKAGES AND COMMANDS %%%
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+
+\usepackage[yyyymmdd]{datetime}
+\renewcommand{\dateseparator}{--}
+
+\usepackage{tabularx}
+\usepackage{dcolumn}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+
+\definecolor{lightgrey}{rgb}{0.925, 0.925, 0.925}
+\newcommand{\todo}[1]{\texttt{\colorbox{lightgrey}{\textcolor{red}{TODO: #1}}}\newline}
+\newcommand{\itodo}[1]{\texttt{\colorbox{lightgrey}{\textcolor{red}{TODO: #1}}}}
+
+% The template normally calculates this value through texcount and shell
+% escape.  The submission bundle contains a reproducibly precomputed value so
+% the document also builds on systems where texcount is unavailable.
+\newcommand{\charactercount}[1]{\input{chars.txt}}
+%%% END ADDITIONAL PACKAGES AND COMMANDS %%%
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+\setcopyright{CC}
+\setcctype{by-sa}
 
 \begin{document}
 
-\title{Vibe Shuffle: Browser-Based Affective Music Selection\\[0.6em]
-\large Work in Progress}
-\author{Felix Hajuj \and Markus Baumann \and Miriam Janner}
-\date{Ludwig-Maximilians-Universit\"at M\"unchen}
+\title{Vibe Shuffle: Testing Transparent Affect-Adaptive Music Selection}
+
+\author{Felix Hajuj}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+
+\author{Markus Baumann}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+
+\author{Miriam Janner}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+
+\begin{abstract}
+Music recommendations usually reflect long-term taste, although listeners' needs can change from moment to moment. We built Vibe Shuffle, a browser prototype that maps facial cues and optional heart-rate information to a simple valence--arousal position and uses that position to select the next song. The rules are intentionally transparent and are not presented as an objective emotion detector. In a within-participant crossover study, 15 participants rated five Vibe-selected and five randomly selected tracks. Mean mood fit was 4.71 for Vibe and 4.15 for Random, a paired difference of 0.56 points, but the uncertainty interval included zero and the directional test was not significant. Liking was almost unchanged. The result is promising but inconclusive. We describe the complete signal and adaptation pipeline, identify reporting and implementation gaps, and outline the validation needed before real-world deployment.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+    <concept>
+        <concept_id>10003120.10003121.10003128</concept_id>
+        <concept_desc>Human-centered computing~Human computer interaction (HCI)</concept_desc>
+        <concept_significance>500</concept_significance>
+    </concept>
+    <concept>
+        <concept_id>10003120.10003121.10003129</concept_id>
+        <concept_desc>Human-centered computing~Interactive systems and tools</concept_desc>
+        <concept_significance>300</concept_significance>
+    </concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Human-centered computing~Human computer interaction (HCI)}
+\ccsdesc[300]{Human-centered computing~Interactive systems and tools}
+
+\keywords{affective computing, music recommendation, heart-rate variability, facial expression, valence--arousal, physiological computing}
 
 \maketitle
-\thispagestyle{empty}
 
+\input{content}
+
+%TC:ignore
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibliography}
+
+\appendix
+\section*{Character Count}
+This work contains \charactercount{content} characters (without spaces).
+%TC:endignore
 \end{document}
