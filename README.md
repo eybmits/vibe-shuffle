@@ -4,7 +4,7 @@ Vibe Shuffle is a browser-based research prototype that compares random music
 selection with affect-adaptive music selection. Each participant completes both
 conditions, rates every track, and exports one CSV row per trial.
 
-- **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
+- **Authors:** Markus Baumann, Felix Hajuj, Miriam Janner
 - **Final report:** [`public/paper.pdf`](public/paper.pdf)
 - **Report source:** [`paper/`](paper/)
 - **Study documentation:** [`docs/STUDY.md`](docs/STUDY.md)

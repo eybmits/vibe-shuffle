@@ -3,7 +3,7 @@
 This directory contains the LaTeX source and publication figures for:
 
 > **Vibe Shuffle: Testing Transparent Affect-Adaptive Music Selection**
-> Felix Hajuj, Markus Baumann, and Miriam Janner, 2026
+> Markus Baumann, Felix Hajuj, and Miriam Janner, 2026
 
 The compiled report is available at [`public/paper.pdf`](../public/paper.pdf).
 The report follows the supplied seminar template and contains 24,481 characters

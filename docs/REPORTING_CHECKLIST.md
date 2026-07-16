@@ -37,7 +37,7 @@ Primary references:
 
 ## Required pre-submission confirmations
 
-1. Confirm the contribution split among Felix Hajuj, Markus Baumann, and Miriam
+1. Confirm the contribution split among Markus Baumann, Felix Hajuj, and Miriam
    Janner.
 2. Add recruitment, demographics, compensation, inclusion/exclusion criteria,
    consent, and ethics-review information where records exist.
