@@ -522,8 +522,15 @@ def build_figure() -> plt.Figure:
         linewidth=0.55,
         zorder=1,
     )
-    frequency_ax.axvline(
-        0.10, color=REFERENCE, lw=0.8, ls=(0, (2.2, 2.2)), alpha=0.72, zorder=1
+    frequency_ax.vlines(
+        0.10,
+        ymin=focused_base,
+        ymax=1.82,
+        color=REFERENCE,
+        lw=0.8,
+        ls=(0, (2.2, 2.2)),
+        alpha=0.72,
+        zorder=1,
     )
     frequency_ax.text(
         0.103,
@@ -537,20 +544,20 @@ def build_figure() -> plt.Figure:
         zorder=5,
     )
     frequency_ax.text(
-        0.034,
+        0.092,
         1.38,
         "more dispersed",
-        ha="left",
+        ha="right",
         va="bottom",
         fontsize=AXIS_LABEL_SIZE,
         fontweight="normal",
         color=CORAL_DARK,
     )
     frequency_ax.text(
-        0.034,
+        0.092,
         0.80,
         "more concentrated",
-        ha="left",
+        ha="right",
         va="bottom",
         fontsize=AXIS_LABEL_SIZE,
         fontweight="normal",
