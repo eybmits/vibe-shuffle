@@ -1,0 +1,3 @@
+outcome,n,vibe_mean,vibe_sd,random_mean,random_sd,difference,ci_low,ci_high,t_stat,p_t_one_sided,w_plus,p_w_one_sided,cohen_dz,source
+Mood fit,15,4.71,0.99,4.15,1.30,0.56,-0.21,1.33,1.56,0.070,74.0,0.088,0.40,"Supplied seven-page manuscript and 15-participant analysis report"
+Liking,15,4.56,1.18,4.47,0.77,0.09,-0.52,0.71,0.32,0.375,58.5,0.353,0.08,"Supplied seven-page manuscript and 15-participant analysis report"

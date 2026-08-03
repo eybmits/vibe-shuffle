@@ -1,0 +1,77 @@
+\section{Related Work}
+
+\subsection{Emotion-aware music selection}
+
+Music can evoke, express, maintain, or help regulate affect through several
+mechanisms~\cite{juslin2008}. Emotion-aware music systems turn that relationship
+into an interaction: the listener supplies or reveals context, and the system
+uses it to narrow the next musical choice.
+
+\emph{Feel the Moosic} is a close design reference. Helmholz et al.\ simplified
+the Russell and Thayer representations into color-coded interfaces in which a
+listener explicitly selected a position; the prototype then requested songs
+within corresponding Spotify Valence and Energy ranges~\cite{helmholz2019}.
+Vibe Shuffle retains the legible two-axis mapping but changes the interaction
+contract. It estimates only baseline-relative movement from a camera and an
+optional cardiac sensor, summarizes a trajectory over the listening window, and
+selects an unplayed catalog track near that point. This is an implicit and
+auditable adjustment mechanism, not a stronger claim to emotion recognition.
+
+\subsection{Personal and multimodal affective recommenders}
+
+Several systems show that personal physiological or camera cues can inform
+music selection. Janssen et al.\ learned listener-specific relations between
+music and physiological response and used them to steer an affective music
+player toward a goal~\cite{janssen2012}. Ayata et al.\ compared machine-learning
+models that predicted Valence and Arousal from wearable galvanic-skin-response
+and photoplethysmography measurements before recommending
+music~\cite{ayata2018}. Tran et al.\ used a facial image to estimate a point in
+Valence--Arousal space and retrieve nearby songs in Spotify feature
+space~\cite{tran2023}.
+
+These projects establish the feasibility of connecting affective signals
+to a music interface. They also clarify Vibe Shuffle's narrower contribution.
+Vibe does not optimize classification accuracy, learn a high-capacity personal
+model, or claim a target emotional state. It makes a small rule-based decision
+from recent baseline-relative evidence and exposes the summarized target,
+region, and distance. Recommendation utility is measured separately from the
+plausibility of the signal label; the export does not preserve every trajectory
+sample.
+
+\subsection{HRV, coherence, and the boundary of inference}
+
+HRV provides useful information about cardiac dynamics, but its interpretation
+depends on measurement duration and context~\cite{shaffer2017}. Balaji et al.\
+analyzed 1,884,216 mobile HRV-biofeedback sessions from 70,041 users and
+reported aggregate associations between coherence measures and emotional
+labels entered by users after their sessions~\cite{balaji2025}. Sessions labeled
+with positive emotions had higher mean coherence and more stable coherence
+frequencies than sessions labeled with negative emotions. The study was an
+observational analysis of 3--15 minute biofeedback practice, lacked
+pre-session emotion reports, and did not establish a per-window emotion
+classifier.
+
+That boundary directly shapes Vibe Shuffle. The software exports a custom
+normalized spectral-peakedness proxy for later diagnostic analysis. It is not
+the coherence measure analyzed by Balaji et al., and it does not determine the
+listener coordinate, quadrant, or next song. Selection uses the
+baseline-relative heart-rate and RMSSD arousal estimate instead. Thus, the
+coherence study motivates a cardiac-rhythm feature worth observing; it neither
+validates this proxy nor justifies inferring a listener's emotion from it.
+
+\subsection{Transparent and user-centered recommendation}
+
+Recommender explanations can target transparency, trust, effectiveness, or
+decision support~\cite{nunes2017}. Vibe exposes target, region, eligibility, and
+distance rather than adding a post-hoc narrative. Inspectability alone does not
+ensure experience: perceived quality, effort, privacy, and context still
+matter~\cite{knijnenburg2012}.
+
+\subsection{Positioning Vibe Shuffle}
+
+Vibe Shuffle brings three ideas together: the understandable two-axis music
+map, personal rather than population-relative sensing, and a controlled
+comparison with Random selection from the same catalog. Its purpose is not to
+advance a new emotion classifier. It is to make the complete path from an
+uncertain observation to a recommendation visible to the listener, simple
+enough to inspect and specific enough to test.

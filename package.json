@@ -1,7 +1,7 @@
 {
   "name": "vibe-shuffle",
   "version": "1.0.0",
-  "description": "Mood-adaptive music validation dashboard comparing Random Shuffle and Vibe Shuffle.",
+  "description": "Browser-based relative affect adaptation for transparent next-song selection.",
   "license": "MIT",
   "homepage": "https://eybmits.github.io/vibe-shuffle/",
   "repository": {
@@ -16,7 +16,7 @@
     "affective-computing",
     "spotify",
     "react",
-    "validation-study"
+    "relative-affect"
   ],
   "engines": {
     "node": ">=20 <23"
@@ -30,7 +30,8 @@
     "test:physiology": "node --test src/physiologyModel.test.js",
     "test:selection": "node --test src/songSelection.test.js",
     "test": "npm run test:catalog && npm run test:data && npm run test:expression && npm run test:physiology && npm run test:selection",
-    "paper": "cd paper && latexmk -pdf -interaction=nonstopmode -halt-on-error -output-directory=build main.tex && cp build/main.pdf ../public/paper.pdf",
+    "paper:figures": "python3 paper/figures/fig1_affect_space.py && python3 paper/figures/fig2_relative_trajectory.py && python3 paper/figures/fig3_pilot_evidence.py",
+    "paper": "npm run paper:figures && cd paper && latexmk -pdf -shell-escape -interaction=nonstopmode -halt-on-error -output-directory=build main.tex && cp build/main.pdf ../public/paper.pdf",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check": "npm test && npm run build"

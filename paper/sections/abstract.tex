@@ -1,0 +1,25 @@
+\begin{abstract}
+Music recommenders are good at learning durable preferences, yet the song that
+fits a listener can change from one moment to the next. We present
+\emph{Vibe Shuffle}, a browser-based research application that uses lightweight
+camera and cardiac signals to adapt the next-song choice. The system does not
+attempt to identify a listener's complete or ``true'' emotion. After an
+initialization track, it asks how recent observations differ from that
+listener's own short reference period. Facial cues provide relative Valence
+evidence; heart rate and
+beat-to-beat variability provide relative Arousal evidence. During playback,
+these estimates form a trajectory in a two-dimensional Valence--Arousal space.
+The average trajectory point determines one of four broad regions, and the
+adaptive policy selects the nearest unplayed song in the corresponding
+Valence--Energy region of a fixed 100-track catalog. The rule is inspectable in
+the software, and a deliberate local export records the summarized target,
+region match, song distance, derived signals, and ratings. It does not retain
+raw camera frames, Bluetooth packets, personal facial-reference values, or the
+full point-by-point trajectory. An exploratory 15-participant crossover
+produced a modest but uncertain mood-fit difference for Vibe over Random
+selection ($+0.56$ on a seven-point scale, 95\% CI $[-0.21,1.33]$), while the
+liking point estimate was near zero but imprecise. These data do not establish
+superiority. They illustrate how an understandable, baseline-relative system
+can connect multimodal sensing to a testable music-selection decision without
+presenting proxy signals as an emotion diagnosis.
+\end{abstract}

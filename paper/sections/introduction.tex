@@ -1,0 +1,63 @@
+\section{Introduction}
+
+The next song is a small decision with an immediate effect. A track can support
+exercise, soften a quiet break, prolong excitement, or feel completely wrong
+for the moment. People regularly use music to regulate mood and
+activation~\cite{juslin2008,schaefer2013}, but most recommender systems are
+optimized around comparatively stable information: listening history, favorite
+artists, similar users, or item features. Those signals describe what a person
+usually likes. They need not describe what fits now, a broader contextual
+challenge for music recommendation~\cite{kaminskas2012,schedl2018}.
+
+Vibe Shuffle began with a practical goal: use signals already available in a
+browser and an optional wearable to make the next-song choice more responsive
+to the listener's recent change. The goal was \emph{not} to recover a complete
+emotional state. Absolute affect recognition would require strong assumptions
+about facial behavior, physiology, context, and ground truth. A camera observes
+movement rather than inner experience, and cardiac timing varies with
+respiration, posture, activity, medication, and fitness. Treating either channel
+as mind reading would make the interface easy to describe but scientifically
+misleading.
+
+The project therefore uses a deliberately narrower representation. During
+setup, the listener supplies short personal references. Subsequent facial and
+cardiac observations are interpreted as movements relative to those
+references. The horizontal direction represents more negative or more positive
+Valence evidence; the vertical direction represents lower or higher Arousal
+evidence. The point is then placed in one of four broad regions: Tense,
+Energetic, Melancholic, or Calm. These labels summarize a recommendation
+region. They are not diagnostic claims about the person. The first track is an
+initialization exception: it is chosen before a completed listening trajectory,
+and only later choices can use the preceding track's summarized path.
+
+Songs are organized with the same visual language. Song Valence forms the
+horizontal axis and song Energy is used as the catalog-side counterpart of
+listener Arousal. Once Vibe Shuffle has summarized the listener's recent
+trajectory, it keeps unplayed songs from the matching region and chooses the
+nearest one. A Random condition selects from the same remaining catalog without
+using the trajectory. The adaptive step is consequently easy to inspect:
+\emph{relative signals $\rightarrow$ recent point $\rightarrow$ region
+$\rightarrow$ nearest available song}.
+
+This paper introduces that software concept and its implementation. It makes
+four contributions:
+
+\begin{itemize}
+  \item a baseline-relative framing that avoids presenting the application as
+        an absolute emotion detector;
+  \item a transparent multimodal path from camera and cardiac observations to
+        a summarized listener trajectory;
+  \item an inspectable four-region, nearest-song policy over a fixed 100-track
+        catalog; and
+  \item an open browser artifact whose participant view can hide condition
+        labels, with a local row-level export for studying whether this form of
+        adaptation is useful.
+\end{itemize}
+
+An exploratory crossover with 15 participants is retained as an early check,
+not as the paper's central identity. The observed mood-fit difference favored
+Vibe on average, but its confidence interval included no difference. The result
+therefore motivates a better instrumented study rather than a claim that the
+software already improves experience. The stronger contribution is the
+explicit bridge between uncertain personal signals and a contestable
+recommendation decision.

@@ -1,17 +1,21 @@
 # Vibe Shuffle
 
-Vibe Shuffle is a browser-based research prototype that compares random music
-selection with affect-adaptive music selection. Each participant completes both
-conditions, rates every track, and exports one CSV row per trial.
+Vibe Shuffle is a browser-based research prototype that turns changes relative
+to a listener's personal camera and cardiac references into a transparent
+next-song choice. It does not claim to diagnose a complete emotional state.
+Instead, it follows a recent Valence-Arousal trajectory, assigns its average to
+one of four broad regions, and selects a nearby unplayed song. A masked study
+mode compares this policy with Random selection from the same controlled pool.
 
 - **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
-- **Paper:** Work in progress - [`public/paper.pdf`](public/paper.pdf)
+- **Paper:** [`public/paper.pdf`](public/paper.pdf)
 - **Live application:** https://eybmits.github.io/vibe-shuffle/
 
 ## Research question
 
-Does Vibe Shuffle produce higher participant-rated mood fit than Random Shuffle
-when both conditions use the same fixed track pool?
+Can a transparent next-song policy based on relative Valence-Arousal changes
+improve participant-rated mood fit compared with Random selection from the same
+fixed track pool?
 
 The prototype evaluates recommendation quality. It does not claim to infer an
 objective or clinical emotion.
@@ -23,10 +27,10 @@ objective or clinical emotion.
 2. An optional Bluetooth heart-rate sensor provides heart rate and RR intervals.
    Heart rate and RMSSD are compared with a 120-second personal baseline to
    estimate Arousal.
-3. The signals are fused into a Valence-Arousal coordinate during each listening
-   window.
-4. Random mode uses a reproducible seeded order. Vibe mode selects the closest
-   unplayed track from the matching Valence-Energy quadrant.
+3. The signals are fused into a sequence of relative Valence-Arousal points
+   during each listening window. The arithmetic mean summarizes this trajectory.
+4. Random mode uses a reproducible seeded order. Vibe mode maps the trajectory
+   mean to one of four regions and selects the closest eligible unplayed track.
 5. The participant rates liking and mood fit on seven-point scales and reports
    their current mood.
 
@@ -44,7 +48,7 @@ Spotify Tracks Dataset. Both experimental conditions use this same catalog.
 - Five tracks per block and ten trials per participant
 - Up to 60 seconds of listening per track
 - Early rating is allowed and recorded
-- Primary outcome: participant-rated mood fit
+- Exploratory report focus: participant-rated mood fit
 
 The exported CSV records protocol and track metadata, ratings, listening time,
 derived signal summaries, selection details, and data-quality flags.
@@ -68,6 +72,8 @@ data is pseudonymous, not anonymous, and must be handled accordingly.
 - Spotify Developer application with a public Client ID
 - Spotify Premium account for Web Playback SDK playback
 - Optional Bluetooth device implementing the Heart Rate Service
+- Python 3 with the packages in `paper/requirements.txt` and a LaTeX
+  installation when rebuilding the paper
 
 The application can run without the camera or heart-rate sensor, but Spotify
 playback is required for a complete study session.
@@ -113,7 +119,8 @@ Secret to this repository.
 | `npm run build` | Create the production build in `dist/`. |
 | `npm run check` | Run the complete test and build gate. |
 | `npm run preview` | Preview the production build. |
-| `npm run paper` | Rebuild the work-in-progress PDF. |
+| `npm run paper:figures` | Regenerate all three paper figures. |
+| `npm run paper` | Regenerate the figures and rebuild `public/paper.pdf`. |
 
 Pushes to `main` run the test/build workflow and deploy the application through
 GitHub Pages.
@@ -129,16 +136,22 @@ GitHub Pages.
 | `src/experimentData.js` | CSV generation and data-quality checks. |
 | `src/studyCatalog.js` | Fixed 100-track study catalog. |
 | `src/*.test.js` | Deterministic tests for the study logic. |
-| `paper/main.tex` | Minimal work-in-progress paper title page. |
-| `public/paper.pdf` | Paper title page served by the application. |
+| `paper/main.tex` | ACM-style paper entry point. |
+| `paper/sections/` | Abstract and manuscript sections. |
+| `paper/figures/` | Reproducible figure scripts plus vector and PNG exports. |
+| `paper/results/` | Frozen participant-level summaries used by Figure 3. |
+| `paper/RESULTS_PROVENANCE.md` | Result provenance and claim boundaries. |
+| `public/paper.pdf` | Rebuilt paper served by the application. |
 
 ## Limitations
 
 Vibe Shuffle is an experimental interaction system, not a validated emotion
-classifier or medical device. Facial rules, physiological coefficients,
-signal-quality thresholds, and the mapping from musical Energy to listener
-Arousal require independent validation. The fixed catalog improves experimental
-control but limits generalization.
+classifier or medical device. Its relative coordinate is a transparent
+recommendation heuristic rather than a measurement of the listener's complete
+emotional state. Facial rules, physiological coefficients, signal-quality
+thresholds, and the mapping from musical Energy to listener Arousal require
+independent validation. The fixed catalog improves experimental control but
+limits generalization.
 
 ## License
 

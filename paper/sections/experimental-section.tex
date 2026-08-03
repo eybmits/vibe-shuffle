@@ -1,0 +1,61 @@
+\section{Exploratory Crossover Study}
+\label{sec:study}
+
+\subsection{Protocol}
+
+The implemented study asks whether the relative adaptive policy feels more
+appropriate than Random selection from the same catalog. Every participant
+completes one five-track Random block and one five-track Vibe block. Two masked
+protocols reverse the order, and odd/even participant numbers suggest the
+assignment. Participants see a protocol identifier rather than the condition
+name when the operator keeps the participant-facing mode enabled. The same
+interface exposes a view toggle and protocol controls, while the experimenter
+and exported data can reveal the order. Masking therefore depended on study
+administration; it was not technically enforced or double blind. The paired
+design is efficient but remains susceptible to practice and carryover, making
+reversed order a substantive control~\cite{greenwald1976}.
+
+Each track plays for up to 60 seconds. Participants may select \emph{Rate now};
+the actual duration and an early-rating flag are preserved. After each track,
+the interface collects a seven-point liking rating, a seven-point mood-fit
+rating, and a categorical current-mood report. Mood fit is treated as the
+primary outcome in this exploratory report because it directly evaluates the
+matching idea. Liking is treated as secondary and helps separate contextual fit
+from general song preference.
+
+\subsection{Available evidence}
+
+The supplied analysis report publishes one five-trial condition mean per
+participant/session for 15 participants, together with paired tests and
+condition-level summaries. These 15 rows are frozen in the repository under
+generic analysis IDs. The protocol implies 75 planned ratings per condition and
+outcome, but the repository still lacks the underlying trial rows needed to
+verify completeness, exclusions, or within-session variation. It also lacks
+recruitment records, demographics, and the complete study-administration file.
+The present paper therefore treats the participant/session as the inferential
+unit and does not claim a fully reproducible human-study archive.
+
+Paired differences are defined as Vibe minus Random. We show the published
+participant/session means, report condition means and standard deviations,
+paired mean differences with two-sided 95\% confidence intervals, and the
+originally supplied paired tests. Because no dated preregistration was
+available, all inference is exploratory~\cite{nosek2018}. We foreground paired
+effects and confidence intervals rather than a thresholded
+$p$-value~\cite{cumming2014}.
+
+\begin{table}[t]
+  \caption{Exploratory condition summaries ($N=15$ participants). Confidence
+  intervals are two-sided. The reported study tests used one-sided
+  Vibe-over-Random alternatives.}
+  \label{tab:pilot}
+  \centering
+  \small
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Outcome & Vibe $M$ (SD) & Random $M$ (SD) & Difference [95\% CI] \\
+    \midrule
+    Mood fit & 4.71 (0.99) & 4.15 (1.30) & $+0.56$ [$-0.21,1.33$] \\
+    Liking   & 4.56 (1.18) & 4.47 (0.77) & $+0.09$ [$-0.52,0.71$] \\
+    \bottomrule
+  \end{tabular}
+\end{table}

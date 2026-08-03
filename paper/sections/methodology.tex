@@ -1,0 +1,157 @@
+\section{From Relative Signals to the Next Song}
+\label{sec:method}
+
+\subsection{Design principle}
+
+Vibe Shuffle is a client-only React/Vite application. A camera, an optional
+Bluetooth Heart Rate Service device, and Spotify playback meet inside one
+browser session. There is no study database or recommendation server. The
+design keeps adaptation between songs rather than changing playback
+continuously: the system listens to the latest window, summarizes it, and then
+chooses the next track. This makes the decision legible and prevents every
+short-lived fluctuation from becoming a command.
+
+Figure~\ref{fig:trajectory} shows the complete idea. Two personal references
+anchor the incoming signals. Confirmed playback produces a path rather than a
+single instantaneous label. The path is averaged, mapped to a region, and used
+to select a nearby song. A participant then rates the track, closing the
+interaction loop.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{fig2_relative_trajectory.pdf}
+  \caption{\textbf{Relative sensing, trajectory, and selection in Vibe
+  Shuffle.} (a) Camera and cardiac inputs are expressed as signed changes from
+  personal references. (b) A curved Valence--Arousal trajectory is summarized
+  by its arithmetic mean (gold diamond); points grow and darken from the open
+  start marker to the filled endpoint. (c) Within the matching region,
+  \emph{As It Was} is nearest but
+  excluded as played (cross), so \emph{CUFF IT} becomes the selected eligible
+  track (filled diamond); open circles are alternatives.
+  The relative changes and trajectory are illustrative; catalog candidates,
+  distances, and the selection result are repository-derived.
+  This is a relative heuristic, not an emotion diagnosis; coherence is logged
+  separately and does not affect selection.}
+  \Description{Three equal square panels show camera and cardiac changes from
+  personal references, a curved illustrative relative valence-arousal
+  trajectory with its mean, and a ranked list of five catalog candidates in
+  which As It Was is marked played and CUFF IT is selected.}
+  \label{fig:trajectory}
+\end{figure*}
+
+\subsection{Relative Valence from camera cues}
+
+The browser runs MediaPipe Face Landmarker locally~\cite{mediapipe2019}. It
+returns facial blendshape activations such as smile, cheek, brow, eye, jaw,
+frown, and mouth movement. Vibe Shuffle combines a selected subset into
+transparent positive, negative, and tension-related scores. These labels belong
+to Vibe Shuffle's rule layer; MediaPipe itself does not output the project's
+emotion-region labels.
+
+A 14-second calibration captures a short facial reference, and a slow running
+baseline continues to adapt. Later observations are debiased against this
+reference and smoothed across frames. Positive facial evidence moves Valence to
+the right; negative or tension-related evidence moves it to the left. If no face
+is detected, Valence returns to the neutral center. The current heuristic also
+lets visible movement increase positive Valence evidence and upward Arousal
+evidence. Movement may instead reflect dancing, repositioning, lighting change,
+or camera noise, so this rule is not a validated engagement or affect measure.
+
+\subsection{Relative Arousal from cardiac timing}
+
+The optional wearable provides device-produced beats per minute and, when
+available, RR intervals---the elapsed time between successive beats. The
+application does not receive a raw electrocardiogram and cannot inspect the
+device's peak-detection process. Implausible and abruptly changing RR intervals
+are rejected before short-term variability is calculated.
+
+The primary variability feature is the root mean square of successive
+differences (RMSSD). A 120-second reference stores the listener's ordinary
+median heart rate and typical RMSSD together with robust estimates of their
+variation. During listening, higher-than-reference heart rate and
+lower-than-reference RMSSD provide upward Arousal evidence. Heart rate receives
+the larger influence because RMSSD estimated from a short window is unstable;
+when the two disagree, the RMSSD contribution is strongly reduced. At least 20
+accepted RR intervals are required before the full estimate is treated as
+usable. Controlled resting data show high agreement between 120-second and
+longer RMSSD recordings~\cite{munoz2015}; this supports the calibration duration,
+not short moving-wearable windows or Arousal validity.
+
+The implementation also exports SDNN and a custom normalized
+frequency-domain spectral-peakedness score. The CSV calls this the physiology
+coherence field. It is an experimental diagnostic, not the coherence measure
+analyzed by Balaji et al., and it does not determine the selected region. Prior
+HRV-biofeedback research reports group-level associations between coherence
+patterns and end-of-session self-reported emotion
+categories~\cite{balaji2025}. That result motivates careful study of cardiac
+timing, but it neither validates the prototype's proxy nor shows that a short
+personal window can identify an individual's emotion. Vibe Shuffle accordingly
+uses baseline-relative activation evidence rather than translating coherence
+frequencies into labels.
+
+\subsection{A trajectory rather than a snapshot}
+
+Whenever the fused live coordinate changes during confirmed playback, Vibe
+Shuffle appends a point to the current trial buffer. Facial cues primarily
+control Valence. Usable cardiac evidence supplies the Arousal base, with visible
+movement able to add upward Arousal. If cardiac evidence is unavailable, camera
+movement provides an upward-only fallback. If neither channel is usable, the
+coordinate returns to $(0.5,0.5)$.
+
+The resulting sequence makes the listener's path visible conceptually:
+\[
+  \mathcal{T}=\{(V_1,A_1),\ldots,(V_m,A_m)\}.
+\]
+At rating time, the application uses the arithmetic mean
+\[
+  (\bar V,\bar A)=\frac{1}{m}\sum_{i=1}^{m}(V_i,A_i)
+\]
+as the target for the next adaptive choice. The points are event-driven rather
+than sampled at a fixed rate, so this is not a time-weighted physiological
+average. Sample count and actual listening duration are exported to make that
+approximation visible.
+
+\subsection{Four regions and a fixed music space}
+
+Splitting both axes at 0.5 produces four recommendation regions:
+Energetic (higher Valence and Arousal), Calm (higher Valence and lower
+Arousal), Tense (lower Valence and higher Arousal), and Melancholic (lower on
+both axes). The frozen catalog contains 100 Spotify tracks, with 25 tracks in
+each corresponding Valence--Energy region. Track coordinates originate from
+historical Spotify features in a public dataset~\cite{spotifydataset}. Energy
+is a practical catalog-side counterpart of Arousal, not proof that an audio
+feature and a physiological construct are identical.
+
+Both Random and Vibe exclude the current and all previously played tracks.
+Random ranks the remaining tracks with a session-seeded pseudorandom score.
+Vibe first retains available tracks in the target region and then selects the
+smallest Euclidean distance:
+\[
+ s^*=\arg\min_{s\in Q(\bar V,\bar A)}
+ \sqrt{(V_s-\bar V)^2+(E_s-\bar A)^2}.
+\]
+The seed resolves only an exact distance tie. If a region has no remaining
+track, the policy falls back to the complete unplayed pool. The export records
+the target coordinate, signal source, distance, and region match. It does not
+record the random seed, the personal facial-reference values, or individual
+trajectory points. The first track is also chosen from the live setup estimate
+before the 14-second facial reference is finalized; later choices use the
+preceding listening window.
+
+\subsection{Browser implementation and privacy boundary}
+
+Spotify authentication uses Authorization Code with PKCE, and the Web Playback
+SDK provides playback for an allowlisted Premium account. Raw camera frames,
+facial landmarks, and Bluetooth notifications remain in browser memory. The
+locally downloaded CSV contains derived signal summaries, song metadata,
+selection fields, ratings, quality flags, pseudonymous identifiers, and
+timestamps. It is downloaded automatically at protocol completion and can also
+be downloaded manually. It contains no image, landmark set, raw waveform, or
+audio. Because it retains only trajectory summaries, it supports review of the
+final adaptive target but not replay of every sensing step.
+
+This is a bounded privacy property, not a claim of offline operation. Spotify
+authentication and playback, MediaPipe asset delivery, and GitHub Pages create
+ordinary external traffic. Exported participant numbers and timestamps are
+pseudonymous rather than anonymous and still require appropriate research-data
+handling.
