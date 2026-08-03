@@ -1,5 +1,16 @@
 """Shared color system for every Vibe Shuffle paper figure."""
 
+# The ACM manuscript uses 9 pt Linux Libertine. DejaVu Sans has a larger
+# x-height, so 8 pt is a close optical match after full-width figure scaling.
+# Keep every reader-facing label on that same optical baseline; panel letters
+# remain 9 pt for hierarchy.
+PANEL_LABEL_SIZE = 9.0
+PRIMARY_TEXT_SIZE = 8.0
+AXIS_LABEL_SIZE = 8.0
+SECONDARY_TEXT_SIZE = 8.0
+TICK_LABEL_SIZE = 8.0
+MICRO_TEXT_SIZE = 8.0
+
 INK = "#18232F"
 MUTED = "#566473"
 MID = "#7B8793"

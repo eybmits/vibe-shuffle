@@ -36,6 +36,7 @@ from matplotlib.patches import Circle, FancyBboxPatch, Rectangle
 import numpy as np
 
 from paper_palette import (
+    AXIS_LABEL_SIZE,
     BLUE,
     BLUE_DARK,
     BLUE_LIGHT,
@@ -47,16 +48,21 @@ from paper_palette import (
     GOLD_MID,
     GRID,
     INK,
+    MICRO_TEXT_SIZE,
     MUTED,
+    PANEL_LABEL_SIZE,
+    PRIMARY_TEXT_SIZE,
     PURPLE,
     PURPLE_DARK,
     PURPLE_LIGHT,
     PURPLE_MID,
     REFERENCE,
+    SECONDARY_TEXT_SIZE,
     TEAL,
     TEAL_DARK,
     TEAL_LIGHT,
     TEAL_MID,
+    TICK_LABEL_SIZE,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -96,15 +102,15 @@ def set_style() -> None:
     mpl.rcParams.update(
         {
             "font.family": "DejaVu Sans",
-            "font.size": 8.5,
-            "axes.titlesize": 9.6,
+            "font.size": SECONDARY_TEXT_SIZE,
+            "axes.titlesize": PANEL_LABEL_SIZE,
             "axes.titleweight": "bold",
-            "axes.labelsize": 8.5,
+            "axes.labelsize": AXIS_LABEL_SIZE,
             "axes.labelcolor": INK,
             "axes.edgecolor": REFERENCE,
             "axes.linewidth": 0.75,
-            "xtick.labelsize": 8.5,
-            "ytick.labelsize": 8.5,
+            "xtick.labelsize": TICK_LABEL_SIZE,
+            "ytick.labelsize": TICK_LABEL_SIZE,
             "xtick.color": MUTED,
             "ytick.color": MUTED,
             "xtick.major.size": 3,
@@ -228,7 +234,7 @@ def add_quadrant_labels(ax: plt.Axes) -> None:
             ha=ha,
             va=va,
             color=QUADRANTS[key]["color"],
-            fontsize=8.5,
+            fontsize=PRIMARY_TEXT_SIZE,
             fontweight="bold",
             zorder=5,
         )
@@ -251,15 +257,15 @@ def build_figure() -> plt.Figure:
     """
     set_style()
 
-    fig = plt.figure(figsize=(7.16, 2.72))
+    fig = plt.figure(figsize=(7.16, 2.68))
     grid = fig.add_gridspec(
         1,
         3,
-        left=0.035,
-        right=0.985,
-        bottom=0.155,
-        top=0.855,
-        wspace=0.28,
+        left=0.030,
+        right=0.990,
+        bottom=0.135,
+        top=0.895,
+        wspace=0.20,
     )
     circumplex_ax = fig.add_subplot(grid[0, 0])
     vocabulary_ax = fig.add_subplot(grid[0, 1])
@@ -270,7 +276,9 @@ def build_figure() -> plt.Figure:
     circumplex_ax.set_ylim(-1.0, 1.0)
     circumplex_ax.set_aspect("equal", adjustable="box")
     circumplex_ax.set_box_aspect(1)
-    circumplex_ax.set_title("(a)", loc="left", color=INK, pad=7, fontsize=8.2)
+    circumplex_ax.set_title(
+        "(a)", loc="left", color=INK, pad=5, fontsize=PANEL_LABEL_SIZE
+    )
 
     affect_fields = [
         (-1.0, 0.0, CORAL_LIGHT),
@@ -325,7 +333,7 @@ def build_figure() -> plt.Figure:
         "Valence",
         ha="right",
         va="bottom",
-        fontsize=6.5,
+        fontsize=PRIMARY_TEXT_SIZE,
         fontweight="normal",
         color=INK,
         zorder=7,
@@ -337,16 +345,28 @@ def build_figure() -> plt.Figure:
         ha="left",
         va="top",
         rotation=90,
-        fontsize=6.5,
+        fontsize=PRIMARY_TEXT_SIZE,
         fontweight="normal",
         color=INK,
         zorder=7,
     )
     circumplex_ax.text(
-        -0.95, -0.055, "unpleasant", ha="left", va="top", fontsize=5.8, color=MUTED
+        -0.95,
+        -0.055,
+        "unpleasant",
+        ha="left",
+        va="top",
+        fontsize=SECONDARY_TEXT_SIZE,
+        color=MUTED,
     )
     circumplex_ax.text(
-        0.95, -0.055, "pleasant", ha="right", va="top", fontsize=5.8, color=MUTED
+        0.95,
+        -0.055,
+        "pleasant",
+        ha="right",
+        va="top",
+        fontsize=SECONDARY_TEXT_SIZE,
+        color=MUTED,
     )
     circumplex_ax.text(
         -0.055,
@@ -354,7 +374,7 @@ def build_figure() -> plt.Figure:
         "high",
         ha="right",
         va="top",
-        fontsize=5.8,
+        fontsize=SECONDARY_TEXT_SIZE,
         color=MUTED,
     )
     circumplex_ax.text(
@@ -363,7 +383,7 @@ def build_figure() -> plt.Figure:
         "low",
         ha="right",
         va="bottom",
-        fontsize=5.8,
+        fontsize=SECONDARY_TEXT_SIZE,
         color=MUTED,
     )
 
@@ -380,7 +400,7 @@ def build_figure() -> plt.Figure:
             label,
             ha="center",
             va="center",
-            fontsize=6.35,
+            fontsize=PRIMARY_TEXT_SIZE,
             fontweight="normal",
             color=color,
             clip_on=True,
@@ -404,7 +424,9 @@ def build_figure() -> plt.Figure:
     vocabulary_ax.set_xlim(0, 3)
     vocabulary_ax.set_ylim(0, 4)
     vocabulary_ax.set_box_aspect(1)
-    vocabulary_ax.set_title("(b)", loc="left", color=INK, pad=7, fontsize=8.2)
+    vocabulary_ax.set_title(
+        "(b)", loc="left", color=INK, pad=5, fontsize=PANEL_LABEL_SIZE
+    )
     vocabulary_ax.set_facecolor("white")
 
     card_specs = [
@@ -440,7 +462,7 @@ def build_figure() -> plt.Figure:
             label,
             ha="center",
             va="center",
-            fontsize=6.15,
+            fontsize=PRIMARY_TEXT_SIZE,
             fontweight="normal",
             color=text_color,
             zorder=3,
@@ -454,7 +476,9 @@ def build_figure() -> plt.Figure:
     frequency_ax.set_xlim(0.03, 0.15)
     frequency_ax.set_ylim(0.0, 2.0)
     frequency_ax.set_box_aspect(1)
-    frequency_ax.set_title("(c)", loc="left", color=INK, pad=7, fontsize=8.2)
+    frequency_ax.set_title(
+        "(c)", loc="left", color=INK, pad=5, fontsize=PANEL_LABEL_SIZE
+    )
     frequency_ax.set_facecolor("white")
 
     x = np.linspace(0.03, 0.15, 500)
@@ -502,12 +526,12 @@ def build_figure() -> plt.Figure:
         0.10, color=REFERENCE, lw=0.8, ls=(0, (2.2, 2.2)), alpha=0.72, zorder=1
     )
     frequency_ax.text(
-        0.10,
+        0.103,
         1.58,
         "0.10 Hz",
-        ha="center",
+        ha="left",
         va="bottom",
-        fontsize=5.8,
+        fontsize=SECONDARY_TEXT_SIZE,
         fontweight="normal",
         color=REFERENCE,
         zorder=5,
@@ -518,7 +542,7 @@ def build_figure() -> plt.Figure:
         "more dispersed",
         ha="left",
         va="bottom",
-        fontsize=6.0,
+        fontsize=AXIS_LABEL_SIZE,
         fontweight="normal",
         color=CORAL_DARK,
     )
@@ -528,17 +552,17 @@ def build_figure() -> plt.Figure:
         "more concentrated",
         ha="left",
         va="bottom",
-        fontsize=6.0,
+        fontsize=AXIS_LABEL_SIZE,
         fontweight="normal",
         color=TEAL_DARK,
     )
     frequency_ax.text(
-        0.146,
+        0.034,
         1.92,
-        "schematic · not data",
-        ha="right",
+        "schematic only",
+        ha="left",
         va="top",
-        fontsize=5.35,
+        fontsize=MICRO_TEXT_SIZE,
         fontweight="normal",
         color=MUTED,
         zorder=6,
@@ -549,7 +573,7 @@ def build_figure() -> plt.Figure:
         "association ≠ individual emotion label",
         ha="center",
         va="bottom",
-        fontsize=5.45,
+        fontsize=MICRO_TEXT_SIZE,
         color=MUTED,
         bbox={
             "boxstyle": "square,pad=0.06",
@@ -559,9 +583,13 @@ def build_figure() -> plt.Figure:
         },
         zorder=5,
     )
-    frequency_ax.set_xlabel("Frequency (Hz)", labelpad=1.5, fontsize=6.5)
+    frequency_ax.set_xlabel(
+        "Frequency (Hz)", labelpad=1, fontsize=AXIS_LABEL_SIZE
+    )
     frequency_ax.set_xticks([0.04, 0.10, 0.14])
-    frequency_ax.set_xticklabels(["0.04", "0.10", "0.14"], fontsize=5.9)
+    frequency_ax.set_xticklabels(
+        ["0.04", "0.10", "0.14"], fontsize=TICK_LABEL_SIZE
+    )
     frequency_ax.set_yticks([])
     frequency_ax.tick_params(axis="x", pad=1, length=2.4, width=0.6)
     frequency_ax.spines["left"].set_visible(False)

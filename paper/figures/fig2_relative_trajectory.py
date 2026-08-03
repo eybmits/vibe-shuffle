@@ -48,17 +48,23 @@ from fig1_affect_space import (
     style_affect_axes,
 )
 from paper_palette import (
+    AXIS_LABEL_SIZE,
     BLUE,
     CORAL_DARK,
     GOLD,
     GRID,
     INK,
+    MICRO_TEXT_SIZE,
     MID,
     MUTED,
+    PANEL_LABEL_SIZE,
+    PRIMARY_TEXT_SIZE,
     REFERENCE,
     ROW_RULE,
     TEAL,
     TEAL_LIGHT,
+    SECONDARY_TEXT_SIZE,
+    TICK_LABEL_SIZE,
 )
 
 
@@ -125,9 +131,9 @@ def _set_panel_label(axis: plt.Axes, label: str) -> None:
         label,
         loc="left",
         color=INK,
-        fontsize=8.2,
+        fontsize=PANEL_LABEL_SIZE,
         fontweight="bold",
-        pad=7,
+        pad=5,
     )
     axis.set_box_aspect(1)
 
@@ -139,12 +145,14 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
     axis.set_ylim(-0.58, 1.58)
     axis.set_yticks([])
     axis.set_xticks((-0.24, 0.0, 0.24))
-    axis.set_xticklabels(("below", "reference", "above"), fontsize=5.8)
+    axis.set_xticklabels(
+        ("below", "reference", "above"), fontsize=TICK_LABEL_SIZE
+    )
     axis.set_xlabel(
-        "Change from personal reference",
-        fontsize=5.8,
+        "Change from reference",
+        fontsize=AXIS_LABEL_SIZE,
         color=MUTED,
-        labelpad=4,
+        labelpad=3,
     )
     axis.tick_params(axis="x", colors=MUTED, length=2.5, width=0.6, pad=2)
     axis.axvline(0, color=REFERENCE, linewidth=0.8, linestyle=(0, (2, 2)), zorder=1)
@@ -158,16 +166,16 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
             "delta": target[0] - 0.5,
             "color": CAMERA,
             "name": "Camera cues",
-            "reference": "14 s personal reference",
-            "symbol": "+ΔV",
+            "reference": "14 s reference",
+            "symbol": "ΔV",
         },
         {
             "y": 0.0,
             "delta": target[1] - 0.5,
             "color": CARDIAC,
             "name": "Heart + RR",
-            "reference": "120 s personal reference",
-            "symbol": "+ΔA",
+            "reference": "120 s reference",
+            "symbol": "ΔA",
         },
     )
     for row in rows:
@@ -206,7 +214,7 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
             str(row["name"]),
             ha="left",
             va="center",
-            fontsize=6.35,
+            fontsize=PRIMARY_TEXT_SIZE,
             fontweight="bold",
             color=INK,
         )
@@ -216,16 +224,16 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
             str(row["reference"]),
             ha="right",
             va="center",
-            fontsize=5.45,
+            fontsize=SECONDARY_TEXT_SIZE,
             color=MUTED,
         )
         axis.text(
-            delta + 0.022,
+            delta + 0.015,
             y_value,
             str(row["symbol"]),
             ha="left",
             va="center",
-            fontsize=5.9,
+            fontsize=AXIS_LABEL_SIZE,
             fontweight="bold",
             color=color,
         )
@@ -246,9 +254,9 @@ def draw_trajectory(
     add_quadrant_fields(axis)
     style_affect_axes(axis, "Relative valence", "Relative arousal")
     _set_panel_label(axis, "(b)")
-    axis.tick_params(axis="both", labelsize=6.0, pad=2)
-    axis.xaxis.label.set_size(6.5)
-    axis.yaxis.label.set_size(6.5)
+    axis.tick_params(axis="both", labelsize=TICK_LABEL_SIZE, pad=2)
+    axis.xaxis.label.set_size(AXIS_LABEL_SIZE)
+    axis.yaxis.label.set_size(AXIS_LABEL_SIZE)
     axis.xaxis.labelpad = 3
     axis.yaxis.labelpad = 3
 
@@ -266,7 +274,7 @@ def draw_trajectory(
             transform=axis.transAxes,
             ha=horizontal,
             va=vertical,
-            fontsize=4.8,
+            fontsize=MICRO_TEXT_SIZE,
             fontweight="bold",
             color=str(QUADRANTS[key]["dark"]),
             zorder=2,
@@ -347,7 +355,7 @@ def draw_trajectory(
         textcoords="offset points",
         ha="center",
         va="top",
-        fontsize=4.6,
+        fontsize=MICRO_TEXT_SIZE,
         fontweight="bold",
         color=INK,
         zorder=9,
@@ -355,10 +363,10 @@ def draw_trajectory(
     axis.annotate(
         "start",
         xy=(valence[0], arousal[0]),
-        xytext=(0.34, 0.42),
+        xytext=(0.37, 0.43),
         ha="center",
         va="center",
-        fontsize=4.6,
+        fontsize=MICRO_TEXT_SIZE,
         fontweight="bold",
         color=MUTED,
         arrowprops={
@@ -372,11 +380,11 @@ def draw_trajectory(
     )
     axis.text(
         0.92,
-        0.63,
+        0.62,
         "end",
         ha="right",
         va="center",
-        fontsize=4.6,
+        fontsize=MICRO_TEXT_SIZE,
         fontweight="bold",
         color=CAMERA,
         zorder=8,
@@ -419,9 +427,13 @@ def draw_candidate_ranking(
     axis.set_xlim(0, 0.10)
     axis.set_ylim(-0.75, len(candidates) - 0.25)
     axis.set_xticks((0.0, 0.05, 0.10))
-    axis.set_xticklabels(("0", "0.05", "0.10"), fontsize=5.9)
+    axis.set_xticklabels(("0", "0.05", "0.10"), fontsize=TICK_LABEL_SIZE)
+    for tick_label, alignment in zip(
+        axis.get_xticklabels(), ("left", "center", "right")
+    ):
+        tick_label.set_horizontalalignment(alignment)
     axis.set_yticks([])
-    axis.set_xlabel("Distance to trajectory mean", fontsize=6.5, labelpad=3)
+    axis.set_xlabel("Distance from mean", fontsize=AXIS_LABEL_SIZE, labelpad=3)
     axis.tick_params(axis="x", colors=MUTED, length=2.5, width=0.6, pad=2)
     axis.grid(axis="x", color=GRID, linewidth=0.6, zorder=0)
 
@@ -456,7 +468,7 @@ def draw_candidate_ranking(
             title,
             ha="left",
             va="center",
-            fontsize=5.65,
+            fontsize=AXIS_LABEL_SIZE,
             fontweight="bold" if is_selected else "normal",
             color=INK,
             zorder=5,
@@ -467,7 +479,7 @@ def draw_candidate_ranking(
             str(track["artist"]),
             ha="left",
             va="center",
-            fontsize=4.85,
+            fontsize=MICRO_TEXT_SIZE,
             color=MUTED,
             zorder=5,
         )
@@ -516,7 +528,7 @@ def draw_candidate_ranking(
             status,
             ha="right",
             va="center",
-            fontsize=4.8,
+            fontsize=MICRO_TEXT_SIZE,
             fontweight="bold" if is_selected else "normal",
             color=status_color,
             zorder=5,
@@ -556,15 +568,15 @@ def build_figure() -> plt.Figure:
     if [track["title"] for _, track in candidates[:2]] != ["As It Was", "CUFF IT"]:
         raise ValueError("Nearest-candidate ordering drifted")
 
-    figure = plt.figure(figsize=(7.16, 2.72))
+    figure = plt.figure(figsize=(7.16, 2.68))
     grid = figure.add_gridspec(
         1,
         3,
-        left=0.035,
-        right=0.985,
-        bottom=0.155,
-        top=0.855,
-        wspace=0.28,
+        left=0.030,
+        right=0.990,
+        bottom=0.135,
+        top=0.895,
+        wspace=0.22,
     )
     input_axis = figure.add_subplot(grid[0, 0])
     trajectory_axis = figure.add_subplot(grid[0, 1])

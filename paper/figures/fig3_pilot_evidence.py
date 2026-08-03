@@ -35,7 +35,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.gridspec import GridSpec
 
-from paper_palette import CONNECTOR, GOLD, GOLD_DARK, GRID, INK, MID, MUTED, TEAL
+from paper_palette import (
+    AXIS_LABEL_SIZE,
+    CONNECTOR,
+    GOLD,
+    GOLD_DARK,
+    GRID,
+    INK,
+    MID,
+    MUTED,
+    PANEL_LABEL_SIZE,
+    SECONDARY_TEXT_SIZE,
+    TEAL,
+    TICK_LABEL_SIZE,
+)
 
 
 NEUTRAL = MID
@@ -97,11 +110,11 @@ def _configure_style() -> None:
     mpl.rcParams.update(
         {
             "font.family": "DejaVu Sans",
-            "font.size": 6.6,
-            "axes.labelsize": 6.6,
-            "axes.titlesize": 7.6,
-            "xtick.labelsize": 6.0,
-            "ytick.labelsize": 6.2,
+            "font.size": SECONDARY_TEXT_SIZE,
+            "axes.labelsize": AXIS_LABEL_SIZE,
+            "axes.titlesize": PANEL_LABEL_SIZE,
+            "xtick.labelsize": TICK_LABEL_SIZE,
+            "ytick.labelsize": TICK_LABEL_SIZE,
             "axes.unicode_minus": False,
             "pdf.fonttype": 42,
             "ps.fonttype": 42,
@@ -219,7 +232,6 @@ def _style_rating_axis(axis: mpl.axes.Axes) -> None:
     axis.set_xlim(-0.22, 1.22)
     axis.set_ylim(0.8, 7.2)
     axis.set_yticks((1, 3, 5, 7))
-    axis.set_ylabel("Rating (1-7)", color=INK, labelpad=2)
     axis.set_box_aspect(1)
     axis.grid(axis="y", color=GRID, linewidth=0.48, zorder=0)
     for spine in ("right", "top"):
@@ -238,6 +250,8 @@ def _plot_pairs(
     random_values: np.ndarray,
     vibe_values: np.ndarray,
     summary: Summary,
+    *,
+    show_xlabel: bool,
 ) -> None:
     _style_rating_axis(axis)
     order = np.argsort(random_values + vibe_values)
@@ -256,7 +270,7 @@ def _plot_pairs(
     axis.scatter(
         offsets,
         random_values,
-        s=16,
+        s=19,
         facecolor="white",
         edgecolor=NEUTRAL,
         linewidth=0.8,
@@ -265,7 +279,7 @@ def _plot_pairs(
     axis.scatter(
         1.0 + offsets,
         vibe_values,
-        s=17,
+        s=20,
         facecolor=outcome.color,
         edgecolor="white",
         linewidth=0.55,
@@ -304,7 +318,7 @@ def _plot_pairs(
         axis.scatter(
             x_value,
             mean,
-            s=38,
+            s=42,
             marker="D",
             facecolor=facecolor,
             edgecolor=edgecolor,
@@ -326,6 +340,7 @@ def _plot_pairs(
             "Vibe",
         ),
     )
+    axis.tick_params(axis="x", labelbottom=show_xlabel)
 
 
 def _stacked_y(values: np.ndarray) -> np.ndarray:
@@ -347,10 +362,10 @@ def _style_difference_axis(
 ) -> None:
     axis.set_xlim(-3.25, 3.25)
     axis.set_ylim(0.0, 1.0)
-    axis.set_xticks((-3, -2, -1, 0, 1, 2, 3))
+    axis.set_xticks((-3, -1, 0, 1, 3))
     axis.set_yticks([])
     if show_xlabel:
-        axis.set_xlabel("Vibe - Random\n(rating points)", color=INK, labelpad=2)
+        axis.set_xlabel("Vibe - Random", color=INK, labelpad=2)
     axis.set_box_aspect(1)
     axis.grid(axis="x", color=GRID, linewidth=0.48, zorder=0)
     axis.axvline(
@@ -364,7 +379,13 @@ def _style_difference_axis(
         axis.spines[spine].set_visible(False)
     axis.spines["bottom"].set_color(NEUTRAL)
     axis.spines["bottom"].set_linewidth(0.65)
-    axis.tick_params(axis="x", colors=MUTED, length=2.4, width=0.6)
+    axis.tick_params(
+        axis="x",
+        colors=MUTED,
+        length=2.4,
+        width=0.6,
+        labelbottom=show_xlabel,
+    )
 
 
 def _plot_differences(
@@ -404,7 +425,7 @@ def _plot_differences(
     axis.scatter(
         differences,
         _stacked_y(differences),
-        s=18,
+        s=20,
         facecolor=outcome.color,
         edgecolor="white",
         linewidth=0.45,
@@ -431,7 +452,7 @@ def _plot_differences(
     axis.scatter(
         summary.difference,
         effect_y,
-        s=38,
+        s=42,
         marker="D",
         facecolor=outcome.color,
         edgecolor="white",
@@ -450,15 +471,15 @@ def _plot_differences(
         0.50,
         0.285,
         f"Mean {summary.difference:+.2f}\n"
-        f"95% CI [{summary.ci_low:+.2f}, {summary.ci_high:+.2f}]",
+        f"95% CI [{summary.ci_low:.2f}, {summary.ci_high:.2f}]",
         transform=axis.transAxes,
         ha="center",
         va="center",
-        fontsize=5.8,
+        fontsize=SECONDARY_TEXT_SIZE,
         linespacing=1.14,
         color=INK,
         bbox={
-            "boxstyle": "square,pad=0.10",
+            "boxstyle": "square,pad=0.02",
             "facecolor": "white",
             "edgecolor": "none",
             "alpha": 0.94,
@@ -472,18 +493,25 @@ def build_figure() -> mpl.figure.Figure:
     summaries = _load_summaries()
 
     # Build at the final ACM column width so typography is never downscaled.
-    figure = plt.figure(figsize=(3.34, 3.48))
+    figure = plt.figure(figsize=(3.34, 3.36))
     grid = GridSpec(
         2,
         2,
         figure=figure,
         width_ratios=(1.0, 1.0),
-        left=0.18,
-        right=0.985,
-        bottom=0.115,
-        top=0.955,
-        hspace=0.25,
-        wspace=0.12,
+        left=0.17,
+        right=0.990,
+        bottom=0.110,
+        top=0.950,
+        hspace=0.21,
+        wspace=0.14,
+    )
+    figure.supylabel(
+        "Rating (1-7)",
+        x=0.035,
+        y=0.53,
+        fontsize=AXIS_LABEL_SIZE,
+        color=INK,
     )
 
     for row_index, (outcome, letters) in enumerate(
@@ -502,6 +530,7 @@ def build_figure() -> mpl.figure.Figure:
             random_values,
             vibe_values,
             summary,
+            show_xlabel=row_index == 1,
         )
         _plot_differences(
             difference_axis,
