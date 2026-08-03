@@ -228,11 +228,11 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
             color=MUTED,
         )
         axis.text(
-            delta + 0.015,
-            y_value,
+            delta,
+            y_value + 0.08,
             str(row["symbol"]),
-            ha="left",
-            va="center",
+            ha="center",
+            va="bottom",
             fontsize=AXIS_LABEL_SIZE,
             fontweight="bold",
             color=color,
@@ -259,6 +259,7 @@ def draw_trajectory(
     axis.yaxis.label.set_size(AXIS_LABEL_SIZE)
     axis.xaxis.labelpad = 3
     axis.yaxis.labelpad = 3
+    axis.yaxis.set_label_coords(-0.12, 0.5)
 
     quadrant_labels = {
         "tense": (0.035, 0.965, "left", "top"),
@@ -462,9 +463,10 @@ def draw_candidate_ranking(
         title = str(track["title"])
         is_played = title in played_titles
         is_selected = title == chosen_title
+        marker_y = y_value + 0.15
         axis.text(
             0.002,
-            y_value + 0.15,
+            marker_y,
             title,
             ha="left",
             va="center",
@@ -487,7 +489,7 @@ def draw_candidate_ranking(
         if is_played:
             axis.scatter(
                 [distance],
-                [y_value],
+                [marker_y],
                 s=29,
                 marker="x",
                 color=PLAYED,
@@ -499,7 +501,7 @@ def draw_candidate_ranking(
         elif is_selected:
             axis.scatter(
                 [distance],
-                [y_value],
+                [marker_y],
                 s=34,
                 marker="D",
                 facecolor=CAMERA,
@@ -512,7 +514,7 @@ def draw_candidate_ranking(
         else:
             axis.scatter(
                 [distance],
-                [y_value],
+                [marker_y],
                 s=23,
                 facecolor="white",
                 edgecolor=ALTERNATIVE,
@@ -524,7 +526,7 @@ def draw_candidate_ranking(
 
         axis.text(
             0.097,
-            y_value,
+            marker_y,
             status,
             ha="right",
             va="center",
