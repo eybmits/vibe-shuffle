@@ -44,19 +44,15 @@ from paper_palette import (
     CORAL_DARK,
     CORAL_LIGHT,
     CORAL_MID,
-    GOLD,
-    GOLD_DARK,
     GOLD_MID,
     GRID,
     INK,
-    MID,
     MUTED,
     PURPLE,
     PURPLE_DARK,
     PURPLE_LIGHT,
     PURPLE_MID,
     REFERENCE,
-    SURFACE,
     TEAL,
     TEAL_DARK,
     TEAL_LIGHT,
@@ -260,18 +256,18 @@ def build_figure() -> plt.Figure:
         1,
         3,
         left=0.035,
-        right=0.992,
+        right=0.985,
         bottom=0.155,
         top=0.855,
-        wspace=0.22,
+        wspace=0.28,
     )
     circumplex_ax = fig.add_subplot(grid[0, 0])
     vocabulary_ax = fig.add_subplot(grid[0, 1])
     frequency_ax = fig.add_subplot(grid[0, 2])
 
     # Panel A: an original continuous rendering of Russell's affect coordinate.
-    circumplex_ax.set_xlim(-1.06, 1.06)
-    circumplex_ax.set_ylim(-1.06, 1.06)
+    circumplex_ax.set_xlim(-1.0, 1.0)
+    circumplex_ax.set_ylim(-1.0, 1.0)
     circumplex_ax.set_aspect("equal", adjustable="box")
     circumplex_ax.set_box_aspect(1)
     circumplex_ax.set_title("(a)", loc="left", color=INK, pad=7, fontsize=8.2)
@@ -293,64 +289,64 @@ def build_figure() -> plt.Figure:
                 radius,
                 facecolor="white",
                 edgecolor=REFERENCE,
-                linewidth=0.55,
-                alpha=0.34,
+                linewidth=0.50,
+                alpha=0.30,
                 zorder=2,
             )
         )
 
     circumplex_ax.annotate(
         "",
-        xy=(1.01, 0),
-        xytext=(-1.01, 0),
+        xy=(0.985, 0),
+        xytext=(-0.985, 0),
         arrowprops={
             "arrowstyle": "<|-|>",
             "color": REFERENCE,
-            "lw": 0.95,
-            "mutation_scale": 7,
+            "lw": 0.80,
+            "mutation_scale": 6,
         },
         zorder=5,
     )
     circumplex_ax.annotate(
         "",
-        xy=(0, 1.01),
-        xytext=(0, -1.01),
+        xy=(0, 0.985),
+        xytext=(0, -0.985),
         arrowprops={
             "arrowstyle": "<|-|>",
             "color": REFERENCE,
-            "lw": 0.95,
-            "mutation_scale": 7,
+            "lw": 0.80,
+            "mutation_scale": 6,
         },
         zorder=5,
     )
     circumplex_ax.text(
         0.94,
         0.055,
-        "VALENCE",
+        "Valence",
         ha="right",
         va="bottom",
-        fontsize=7.0,
-        fontweight="bold",
+        fontsize=6.5,
+        fontweight="normal",
         color=INK,
         zorder=7,
     )
     circumplex_ax.text(
         0.055,
         0.94,
-        "AROUSAL",
+        "Arousal",
         ha="left",
         va="top",
         rotation=90,
-        fontsize=7.0,
-        fontweight="bold",
+        fontsize=6.5,
+        fontweight="normal",
         color=INK,
         zorder=7,
     )
     circumplex_ax.text(
-        -0.95, -0.065, "unpleasant", ha="left", va="top", fontsize=6.5, color=MUTED
+        -0.95, -0.055, "unpleasant", ha="left", va="top", fontsize=5.8, color=MUTED
     )
     circumplex_ax.text(
-        0.95, -0.065, "pleasant", ha="right", va="top", fontsize=6.5, color=MUTED
+        0.95, -0.055, "pleasant", ha="right", va="top", fontsize=5.8, color=MUTED
     )
     circumplex_ax.text(
         -0.055,
@@ -358,7 +354,7 @@ def build_figure() -> plt.Figure:
         "high",
         ha="right",
         va="top",
-        fontsize=6.5,
+        fontsize=5.8,
         color=MUTED,
     )
     circumplex_ax.text(
@@ -367,7 +363,7 @@ def build_figure() -> plt.Figure:
         "low",
         ha="right",
         va="bottom",
-        fontsize=6.5,
+        fontsize=5.8,
         color=MUTED,
     )
 
@@ -384,13 +380,19 @@ def build_figure() -> plt.Figure:
             label,
             ha="center",
             va="center",
-            fontsize=7.2,
-            fontweight="bold",
+            fontsize=6.35,
+            fontweight="normal",
             color=color,
             zorder=8,
         )
     circumplex_ax.scatter(
-        [0], [0], s=22, facecolor="white", edgecolor=REFERENCE, linewidth=0.8, zorder=9
+        [0],
+        [0],
+        s=19,
+        facecolor="white",
+        edgecolor=REFERENCE,
+        linewidth=0.75,
+        zorder=9,
     )
     circumplex_ax.set_xticks([])
     circumplex_ax.set_yticks([])
@@ -402,32 +404,32 @@ def build_figure() -> plt.Figure:
     vocabulary_ax.set_ylim(0, 4)
     vocabulary_ax.set_box_aspect(1)
     vocabulary_ax.set_title("(b)", loc="left", color=INK, pad=7, fontsize=8.2)
-    vocabulary_ax.set_facecolor(SURFACE)
+    vocabulary_ax.set_facecolor("white")
 
     card_specs = [
         (0, 3, 1, 1, "ANGRY", CORAL, INK),
         (1, 3, 1, 1, "EXCITED", GOLD_MID, INK),
-        (2, 3, 1, 1, "HAPPY", TEAL_DARK, "white"),
+        (2, 3, 1, 1, "HAPPY", TEAL_MID, INK),
         (0, 2, 1, 1, "NERVOUS", CORAL_MID, INK),
         (2, 2, 1, 1, "PLEASED", TEAL_MID, INK),
         (0, 1, 1, 1, "BORED", PURPLE_MID, INK),
         (2, 1, 1, 1, "RELAXED", BLUE_MID, INK),
-        (0, 0, 1, 1, "SAD", PURPLE, "white"),
+        (0, 0, 1, 1, "SAD", PURPLE_MID, INK),
         (1, 0, 1, 1, "SLEEPY", BLUE_MID, INK),
-        (2, 0, 1, 1, "PEACEFUL", BLUE, "white"),
+        (2, 0, 1, 1, "PEACEFUL", BLUE_MID, INK),
         (1, 1, 1, 2, "CALM", TEAL_LIGHT, TEAL_DARK),
     ]
     for x, y, width, height, label, face, text_color in card_specs:
-        pad = 0.055
+        pad = 0.032
         vocabulary_ax.add_patch(
             FancyBboxPatch(
                 (x + pad, y + pad),
                 width - 2 * pad,
                 height - 2 * pad,
-                boxstyle="round,pad=0.012,rounding_size=0.08",
+                boxstyle="round,pad=0.008,rounding_size=0.035",
                 facecolor=face,
                 edgecolor="white",
-                linewidth=1.0,
+                linewidth=0.55,
                 zorder=2,
             )
         )
@@ -437,8 +439,8 @@ def build_figure() -> plt.Figure:
             label,
             ha="center",
             va="center",
-            fontsize=6.6,
-            fontweight="bold",
+            fontsize=6.15,
+            fontweight="normal",
             color=text_color,
             zorder=3,
         )
@@ -452,7 +454,7 @@ def build_figure() -> plt.Figure:
     frequency_ax.set_ylim(0.0, 2.0)
     frequency_ax.set_box_aspect(1)
     frequency_ax.set_title("(c)", loc="left", color=INK, pad=7, fontsize=8.2)
-    frequency_ax.set_facecolor(SURFACE)
+    frequency_ax.set_facecolor("white")
 
     x = np.linspace(0.03, 0.15, 500)
     broad = (
@@ -468,31 +470,31 @@ def build_figure() -> plt.Figure:
         broad_base,
         broad_base + broad,
         facecolor=CORAL_MID,
-        alpha=0.78,
+        alpha=0.64,
         linewidth=0,
         zorder=2,
     )
     frequency_ax.plot(
-        x, broad_base + broad, color=CORAL_DARK, lw=1.05, zorder=3
+        x, broad_base + broad, color=CORAL_DARK, lw=1.0, zorder=3
     )
     frequency_ax.fill_between(
         x,
         focused_base,
         focused_base + focused,
         facecolor=TEAL_MID,
-        alpha=0.82,
+        alpha=0.68,
         linewidth=0,
         zorder=2,
     )
     frequency_ax.plot(
-        x, focused_base + focused, color=TEAL_DARK, lw=1.05, zorder=3
+        x, focused_base + focused, color=TEAL_DARK, lw=1.0, zorder=3
     )
     frequency_ax.hlines(
         [broad_base, focused_base],
         xmin=0.03,
         xmax=0.15,
         colors=[GRID, GRID],
-        linewidth=0.65,
+        linewidth=0.55,
         zorder=1,
     )
     frequency_ax.axvline(
@@ -500,19 +502,13 @@ def build_figure() -> plt.Figure:
     )
     frequency_ax.text(
         0.10,
-        1.60,
-        "≈0.10 Hz",
+        1.58,
+        "0.10 Hz",
         ha="center",
         va="bottom",
-        fontsize=6.4,
-        fontweight="bold",
+        fontsize=5.8,
+        fontweight="normal",
         color=REFERENCE,
-        bbox={
-            "boxstyle": "square,pad=0.08",
-            "facecolor": "white",
-            "edgecolor": "none",
-            "alpha": 0.96,
-        },
         zorder=5,
     )
     frequency_ax.text(
@@ -521,8 +517,8 @@ def build_figure() -> plt.Figure:
         "more dispersed",
         ha="left",
         va="bottom",
-        fontsize=6.5,
-        fontweight="bold",
+        fontsize=6.0,
+        fontweight="normal",
         color=CORAL_DARK,
     )
     frequency_ax.text(
@@ -531,25 +527,19 @@ def build_figure() -> plt.Figure:
         "more concentrated",
         ha="left",
         va="bottom",
-        fontsize=6.5,
-        fontweight="bold",
+        fontsize=6.0,
+        fontweight="normal",
         color=TEAL_DARK,
     )
     frequency_ax.text(
         0.146,
-        1.88,
-        "SCHEMATIC · NOT DATA",
+        1.92,
+        "schematic · not data",
         ha="right",
         va="top",
-        fontsize=6.0,
-        fontweight="bold",
+        fontsize=5.35,
+        fontweight="normal",
         color=MUTED,
-        bbox={
-            "boxstyle": "round,pad=0.26",
-            "facecolor": "white",
-            "edgecolor": GRID,
-            "linewidth": 0.7,
-        },
         zorder=6,
     )
     frequency_ax.text(
@@ -558,21 +548,21 @@ def build_figure() -> plt.Figure:
         "association ≠ individual emotion label",
         ha="center",
         va="bottom",
-        fontsize=6.1,
+        fontsize=5.45,
         color=MUTED,
         bbox={
             "boxstyle": "square,pad=0.06",
-            "facecolor": SURFACE,
+            "facecolor": "white",
             "edgecolor": "none",
             "alpha": 0.98,
         },
         zorder=5,
     )
-    frequency_ax.set_xlabel("Coherence frequency (Hz)", labelpad=3, fontsize=6.8)
+    frequency_ax.set_xlabel("Frequency (Hz)", labelpad=1.5, fontsize=6.5)
     frequency_ax.set_xticks([0.04, 0.10, 0.14])
-    frequency_ax.set_xticklabels(["0.04", "0.10", "0.14"], fontsize=6.3)
+    frequency_ax.set_xticklabels(["0.04", "0.10", "0.14"], fontsize=5.9)
     frequency_ax.set_yticks([])
-    frequency_ax.tick_params(axis="x", pad=2, length=2.5, width=0.6)
+    frequency_ax.tick_params(axis="x", pad=1, length=2.4, width=0.6)
     frequency_ax.spines["left"].set_visible(False)
     frequency_ax.spines["right"].set_visible(False)
     frequency_ax.spines["top"].set_visible(False)
