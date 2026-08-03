@@ -368,10 +368,10 @@ def build_figure() -> plt.Figure:
     )
 
     affect_labels = [
-        (-0.68, 0.69, "Q1  ANGRY", CORAL),
-        (0.68, 0.69, "Q2  HAPPY", TEAL),
-        (-0.68, -0.69, "Q3  SAD", PURPLE),
-        (0.68, -0.69, "Q4  RELAXED", BLUE),
+        (-0.68, 0.69, "ANGRY", CORAL),
+        (0.68, 0.69, "HAPPY", TEAL),
+        (-0.68, -0.69, "SAD", PURPLE),
+        (0.68, -0.69, "RELAXED", BLUE),
     ]
     for x, y, label, color in affect_labels:
         circumplex_ax.text(
@@ -383,6 +383,7 @@ def build_figure() -> plt.Figure:
             fontsize=6.35,
             fontweight="normal",
             color=color,
+            clip_on=True,
             zorder=8,
         )
     circumplex_ax.scatter(
