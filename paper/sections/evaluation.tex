@@ -1,28 +1,22 @@
-\section{What the Prototype Shows---and Does Not Show}
+\section{Results and Limitations}
 \label{sec:evaluation}
 
-\subsection{A directional but uncertain mood-fit result}
+\subsection{Mood-fit estimate and uncertainty}
 
 Mood fit averaged 4.71 under Vibe and 4.15 under Random
 (Table~\ref{tab:pilot}). The paired mean difference was $+0.56$ rating points
 with a 95\% confidence interval from $-0.21$ to $1.33$. The supplied
-directional paired test did not reach $\alpha=.05$, $t(14)=1.56$, $p=.070$;
-the signed-rank sensitivity check agreed, $W^+=74.0$, $p=.088$. The
-standardized paired effect was $d_z=0.40$.
-
-Figure~\ref{fig:pilot} preserves the original paired-estimation view while
-making the comparison easier to scan. Eight participant/session means were
-higher under Vibe, one tied, and six were lower. The average is compatible with
-a useful improvement, but the interval also allows little benefit or a small
-disadvantage. The correct reading is therefore \emph{promising direction,
-unresolved magnitude}, not validation of the adaptive policy.
+directional paired test yielded $t(14)=1.56$, $p=.070$; the signed-rank
+sensitivity check yielded $W^+=74.0$, $p=.088$. The standardized paired effect
+was $d_z=0.40$. Eight participant/session means were higher under Vibe, one was
+tied, and six were lower. The 95\% confidence interval includes effects on
+either side of zero. Figure~\ref{fig:pilot} plots the paired participant means
+and Vibe--Random differences.
 
 Liking averaged 4.56 under Vibe and 4.47 under Random. The paired difference
 was $+0.09$ with a 95\% confidence interval from $-0.52$ to $0.71$,
-$t(14)=0.32$, $p=.375$, and $W^+=58.5$, $p=.353$. This near-zero point
-estimate suggests that the mood-fit direction was not simply a broad rise in
-song liking. It does not establish equivalence: the interval remains wide
-enough to contain meaningful changes in either direction.
+$t(14)=0.32$, $p=.375$, and $W^+=58.5$, $p=.353$. The liking confidence
+interval includes zero; the study did not specify an equivalence margin.
 
 \begin{figure}[t]
   \centering
@@ -35,75 +29,73 @@ enough to contain meaningful changes in either direction.
   \Description{Four compact panels compare mood fit and liking. For each
   outcome, a connected-pairs panel shows 15 Random and Vibe participant means,
   and an estimation panel shows all Vibe-minus-Random differences, a bootstrap
-  distribution, and the mean confidence interval. Mood fit trends positive;
-  liking is near zero, and both confidence intervals cross zero.}
+  distribution, and the mean confidence interval. The mood-fit point estimate
+  is positive, the liking point estimate is close to zero, and both confidence
+  intervals include zero.}
   \label{fig:pilot}
 \end{figure}
 
-\subsection{Artifact validation}
+\subsection{Software checks}
 
-The software's scientific core is separated into pure JavaScript modules so it
-can be checked without a camera, wearable, or Spotify account. The repository
-tests catalog size and quadrant balance, CSV finiteness and quality flags,
-facial-rule behavior, RR filtering and baseline-relative cardiac behavior, and
-Random/Vibe selection. In the verified repository state, all 63 deterministic
-tests pass. These checks validate internal contracts; they do not validate the
-facial or physiological interpretation against ground truth.
+Core selection and signal-processing rules are implemented as pure JavaScript
+modules and can be tested without a camera, wearable, or Spotify account. The
+repository tests catalog size and region balance, CSV finiteness and quality
+flags, facial-rule behavior, RR filtering and baseline-relative cardiac
+behavior, and Random/Vibe selection. All 63 deterministic tests pass in the
+verified repository state. The suite tests software contracts; it contains no
+labeled affect data or independent sensor ground truth.
 
-The fixed catalog and crossover hold many interaction details constant:
-playback path, rating questions, number of exposures, and available song pool.
-That makes the selection policy easier to study. It does not make the two
-conditions acoustically identical, because the policies can choose different
-artists, genres, languages, familiarity levels, and popularity profiles.
+Both policies used the same playback path, rating questions, exposure count,
+and catalog. Their selected tracks could differ in artist, genre, language,
+familiarity, and popularity.
 
 \subsection{Measurement and study limits}
 
-The principal limitation is construct validity. Facial behavior cannot be
-reduced reliably to a universal readout of felt emotion
+The facial and cardiac mappings have not been validated against ground truth.
+Facial behavior cannot be reduced reliably to a universal readout of felt emotion
 ~\cite{barrett2019}. Vibe's rule weights were not learned or validated on a
 labeled affect dataset. Lighting, pose, occlusion, morphology, culture, and
 deliberate display can all change the output.
 
-Cardiac timing is similarly non-specific. Respiration, posture, speaking,
-movement, fitness, medication, contact quality, and vendor processing can alter
-heart rate and RMSSD~\cite{shaffer2017,quigley2024}. The listening window is
-short for HRV, respiration is not measured, and the application receives
-processed RR intervals rather than raw peaks. A personal baseline reduces
-between-person differences but cannot remove these contextual influences.
+Heart rate and RMSSD also vary with respiration, posture, speaking, movement,
+fitness, medication, contact quality, and vendor
+processing~\cite{shaffer2017,quigley2024}. The listening window is short for
+HRV, respiration is not measured, and the application receives processed RR
+intervals without access to raw peaks. Personal baselining adjusts
+between-person levels but leaves within-session physiological changes and sensor
+artifacts in the estimate.
 
 Movement can affect the camera channel, raise heart rate, and introduce RR
-artifacts at the same time. The current fusion can therefore count one behavior
-more than once. The trajectory mean is event-driven rather than time-weighted,
-and the first selection may occur before both references are fully established.
-Optional sensing also means that participants can experience meaningfully
-different evidence paths.
+artifacts at the same time. One behavior can be counted by both channels. The
+trajectory mean weights coordinate-change events instead of elapsed time, and
+the first selection may occur before both references are fully established.
+Because sensing is optional, participants may experience different evidence
+paths.
 
-At the exact no-signal center, current code paths also disagree on which region
+At the exact no-signal center, current code paths disagree on which region
 owns the boundary: the fallback label is Calm, whereas the numerical
 greater-than-or-equal rule assigns $(0.5,0.5)$ to Energetic. This edge case
 should be unified before a confirmatory study.
 
-The human-study archive adds separate constraints. Raw trial rows, participant
-characteristics, recruitment and compensation details, the exact sensor model,
-room conditions, consent documentation, and ethics procedure are not present
-in the repository. These are reporting gaps, not evidence that procedures were
-absent. They prevent a complete independent audit and rule out a strong
-effectiveness claim.
+The repository lacks raw trial rows, participant characteristics, recruitment
+and compensation details, the exact sensor model, room conditions, consent
+documentation, and the ethics procedure. No inference can be made about whether
+the undocumented procedures occurred. Without these records, recruitment,
+ethics, sensor setup, and trial-level data processing cannot be independently
+reconstructed.
 
 \subsection{Next validation steps}
 
-A stronger study should proceed in stages. First, validate the frozen facial
-and cardiac mappings under controlled changes in expression, lighting, posture,
-movement, and respiration. Second, make successful completion of calibration,
-timing, missing-data flags, and a ten-trial export an end-to-end release gate.
-Third, preregister a meaningful mood-fit effect, sample size, exclusions,
-primary paired analysis, order analysis, and sensor-quality checks before
-collecting a larger crossover sample. Sample size should target interval
-precision or a smallest relevant effect, not copy the
-pilot~\cite{lakens2022}.
+Validation should begin with controlled changes in expression, lighting,
+posture, movement, and respiration applied to the frozen facial and cardiac
+mappings. Release should then require successful calibration, timing,
+missing-data flags, and a complete ten-trial export. Before collecting a larger
+crossover sample, preregister the meaningful mood-fit effect, sample size,
+exclusions, primary paired analysis, order analysis, and sensor-quality checks.
+Base sample size on interval precision or a prespecified smallest relevant
+effect~\cite{lakens2022}; the pilot estimate is too uncertain to serve as the
+target.
 
-The interface should also let the listener choose the adaptation goal. The
-current policy matches the recent region. A future system could instead
-maintain, intensify, or deliberately shift it. Keeping those goals separate is
-essential: otherwise a recommendation cannot be judged against a clear
-intention.
+Future protocols should specify whether the policy is intended to maintain,
+intensify, or shift the recent region. The outcome measure should match that
+stated goal.

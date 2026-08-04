@@ -6,70 +6,56 @@ The circumplex model represents affect along two continuous dimensions:
 \emph{valence}, from unpleasant to pleasant, and \emph{arousal}, from low to
 high activation~\cite{russell1980,posner2005}. Thayer's account of energetic and
 tense arousal offers a complementary vocabulary for changes in activation and
-mood~\cite{thayer1991}. These models are useful here as a compact interaction
-space, not as a complete account of emotion. Both dimensional and discrete
-models appear in music-emotion research, with results sensitive to model and
-annotations~\cite{eerola2013}.
+mood~\cite{thayer1991}. The interface uses the Valence--Arousal axes and
+selected category labels from these models. Both dimensional and discrete
+models appear in music-emotion research, and results depend on the selected
+model and annotations~\cite{eerola2013}.
 
-Figure~\ref{fig:affect-space} is an independently drawn conceptual synthesis:
-it places the continuous and categorical affect vocabularies beside the
-strictly group-level HRV-frequency context that motivates an exploratory
-diagnostic signal.
+Figure~\ref{fig:affect-space} juxtaposes the two affect vocabularies with
+group-level HRV-frequency evidence used to motivate an exploratory diagnostic
+signal.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig1_affect_space.pdf}
-  \caption{\textbf{Conceptual foundations.} Panels (a)--(b) are adapted and
-  independently redrawn from Helmholz et al.~\cite{helmholz2019}, Figure~1,
-  which operationalizes Russell's circumplex~\cite{russell1980} and Thayer's
-  mood--arousal model~\cite{thayer1991}; no source pixels are reused. Panel (c)
-  is an original, data-free schematic of the group-level frequency distinction
-  discussed by Balaji et al.~\cite{balaji2025}; no curves, observations, or
-  source artwork are reproduced or adapted. Illustrations only---not Vibe
-  measurements or classifiers.}
+  \caption{\textbf{Conceptual foundations.} Panels (a)--(b) are original
+  redrawings adapted from Helmholz et al.~\cite{helmholz2019}, who
+  operationalized Russell's circumplex~\cite{russell1980} and Thayer's
+  mood--arousal model~\cite{thayer1991}. Panel (c) is an original schematic
+  adapted from the group-level frequency distinction reported by Balaji et
+  al.~\cite{balaji2025}; it contains no empirical observations.}
   \Description{Three square conceptual panels show a continuous
-  valence-arousal plane, a categorical affect vocabulary, and two synthetic
-  coherence-frequency profiles explicitly marked as schematic rather than
-  data.}
+  valence-arousal plane, a categorical affect vocabulary, and a
+  coherence-frequency schematic.}
   \label{fig:affect-space}
 \end{figure*}
 
-Vibe Shuffle borrows only the two-axis coordinate structure. It does not output
-the emotion words shown in Figure~\ref{fig:affect-space} or treat them as
-ground-truth labels. The coherence profiles in panel (c) are likewise not the
-prototype's diagnostic signal.
+The interface maps sensor-derived coordinates onto the two-axis recommendation
+space. It does not output the emotion terms or coherence profiles shown in
+Figure~\ref{fig:affect-space}.
 
-Vibe Shuffle places the listener at a point $(V,A)$ in this space and divides
-the plane into four quadrants. Crucially, the point describes change relative
-to that listener's own reference measurements. The center is the personal
-baseline; evidence of more positive facial display moves the point right, while
-evidence of greater cardiac activation moves it upward. The system therefore
-asks a deliberately narrow question---which direction did the observed signals
-move?---rather than attempting to name or recover the listener's full emotional
-state. This distinction matters because facial movements are not unique
-fingerprints of specific emotions and vary with person and
-context~\cite{barrett2019}. Facial judgments can also shift with body context,
-and Valence--Arousal relations vary across people and
+Each listener point $(V,A)$ records change from personal reference
+measurements. The center marks the reference. More positive facial display
+moves the point right, and greater cardiac activation moves it upward. Facial
+movements vary by person and context and do not uniquely identify
+emotions~\cite{barrett2019}. Body context also shifts facial judgments, and
+Valence--Arousal relations vary across people and
 cultures~\cite{aviezer2012,kuppens2017}.
 
 \subsection{Connecting listener state to music}
 
-Music can be placed in a parallel two-dimensional space. Song \emph{Valence}
+Songs can be placed in a parallel two-dimensional space. Song \emph{Valence}
 describes conveyed positivity, whereas \emph{Energy} describes perceived
 intensity and activity. Prior emotion-oriented music interfaces have used these
 attributes as musical counterparts to affective valence and
-arousal~\cite{helmholz2019}. Vibe Shuffle adopts that practical bridge: listener
-Valence is compared with song Valence, and listener Arousal is compared with
-song Energy. The alignment is an engineering assumption, not a claim that
-musical Energy and physiological Arousal are the same construct.
-Music-emotion recognition also uses continuous coordinates, but its annotations
-remain subjective~\cite{yang2012}.
+arousal~\cite{helmholz2019}. Vibe Shuffle compares listener Valence with song
+Valence and listener Arousal with song Energy. Musical Energy and physiological
+Arousal remain distinct constructs. Continuous music-emotion coordinates also
+depend on subjective annotations~\cite{yang2012}.
 
-The shared plane makes the selection rule easy to inspect. High and low values
-on each axis produce four broad regions, and the listener's relative position
-determines the target region. Within that region, distance in the continuous
-plane distinguishes closer from more distant songs. The quadrants simplify
-communication; the underlying coordinate preserves degree and direction.
+Splitting each axis at 0.5 yields four recommendation regions. The listener's
+relative position selects a region. Quadrant membership determines eligibility,
+and Euclidean distance ranks the eligible songs.
 
 \subsection{Heart-rate variability as relative evidence}
 
@@ -77,14 +63,12 @@ Heart-rate variability (HRV) describes variation between successive heart
 beats. The root mean square of successive differences (RMSSD) is a widely used
 time-domain summary of short-term RR-interval variation~\cite{shaffer2017}.
 Heart rate and RMSSD depend on respiration, movement, posture, fitness,
-medication, sensor quality, and other factors; neither measure identifies a
-particular emotion on its own. Good-practice guidance therefore emphasizes
-standardized conditions, artifact review, matched durations, and respiration
+medication, sensor quality, and other factors. These measures lack
+emotion-specific interpretation. Recommended practice includes standardized
+conditions, artifact review, matched durations, and respiration
 assessment~\cite{laborde2017}.
 
-Vibe Shuffle consequently uses cardiac measurements only as
-baseline-relative evidence for the arousal axis. A heart rate above the
-listener's reference and an RMSSD below that reference contribute upward
-evidence; changes in the opposite direction lower it. The mapping is transparent
-and testable, but remains a prototype heuristic rather
-than a clinical or psychological measurement.
+Vibe Shuffle uses cardiac measurements as baseline-relative evidence for the
+Arousal axis. Heart rate above the reference and RMSSD below it contribute
+upward evidence; changes in the opposite direction lower it. The cardiac rule
+has not undergone clinical or psychological validation.

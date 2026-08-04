@@ -3,45 +3,44 @@
 
 \subsection{Protocol}
 
-The implemented study asks whether the relative adaptive policy feels more
-appropriate than Random selection from the same catalog. Every participant
-completes one five-track Random block and one five-track Vibe block. Two masked
-protocols reverse the order, and odd/even participant numbers suggest the
-assignment. Participants see a protocol identifier rather than the condition
-name when the operator keeps the participant-facing mode enabled. The same
-interface exposes a view toggle and protocol controls, while the experimenter
-and exported data can reveal the order. Masking therefore depended on study
-administration; it was not technically enforced or double blind. The paired
-design is efficient but remains susceptible to practice and carryover, making
-reversed order a substantive control~\cite{greenwald1976}.
+The study compares the perceived appropriateness of the relative adaptive
+policy with Random selection from the same catalog. Each participant completes
+five tracks in each condition. Two masked protocols reverse block order, and
+the interface uses odd/even participant numbers to suggest an assignment. In
+participant-facing mode, the condition name is replaced by a protocol
+identifier. The experimenter can access the view toggle, protocol controls, and
+condition order in exported data. Masking depended on study administration and
+was not enforced by the interface. The study was not double blind. Practice and
+carryover remain possible in the paired design; reversing block order helps
+control those effects~\cite{greenwald1976}.
 
 Each track plays for up to 60 seconds. Participants may select \emph{Rate now};
 the actual duration and an early-rating flag are preserved. After each track,
 the interface collects a seven-point liking rating, a seven-point mood-fit
-rating, and a categorical current-mood report. Mood fit is treated as the
-primary outcome in this exploratory report because it directly evaluates the
-matching idea. Liking is treated as secondary and helps separate contextual fit
-from general song preference.
+rating, and a categorical current-mood report. We designated mood fit as the
+primary exploratory outcome because it measures the proposed match directly.
+Liking was secondary and separates contextual fit from general song
+preference.
 
 \subsection{Available evidence}
 
-The supplied analysis report publishes one five-trial condition mean per
+The supplied analysis report contains one five-trial condition mean per
 participant/session for 15 participants, together with paired tests and
-condition-level summaries. These 15 rows are frozen in the repository under
-generic analysis IDs. The protocol implies 75 planned ratings per condition and
-outcome, but the repository still lacks the underlying trial rows needed to
-verify completeness, exclusions, or within-session variation. It also lacks
-recruitment records, demographics, and the complete study-administration file.
-The present paper therefore treats the participant/session as the inferential
-unit and does not claim a fully reproducible human-study archive.
+condition summaries. The 15 rows are frozen in the repository under generic
+analysis IDs. The protocol implies 75 planned ratings for each condition and
+outcome. Without the trial rows, completeness, exclusions, and within-session
+variation cannot be checked. Recruitment records, demographics, and the
+complete study-administration file are also unavailable. The available files
+limit the analysis to the 15 participant/session means. The human-study archive
+remains incomplete.
 
-Paired differences are defined as Vibe minus Random. We show the published
-participant/session means, report condition means and standard deviations,
+Paired differences are defined as Vibe minus Random. The analysis includes the
+published participant/session means, condition means and standard deviations,
 paired mean differences with two-sided 95\% confidence intervals, and the
-originally supplied paired tests. Because no dated preregistration was
-available, all inference is exploratory~\cite{nosek2018}. We foreground paired
-effects and confidence intervals rather than a thresholded
-$p$-value~\cite{cumming2014}.
+originally supplied paired tests. No dated preregistration was available. We
+report the paired estimates, 95\% confidence intervals, and supplied $p$-values
+as exploratory results~\cite{nosek2018,cumming2014}; no confirmatory
+significance threshold was specified.
 
 \begin{table}[t]
   \caption{Exploratory condition summaries ($N=15$ participants). Confidence

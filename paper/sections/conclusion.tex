@@ -1,25 +1,19 @@
 \section{Conclusion}
 
-Vibe Shuffle demonstrates a simple alternative to absolute emotion
-recognition. It compares recent camera and cardiac observations with a
-listener's own reference, follows their movement through Valence--Arousal
-space, and turns the average trajectory into an understandable next-song
-decision. The four regions reduce an uncertain continuous estimate to a
-transparent shortlist; nearest-song selection then makes the final action
-reviewable at the exported decision-summary level.
+Vibe Shuffle uses baseline-relative camera and cardiac observations to select
+the next song. It tracks recent movement in Valence--Arousal space, averages the
+trajectory, maps that point to one of four regions, and chooses the nearest
+eligible song. The exported target, region, and distance identify the rule used
+for each recommendation.
 
-The exploratory study does not prove that this policy improves listening.
-Fifteen participants showed a modest average mood-fit direction and almost no
-average liking change, but both uncertainty intervals included zero. More
-importantly, neither that result nor the software establishes an objective
-emotion label. Vibe Shuffle contributes an inspectable research object: every
-assumption can be located in a reference period, a signal rule, a trajectory,
-a region boundary, or a distance, even though the present export does not retain
-every intermediate sample.
+In the 15-participant crossover, average mood fit was $0.56$ points higher under
+Vibe (95\% CI $[-0.21,1.33]$), and liking was $0.09$ points higher (95\% CI
+$[-0.52,0.71]$). The current-mood reports were subjective ratings, and the
+software produced no objective emotion label. The stored target, signal-source
+summary, region, and song distance document the final decision; the export
+omits point-level trajectory samples.
 
-That transparency is the project's strongest foundation. With controlled
-signal validation, time-aware fusion, complete study provenance, and a larger
-preregistered comparison, the same artifact can test when relative adaptation
-helps, for whom it helps, and which signal path contributes. Physiological
-input becomes useful here not as mind reading, but as one uncertain, personal,
-and visible influence on a familiar choice: what to play next.
+A follow-up study should validate each sensor rule under controlled conditions,
+use time-weighted fusion, retain complete trial-level provenance, and
+preregister a larger paired comparison. The current system uses physiology only
+to shift the recommendation coordinate relative to a personal baseline.

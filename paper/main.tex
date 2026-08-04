@@ -11,6 +11,7 @@
 \usepackage{tabularx}
 
 \graphicspath{{figures/}}
+\setlength{\emergencystretch}{1em}
 
 \newcommand{\writeestimatedcharactercount}[1]{%
   \immediate\write18{expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 > chars.txt}%
@@ -64,7 +65,7 @@
 \ccsdesc[300]{Information systems~Recommender systems}
 
 \keywords{affective computing, music recommendation, relative affect,
-valence and arousal, heart-rate variability, facial cues, transparent adaptation}
+valence and arousal, heart-rate variability, facial cues, baseline-relative adaptation}
 
 \maketitle
 
