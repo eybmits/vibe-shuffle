@@ -30,8 +30,13 @@ same remaining catalog without using the trajectory. The adaptive rule is
 \emph{relative signals $\rightarrow$ recent point $\rightarrow$ region
 $\rightarrow$ nearest available song}.
 
-Vibe Shuffle implements a baseline-relative signal representation, an
-observation-to-trajectory mapping, a four-region nearest-song policy over 100
-tracks, participant-facing condition masking, and a local row-level export. In
-the 15-participant crossover, the mean mood-fit difference was $+0.56$ points
-(95\% CI $[-0.21,1.33]$).
+\paragraph{System contribution.}
+The browser artifact combines baseline-relative camera and cardiac signals with
+trajectory-based song selection. A fixed rule maps the trajectory mean to a
+region and the nearest eligible track. The local export stores the target
+coordinate, region, eligibility status, and distance for each recommendation.
+The study interface masks condition labels and compares the policy with Random
+selection from the same frozen catalog.
+
+In the 15-participant crossover, the mean mood-fit difference was $+0.56$
+points (95\% CI $[-0.21,1.33]$).
