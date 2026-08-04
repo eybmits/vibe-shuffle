@@ -17,8 +17,17 @@ paired-estimation figure in the supplied seven-page PDF *Vibe Shuffle: Testing
 Transparent Affect-Adaptive Music Selection* (SHA-256
 `336059514d0c8b80fc59687ab8746ab9cc2dc0478b74fd7cc041f3a9e795d7fb`).
 
+The transcribed participant/session means are rounded to one decimal place.
+They reproduce the reported condition means, paired means, paired t statistics,
+and t confidence intervals to rounding. Exact signed-rank results depend on the
+unavailable underlying precision and tie convention, so
+`results/pilot_summary.csv` preserves the values supplied in the source report.
+
 These published participant/session means support the connected pairs,
 difference points, and deterministic bootstrap distribution in Figure 3. They
 do not restore the underlying ten trial rows per participant, sensor-quality
 records, recruitment data, or administration logs. Trial-level completeness
-and quality checks therefore remain outside the reproducible archive.
+and quality checks therefore remain outside the reproducible archive. The
+archive also does not identify the code revision used during pilot data
+collection; current tests and export-schema fields describe the current
+implementation.

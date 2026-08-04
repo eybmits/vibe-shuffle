@@ -6,7 +6,7 @@ The circumplex model represents affect along two continuous dimensions:
 \emph{valence}, from unpleasant to pleasant, and \emph{arousal}, from low to
 high activation~\cite{russell1980,posner2005}. Thayer's account of energetic and
 tense arousal offers a complementary vocabulary for changes in activation and
-mood~\cite{thayer1991}. The research system uses the Valence--Arousal axes and
+mood~\cite{thayer1991}. Vibe Shuffle uses the Valence--Arousal axes and
 selected category labels from these models. Both dimensional and discrete
 models appear in music-emotion research, and results depend on the selected
 model and annotations~\cite{eerola2013}.
@@ -30,7 +30,7 @@ signal.
   \label{fig:affect-space}
 \end{figure*}
 
-The research system maps sensor-derived coordinates onto the two-axis
+The recommendation rule maps sensor-derived coordinates onto the two-axis
 recommendation space. It does not output the emotion terms or coherence
 profiles shown in Figure~\ref{fig:affect-space}.
 
@@ -51,7 +51,9 @@ attributes as musical counterparts to affective valence and
 arousal~\cite{helmholz2019}. Vibe Shuffle compares listener Valence with song
 Valence and listener Arousal with song Energy. Musical Energy and physiological
 Arousal remain distinct constructs. Continuous music-emotion coordinates also
-depend on subjective annotations~\cite{yang2012}.
+depend on subjective annotations~\cite{yang2012}. Music unfolds over time, so a
+single song coordinate is an average approximation of a potentially changing
+emotional course~\cite{aljanaki2017}.
 
 Splitting each axis at 0.5 yields four recommendation regions. The listener's
 relative position selects a region. Quadrant membership determines eligibility,

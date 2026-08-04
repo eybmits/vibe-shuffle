@@ -29,9 +29,8 @@ Valence--Arousal space and retrieved nearby songs in Spotify feature
 space~\cite{tran2023}.
 
 Vibe Shuffle applies a fixed rule that maps recent within-person changes to a
-catalog coordinate. The study uses participant/session-level recommendation
-ratings, and the export stores the trajectory summary, target region, and
-distance but not point-level samples.
+catalog coordinate and evaluates participant/session-level recommendation
+ratings.
 
 \subsection{HRV and coherence evidence}
 
@@ -46,12 +45,9 @@ observational analysis of 3--15 minute biofeedback practice, lacked
 pre-session emotion reports, and did not establish a per-window emotion
 classifier.
 
-Vibe Shuffle exports a custom normalized spectral-peakedness proxy for later
-diagnostic analysis. This field differs from the coherence measure analyzed by
-Balaji et al.\ and has no role in coordinate, region, or song selection.
-Selection uses the baseline-relative heart-rate and RMSSD estimate. The
-spectral-peakedness proxy has not been validated as either a coherence measure
-or a basis for individual emotion inference.
+Vibe Shuffle logs a different custom spectral-peakedness proxy for diagnostic
+analysis only. Selection instead uses the baseline-relative heart-rate and
+RMSSD estimate.
 
 \subsection{Explanations and user experience}
 
@@ -65,5 +61,4 @@ experience~\cite{knijnenburg2012}.
 
 Vibe Shuffle differs from the cited systems in two study-design choices: a
 fixed baseline-relative mapping and a Random condition drawn from the same
-frozen catalog. The trial record contains the coordinate, region, eligibility,
-and distance used for each recommendation.
+frozen catalog.

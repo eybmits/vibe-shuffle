@@ -1,4 +1,4 @@
-\section{Research System Design and Implementation}
+\section{System Design and Selection Policy}
 \label{sec:method}
 
 \subsection{System overview}
@@ -48,15 +48,16 @@ smile, cheek, brow, eye, jaw, frown, and mouth movement. A fixed rule combines
 a selected subset into positive, negative, and tension-related scores. Vibe
 Shuffle defines these scores; they are absent from the MediaPipe output.
 
-A 14-second calibration captures a short facial reference, and a slow running
-baseline continues to adapt. Later observations are debiased against this
-reference and smoothed across frames. Positive facial evidence moves Valence to
-the right; negative or tension-related evidence moves it to the left. If no face
-is detected, Valence returns to the neutral center. The current heuristic treats
-visible movement as additional positive-Valence and upward-Arousal evidence.
-Dancing, repositioning, lighting changes, and camera noise can produce the same
-signal. The movement rule lacks validation as a measure of engagement or
-affect.
+The interface schedules up to 14 seconds for a short facial reference, after
+which a slow running baseline continues to adapt. The participant can skip this
+step; completion time is not a separate export field. Later observations are
+debiased against the reference and smoothed across frames. Positive facial
+evidence moves Valence to the right; negative or tension-related evidence moves
+it to the left. If no face is detected, Valence returns to the neutral center.
+The current heuristic treats visible movement as additional positive-Valence
+and upward-Arousal evidence. Dancing, repositioning, lighting changes, and
+camera noise can produce the same signal. The movement rule lacks validation as
+a measure of engagement or affect.
 
 \subsection{Relative Arousal from cardiac timing}
 
@@ -87,6 +88,46 @@ selection. Balaji et al.\ report group-level associations for a different
 coherence measure~\cite{balaji2025}. Vibe Shuffle's proxy has not been validated
 against that measure or against individual emotion labels. Song selection uses
 only the baseline-relative heart-rate and RMSSD estimate.
+
+\subsection{Core fixed mapping}
+
+The following equations specify the part of the rule that produces the
+continuous coordinates. Let $h$, $s$, and $t$ denote the baseline-debiased and
+smoothed happy, sad, and tense rule scores. The camera Valence coordinate is
+\[
+ V=\operatorname{clip}_{[.05,.95]}
+   \{.5+1.05(h-.55s-.45t)\}.
+\]
+Face samples arrive every 120\,ms and use an exponential smoothing coefficient
+of $.34$. The continuing baseline coefficient is $.002$ and its debiasing
+factor is $.9$. Normalized movement $m$ and nodding $n$, computed over 3.2
+seconds, give camera Arousal
+\[
+ A_f=\operatorname{clip}_{[.5,.95]}\{.5+.4m+.2n\}.
+\]
+Movement and nodding also add $.38m+.42n$ to the happy evidence before
+smoothing. The archived file \texttt{src/expressionModel.js} lists the
+underlying blendshape gates and coefficients.
+
+For cardiac input, $z_H$ is the median-heart-rate change divided by its robust
+baseline scale, and $z_R$ is the baseline-minus-current RMSSD change divided by
+its robust scale. The scale floors are 4\,bpm and 6\,ms. Define
+\[
+ d(z)=
+ \begin{cases}
+  0, & |z|\leq .25,\\
+  \operatorname{sign}(z)\min(|z|-.25,3), & \text{otherwise}.
+ \end{cases}
+\]
+Cardiac Arousal is
+\[
+ A_c=\operatorname{clip}_{[0,1]}
+ \{.5+.18[.75d(z_H)+w_Rd(z_R)]\},
+\]
+where $w_R=.35$, reduced to $.07$ when RMSSD indicates higher Arousal while
+heart-rate evidence is nonpositive. With usable cardiac data,
+$A=\operatorname{clip}_{[0,1]}\{A_c+\max(0,A_f-.5)\}$; otherwise $A=A_f$.
+Without a face, $V=.5$; without either usable channel, $(V,A)=(.5,.5)$.
 
 \subsection{Trajectory aggregation}
 
@@ -119,7 +160,10 @@ both axes). The frozen catalog contains 100 Spotify tracks, with 25 tracks in
 each corresponding Valence--Energy region. Track coordinates originate from
 historical Spotify features in a public dataset~\cite{spotifydataset}. Energy
 serves as the catalog-side proxy for Arousal. The audio feature and
-physiological construct are not equivalent.
+physiological construct are not equivalent. The repository preserves the 100
+track records but not the dataset download date or a script that reconstructs
+their curation. The catalog is therefore reproducible as a frozen stimulus set,
+not as a fresh derivation from the source dataset.
 
 Both Random and Vibe exclude the current and all previously played tracks.
 Random ranks the remaining tracks with a session-seeded pseudorandom score.
@@ -130,11 +174,12 @@ smallest Euclidean distance:
  \sqrt{(V_s-\bar V)^2+(E_s-\bar A)^2}.
 \]
 The seed resolves only an exact distance tie. If a region has no remaining
-track, the policy falls back to the complete unplayed pool. The export records
-the target coordinate, signal source, distance, and region match. The random
-seed, personal facial-reference values, and individual trajectory points are
-absent. The first track is chosen from the live setup estimate before the
-14-second facial reference is finalized. Later choices use the preceding
+track, the policy falls back to the complete unplayed pool. The current export
+schema records the target coordinate, signal source, distance, and region
+match. The random seed, personal facial-reference values, and individual
+trajectory points are absent. The first track is ranked from the live setup
+estimate before the facial reference is finalized. An up-to-14-second overlay
+then blocks playback but may be skipped. Later choices use the preceding
 listening window.
 
 \subsection{Research data flow and local export}

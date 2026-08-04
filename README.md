@@ -1,15 +1,17 @@
 # Vibe Shuffle
 
-Vibe Shuffle is a browser-based research prototype that turns changes relative
-to a listener's personal camera and cardiac references into a transparent
-next-song choice. It does not claim to diagnose a complete emotional state.
-Instead, it follows a recent Valence-Arousal trajectory, assigns its average to
-one of four broad regions, and selects a nearby unplayed song. A masked study
-mode compares this policy with Random selection from the same controlled pool.
+Vibe Shuffle is a scientific research project on baseline-relative music
+selection. Its current experimental implementation runs in a browser and turns
+changes relative to a listener's personal camera and cardiac references into a
+reviewable next-song choice. It does not claim to diagnose a complete emotional
+state. Instead, it follows a recent Valence-Arousal trajectory, assigns its
+average to one of four broad regions, and selects a nearby unplayed song. A
+masked study mode compares this policy with Random selection from the same
+controlled pool.
 
 - **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
 - **Paper:** [`public/paper.pdf`](public/paper.pdf)
-- **Live application:** https://eybmits.github.io/vibe-shuffle/
+- **Live study implementation:** https://eybmits.github.io/vibe-shuffle/
 
 ## Research question
 

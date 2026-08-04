@@ -41,9 +41,11 @@ The selection and signal-processing rules are pure JavaScript modules, allowing
 deterministic verification without camera, wearable, or Spotify access. The 63
 tests cover catalog size and region balance, CSV finiteness and quality flags,
 facial-rule behavior, RR filtering, baseline-relative cardiac behavior, and
-Random/Vibe selection. All tests pass for the reported version. They verify
-computational behavior and contain no labeled affect data or independent sensor
-ground truth.
+Random/Vibe selection. All tests pass for the current reported source tree.
+They verify module-level computational behavior and contain no labeled affect
+data, independent sensor ground truth, or end-to-end browser, MediaPipe,
+Bluetooth, Spotify, and hardware checks. The archive does not identify the code
+revision used during the pilot sessions.
 
 Both policies used the same playback path, rating questions, exposure count,
 and catalog. Their selected tracks could differ in artist, genre, language,
@@ -69,8 +71,9 @@ Movement can affect the camera channel, raise heart rate, and introduce RR
 artifacts at the same time. One behavior can be counted by both channels. The
 trajectory mean weights coordinate-change events instead of elapsed time, and
 the first selection may occur before both references are fully established.
-Because sensing is optional, participants may experience different evidence
-paths.
+Because sensing is optional, a Vibe selection can follow a camera-only,
+cardiac-only, fused, or no-signal path. The archived participant means do not
+report how often each path occurred.
 
 At the exact no-signal center, current code paths disagree on which region
 owns the boundary: the fallback label is Calm, whereas the numerical
@@ -79,10 +82,26 @@ should be unified before a confirmatory study.
 
 The study archive lacks raw trial rows, participant characteristics, recruitment
 and compensation details, the exact sensor model, room conditions, consent
-documentation, and the ethics procedure. No inference can be made about whether
-the undocumented procedures occurred. Without these records, recruitment,
-ethics, sensor setup, and trial-level data processing cannot be independently
-reconstructed.
+documentation, and the ethics procedure. The available archive therefore
+cannot establish recruitment, ethics, sensor setup, or trial-level data
+processing.
+
+\subsection{Materials and evidence availability}
+
+Source code, the frozen catalog, deterministic tests, figure scripts, and the
+15 participant/session means are available at
+\url{https://github.com/eybmits/vibe-shuffle}. The JavaScript dependency
+versions are fixed in \texttt{package-lock.json}; the computational check is
+run with Node.js 20 using \texttt{npm ci} followed by \texttt{npm test}. A final
+submission should cite an immutable release of this archive.
+
+The participant means and inferential summary were transcribed from the
+supplied reports; their source-file hashes are documented in
+\texttt{paper/RESULTS\_PROVENANCE.md}. Trial-level ratings, sensor streams,
+administration records, and a code revision tied to pilot collection are not
+present. The current export schema and tests therefore describe the current
+implementation, not properties independently verified in the historical pilot
+sessions.
 
 \subsection{Next validation steps}
 
