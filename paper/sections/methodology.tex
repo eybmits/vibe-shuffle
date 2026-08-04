@@ -1,12 +1,13 @@
-\section{System Design and Implementation}
+\section{Research System Design and Implementation}
 \label{sec:method}
 
 \subsection{System overview}
 
-Vibe Shuffle is a client-only React/Vite application. Camera input, an optional
-Bluetooth Heart Rate Service device, and Spotify playback are integrated within
-one browser session. The application has no study database or recommendation
-server. Adaptation occurs between tracks: the latest listening window is
+Vibe Shuffle implements its research protocol in a client-side React/Vite
+browser interface. Camera input, an optional Bluetooth Heart Rate Service
+device, and Spotify playback are integrated within one experimental session. The
+current implementation has no study database or recommendation server. The
+selection policy updates between tracks: the latest listening window is
 summarized before the next track is selected. This interval-level update
 produces one decision per track and prevents brief fluctuations from changing
 playback immediately.
@@ -19,17 +20,18 @@ a region and a nearby song. The participant rates the track after playback.
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig2_relative_trajectory.pdf}
-  \caption{\textbf{Relative sensing, trajectory, and selection in Vibe
-  Shuffle.} (a) Camera and cardiac inputs are expressed as signed changes from
-  personal references. (b) A curved Valence--Arousal trajectory is summarized
-  by its arithmetic mean (gold diamond); points grow and darken from the open
-  start marker to the filled endpoint. (c) Within the matching region,
+  \caption{\textbf{Baseline-relative sensing, trajectory aggregation, and
+  catalog selection.} (a) Camera and cardiac inputs are expressed as signed
+  changes from personal references. (b) A curved Valence--Arousal trajectory is
+  summarized by its arithmetic mean (gold diamond); points grow and darken from
+  the open start marker to the filled endpoint. (c) Within the matching region,
   \emph{As It Was} is nearest but
   excluded as played (cross), so \emph{CUFF IT} becomes the selected eligible
   track (filled diamond); open circles are alternatives.
-  Panels (a) and (b) are schematics. Panel (c) uses catalog candidates,
-  distances, and the repository's selection result. The trajectory illustrates
-  the implemented aggregation rule. The logged coherence field is excluded
+  Panels (a) and (b) are schematics. Panel (c) uses candidates and distances
+  from the frozen catalog and reproduces the resulting selection. The
+  trajectory illustrates the specified aggregation rule. The logged
+  coherence field is excluded
   from selection.}
   \Description{Three equal square panels show camera and cardiac changes from
   personal references, a curved illustrative relative valence-arousal
@@ -40,11 +42,11 @@ a region and a nearby song. The participant rates the track after playback.
 
 \subsection{Relative Valence from camera cues}
 
-The browser runs MediaPipe Face Landmarker locally~\cite{mediapipe2019}. It
-returns facial blendshape activations such as smile, cheek, brow, eye, jaw,
-frown, and mouth movement. A fixed rule combines a selected subset into
-positive, negative, and tension-related scores. Vibe Shuffle defines these
-scores; they are absent from the MediaPipe output.
+MediaPipe Face Landmarker runs locally in the
+browser~\cite{mediapipe2019}. It returns facial blendshape activations such as
+smile, cheek, brow, eye, jaw, frown, and mouth movement. A fixed rule combines
+a selected subset into positive, negative, and tension-related scores. Vibe
+Shuffle defines these scores; they are absent from the MediaPipe output.
 
 A 14-second calibration captures a short facial reference, and a slow running
 baseline continues to adapt. Later observations are debiased against this
@@ -60,7 +62,7 @@ affect.
 
 The optional wearable provides device-produced beats per minute and, when
 available, RR intervals---the elapsed time between successive beats. The
-application receives device-produced summaries and has no access to a raw
+research system receives device-produced summaries and has no access to a raw
 electrocardiogram or the device's peak-detection process. Implausible and
 abruptly changing RR intervals are rejected before short-term variability is
 calculated.
@@ -77,7 +79,7 @@ found high agreement between 120-second and longer RMSSD recordings under
 controlled resting conditions~\cite{munoz2015}. Their study did not examine
 short wearable windows during movement or Arousal estimation.
 
-The implementation also exports SDNN and a custom normalized
+The local study export also includes SDNN and a custom normalized
 frequency-domain spectral-peakedness score, recorded in the CSV as the
 physiology coherence field. This experimental diagnostic differs from the
 coherence measure analyzed by Balaji et al.\ and has no role in region
@@ -99,7 +101,7 @@ The trial trajectory is the sequence
 \[
   \mathcal{T}=\{(V_1,A_1),\ldots,(V_m,A_m)\}.
 \]
-At rating time, the application uses the arithmetic mean
+At rating time, the selection policy uses the arithmetic mean
 \[
   (\bar V,\bar A)=\frac{1}{m}\sum_{i=1}^{m}(V_i,A_i)
 \]
@@ -135,7 +137,7 @@ absent. The first track is chosen from the live setup estimate before the
 14-second facial reference is finalized. Later choices use the preceding
 listening window.
 
-\subsection{Data flow and local export}
+\subsection{Research data flow and local export}
 
 Spotify authentication uses Authorization Code with PKCE, and the Web Playback
 SDK provides playback for an allowlisted Premium account. Raw camera frames,
@@ -146,6 +148,9 @@ timestamps. It is downloaded automatically at protocol completion and can also
 be downloaded manually. The file contains no images, landmark sets, raw
 waveforms, or audio. Its trajectory summaries allow review of the final target,
 but individual sensing steps cannot be replayed.
+
+Spotify supplies playback for the frozen study catalog. The experiment does not
+evaluate a dynamically changing catalog or another streaming provider.
 
 Authentication, asset delivery, and hosting require network requests to
 Spotify, MediaPipe, and GitHub Pages. Participant numbers and timestamps in the

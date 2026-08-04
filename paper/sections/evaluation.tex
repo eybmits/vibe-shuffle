@@ -35,15 +35,15 @@ interval includes zero; the study did not specify an equivalence margin.
   \label{fig:pilot}
 \end{figure}
 
-\subsection{Software checks}
+\subsection{Computational verification}
 
-Core selection and signal-processing rules are implemented as pure JavaScript
-modules and can be tested without a camera, wearable, or Spotify account. The
-repository tests catalog size and region balance, CSV finiteness and quality
-flags, facial-rule behavior, RR filtering and baseline-relative cardiac
-behavior, and Random/Vibe selection. All 63 deterministic tests pass in the
-verified repository state. The suite tests software contracts; it contains no
-labeled affect data or independent sensor ground truth.
+The selection and signal-processing rules are pure JavaScript modules, allowing
+deterministic verification without camera, wearable, or Spotify access. The 63
+tests cover catalog size and region balance, CSV finiteness and quality flags,
+facial-rule behavior, RR filtering, baseline-relative cardiac behavior, and
+Random/Vibe selection. All tests pass for the reported version. They verify
+computational behavior and contain no labeled affect data or independent sensor
+ground truth.
 
 Both policies used the same playback path, rating questions, exposure count,
 and catalog. Their selected tracks could differ in artist, genre, language,
@@ -60,7 +60,7 @@ deliberate display can all change the output.
 Heart rate and RMSSD also vary with respiration, posture, speaking, movement,
 fitness, medication, contact quality, and vendor
 processing~\cite{shaffer2017,quigley2024}. The listening window is short for
-HRV, respiration is not measured, and the application receives processed RR
+HRV, respiration is not measured, and the research system receives processed RR
 intervals without access to raw peaks. Personal baselining adjusts
 between-person levels but leaves within-session physiological changes and sensor
 artifacts in the estimate.
@@ -77,7 +77,7 @@ owns the boundary: the fallback label is Calm, whereas the numerical
 greater-than-or-equal rule assigns $(0.5,0.5)$ to Energetic. This edge case
 should be unified before a confirmatory study.
 
-The repository lacks raw trial rows, participant characteristics, recruitment
+The study archive lacks raw trial rows, participant characteristics, recruitment
 and compensation details, the exact sensor model, room conditions, consent
 documentation, and the ethics procedure. No inference can be made about whether
 the undocumented procedures occurred. Without these records, recruitment,
@@ -88,10 +88,11 @@ reconstructed.
 
 Validation should begin with controlled changes in expression, lighting,
 posture, movement, and respiration applied to the frozen facial and cardiac
-mappings. Release should then require successful calibration, timing,
-missing-data flags, and a complete ten-trial export. Before collecting a larger
-crossover sample, preregister the meaningful mood-fit effect, sample size,
-exclusions, primary paired analysis, order analysis, and sensor-quality checks.
+mappings. A confirmatory study should then require successful calibration,
+timing, missing-data flags, and a complete ten-trial record. Before collecting
+a larger crossover sample, preregister the meaningful mood-fit effect, sample
+size, exclusions, primary paired analysis, order analysis, and
+sensor-quality checks.
 Base sample size on interval precision or a prespecified smallest relevant
 effect~\cite{lakens2022}; the pilot estimate is too uncertain to serve as the
 target.
@@ -99,3 +100,7 @@ target.
 Future protocols should specify whether the policy is intended to maintain,
 intensify, or shift the recent region. The outcome measure should match that
 stated goal.
+
+A later study could evaluate the same policy on a larger, changing catalog. Its
+protocol should record playback failures, unavailable features, catalog
+changes, and recommendation coverage.

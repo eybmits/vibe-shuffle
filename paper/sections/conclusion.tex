@@ -1,19 +1,21 @@
 \section{Conclusion}
 
-Vibe Shuffle uses baseline-relative camera and cardiac observations to select
-the next song. It tracks recent movement in Valence--Arousal space, averages the
+Vibe Shuffle studies baseline-relative music selection from camera and cardiac
+observations. It tracks recent movement in Valence--Arousal space, averages the
 trajectory, maps that point to one of four regions, and chooses the nearest
-eligible song. The exported target, region, and distance identify the rule used
-for each recommendation.
+eligible song. The trial record identifies the target, region, and distance
+used for each recommendation.
 
 In the 15-participant crossover, average mood fit was $0.56$ points higher under
 Vibe (95\% CI $[-0.21,1.33]$), and liking was $0.09$ points higher (95\% CI
 $[-0.52,0.71]$). The current-mood reports were subjective ratings, and the
-software produced no objective emotion label. The stored target, signal-source
-summary, region, and song distance document the final decision; the export
-omits point-level trajectory samples.
+research system produced no objective emotion label. The stored target,
+signal-source summary, region, and song distance document the final decision;
+the trial record omits point-level trajectory samples.
 
 A larger preregistered study should validate the sensor mappings, use
 time-weighted fusion, retain complete trial records, and include signal
-ablations. The relevant outcome is whether a personal, inspectable adjustment
-improves the perceived fit of what plays next.
+ablations. If these studies establish a reproducible benefit, a later platform
+study could evaluate the policy as a recommendation layer within a
+music-streaming service. That evaluation must determine whether
+baseline-relative selection improves the perceived fit of what plays next.

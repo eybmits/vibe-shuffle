@@ -1,16 +1,15 @@
 \begin{abstract}
-Music recommendation usually models durable preferences, although a suitable
-track changes with context. \emph{Vibe Shuffle} is a browser application that
-adapts the next-song choice from camera and cardiac signals. Recent
-observations are expressed as changes from short personal reference periods.
-Facial cues supply relative Valence evidence; heart rate and beat-to-beat
-variability supply relative Arousal evidence. During playback, these estimates
-form a trajectory in Valence--Arousal space. The trajectory mean selects a
-recommendation region, and the policy chooses the nearest unplayed song in the
-corresponding Valence--Energy region of a fixed catalog. A local export records
-the target, region, song distance, derived signals, and ratings. Raw camera
-frames, Bluetooth packets, facial-reference values, and point-level
-trajectories remain unexported. An exploratory crossover left the effects on
-mood fit and liking unresolved. A larger study with complete trial-level
-records is needed to estimate the policy's effect.
+Music recommenders model durable preferences, but track fit also depends on
+current context. \emph{Vibe Shuffle} is a research project that studies a
+baseline-relative approach to next-song selection using camera and cardiac
+observations. Short personal reference periods transform facial cues into
+relative Valence evidence and heart rate and beat-to-beat variability into
+relative Arousal evidence. Measurements collected during a track form a
+trajectory whose mean defines one of four recommendation regions. The policy
+selects the nearest unplayed song in the corresponding Valence--Energy region
+of a fixed catalog. The trial record contains the target, signal source, region,
+distance, quality flags, and ratings while excluding raw sensor data. An
+exploratory crossover left the effects on mood fit and liking unresolved.
+Evaluation is limited to the fixed 100-track catalog; sensor validation and a
+larger preregistered study are needed.
 \end{abstract}

@@ -8,12 +8,14 @@ features. These signals characterize usual preference and capture momentary fit
 only indirectly, a known challenge in contextual music
 recommendation~\cite{kaminskas2012,schedl2018}.
 
-Vibe Shuffle uses browser camera input and optional wearable data to adapt the
-next-song choice to recent within-listener change. Full affect recognition
-would require reliable links among facial behavior, physiology, context, and
-subjective experience. A camera captures visible movement. Cardiac timing also
-varies with respiration, posture, activity, medication, and fitness. Neither
-channel directly identifies emotion.
+Vibe Shuffle is a research project on baseline-relative, affect-adaptive music
+selection. It tests whether camera observations and
+optional wearable signals can inform the next-song choice when treated as
+within-listener changes rather than absolute emotion labels. Full affect
+recognition would require reliable links among facial behavior, physiology,
+context, and subjective experience. A camera captures visible movement.
+Cardiac timing also varies with respiration, posture, activity, medication, and
+fitness. Neither channel directly identifies emotion.
 
 During setup, the listener supplies short personal references. Later facial and
 cardiac observations are expressed as changes from those references. The
@@ -30,13 +32,26 @@ same remaining catalog without using the trajectory. The adaptive rule is
 \emph{relative signals $\rightarrow$ recent point $\rightarrow$ region
 $\rightarrow$ nearest available song}.
 
-\paragraph{System contribution.}
-The browser artifact combines baseline-relative camera and cardiac signals with
-trajectory-based song selection. A fixed rule maps the trajectory mean to a
-region and the nearest eligible track. The local export stores the target
-coordinate, region, eligibility status, and distance for each recommendation.
-The study interface masks condition labels and compares the policy with Random
-selection from the same frozen catalog.
+\paragraph{Research contributions.}
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item \textbf{Baseline-relative signal representation.} Personal reference
+  periods center camera and cardiac observations before they enter the relative
+  Valence and Arousal coordinates.
+  \item \textbf{Trajectory-based selection policy.} Event-driven observations
+  form a trajectory; its mean defines a region, and distance selects the
+  nearest unplayed song. The trial record contains the target, region,
+  eligibility, and distance used for each decision.
+  \item \textbf{Paired comparison.} The study compares the adaptive policy with
+  Random selection from the same frozen catalog under masked condition labels
+  and identical rating questions. Deterministic tests verify the selection and
+  signal-processing rules.
+\end{itemize}
 
-In the 15-participant crossover, the mean mood-fit difference was $+0.56$
-points (95\% CI $[-0.21,1.33]$).
+The exploratory 15-participant crossover left the effects on mood fit and
+liking unresolved. The browser client and fixed catalog form the present study
+implementation; they do not establish performance in a live streaming catalog.
+After sensor validation and a larger preregistered study, the same policy could
+be evaluated as a recommendation layer within a music-streaming service.
