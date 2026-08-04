@@ -548,10 +548,11 @@ def build_figure() -> plt.Figure:
     tracks = load_catalog()
 
     # Illustrative, event-driven samples from one listening window. The path
-    # rises from near neutral, arcs through a high-activation peak, and settles
-    # at a more positive endpoint. Its exact arithmetic mean is (0.62, 0.73).
+    # starts at the neutral reference, arcs through a high-activation peak, and
+    # settles at a more positive endpoint. Its exact arithmetic mean is
+    # (0.62, 0.73).
     valence = np.array(
-        [0.44, 0.47, 0.50, 0.54, 0.58, 0.62, 0.66, 0.69, 0.72, 0.75, 0.85]
+        [0.50, 0.51, 0.52, 0.54, 0.57, 0.60, 0.63, 0.66, 0.70, 0.75, 0.84]
     )
     arousal = np.array(
         [0.50, 0.56, 0.64, 0.72, 0.79, 0.84, 0.86, 0.84, 0.80, 0.76, 0.72]
