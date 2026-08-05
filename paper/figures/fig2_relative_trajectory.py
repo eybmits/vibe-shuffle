@@ -166,7 +166,7 @@ def draw_relative_inputs(axis: plt.Axes, target: tuple[float, float]) -> None:
             "delta": target[0] - 0.5,
             "color": CAMERA,
             "name": "Camera cues",
-            "reference": "14 s reference",
+            "reference": "up to 14 s",
             "symbol": "ΔV",
         },
         {
