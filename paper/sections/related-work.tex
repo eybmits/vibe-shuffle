@@ -1,64 +1,54 @@
-\section{Related Work}
+\subsection{Related work}
 
-\subsection{Emotion-aware music selection}
+Prior music systems connect listener information with song coordinates in
+several ways. \emph{Feel the Moosic} lets the listener choose a position in a
+simplified affect space and requests tracks from corresponding Spotify
+Valence--Energy ranges~\cite{helmholz2019}. Janssen et al.\ learned
+listener-specific relations between music and physiological response and used
+them to steer an affective music player toward a goal~\cite{janssen2012}.
+Ayata et al.\ estimated Valence and Arousal from wearable
+galvanic-skin-response and photoplethysmography measurements~\cite{ayata2018},
+while Tran et al.\ matched a facial estimate with nearby tracks in Spotify
+feature space~\cite{tran2023}. These systems establish several routes from
+explicit or inferred context to music.
 
-Music can evoke, express, maintain, or help regulate affect through several
-mechanisms~\cite{juslin2008}. Emotion-aware music systems use
-listener-provided or inferred context to constrain the next track.
+Two issues remain. First, classification accuracy does not establish that a
+recommended track improves the listening experience. Second, the path from
+sensor observation to selection can hide consequential assumptions.
+Explanations may support transparency, trust, effectiveness, or
+decision-making~\cite{nunes2017}, while user experience also depends on effort,
+privacy, and context~\cite{knijnenburg2012}. A reviewable policy should expose
+what was observed, how it was summarized, and why one song became eligible.
 
-Helmholz et al.'s \emph{Feel the Moosic} uses a two-axis interface. Its
-color-coded representation simplifies the Russell and Thayer models. A listener
-selected a position, and the prototype requested songs within corresponding
-Spotify Valence and Energy ranges~\cite{helmholz2019}.
-Vibe Shuffle retains the two-axis mapping and derives the listener coordinate
-from baseline-relative camera and cardiac evidence. It summarizes a trajectory
-over the listening window and selects an unplayed catalog track near the mean
-coordinate. The experimental interface reports the resulting target, region,
-and distance.
+\subsection{Research gap, questions, and contributions}
 
-\subsection{Personal and multimodal affective recommenders}
+Among the systems reviewed here, few expose a baseline-relative path from
+multimodal observations to a reviewable next-song decision. It also remains
+unclear whether that policy changes listener judgments when catalog, exposure,
+and rating procedure are held constant. Vibe Shuffle addresses this gap with a
+personal reference, an event-driven listening trajectory, a fixed
+region-and-distance rule, and a Random comparator drawn from the same frozen
+catalog.
 
-Prior systems have used personal physiological or camera cues to select music.
-Janssen et al.\ learned listener-specific relations between
-music and physiological response and used them to steer an affective music
-player toward a goal~\cite{janssen2012}. Ayata et al.\ compared machine-learning
-models that predicted Valence and Arousal from wearable galvanic-skin-response
-and photoplethysmography measurements before recommending
-music~\cite{ayata2018}. Tran et al.\ used a facial image to estimate a point in
-Valence--Arousal space and retrieved nearby songs in Spotify feature
-space~\cite{tran2023}.
+\paragraph{RQ1.}
+How can within-listener changes in facial and cardiac observations be
+transformed into an inspectable next-song decision without assigning absolute
+emotion labels?
 
-Vibe Shuffle applies a fixed rule that maps recent within-person changes to a
-catalog coordinate and evaluates participant/session-level recommendation
-ratings.
+\paragraph{RQ2.}
+How does Vibe Shuffle compare with Random song selection in participants'
+ratings of mood fit and liking?
 
-\subsection{HRV and coherence evidence}
+The paper makes three concrete contributions. First, it defines a
+baseline-relative formulation of multimodal music adaptation. Second, it
+specifies the path from personal references and listening trajectories to an
+eligible-song decision. Third, it reports a matched exploratory comparison
+that quantifies the direction and uncertainty of mood-fit and liking
+differences. These contributions define a testable policy and its current
+evidence boundary.
 
-HRV provides useful information about cardiac dynamics, but its interpretation
-depends on measurement duration and context~\cite{shaffer2017}. Balaji et al.\
-analyzed 1,884,216 mobile HRV-biofeedback sessions from 70,041 users and
-reported aggregate associations between coherence measures and emotional
-labels entered by users after their sessions~\cite{balaji2025}. Sessions labeled
-with positive emotions had higher mean coherence and more stable coherence
-frequencies than sessions labeled with negative emotions. The study was an
-observational analysis of 3--15 minute biofeedback practice, lacked
-pre-session emotion reports, and did not establish a per-window emotion
-classifier.
-
-Vibe Shuffle logs a different custom spectral-peakedness proxy for diagnostic
-analysis only. Selection instead uses the baseline-relative heart-rate and
-RMSSD estimate.
-
-\subsection{Explanations and user experience}
-
-Recommender explanations can target transparency, trust, effectiveness, or
-decision support~\cite{nunes2017}. The Vibe study interface displays the
-target, region, eligibility status, and distance. Perceived quality, effort,
-privacy, and context remain separate aspects of user
-experience~\cite{knijnenburg2012}.
-
-\subsection{Comparison with prior systems}
-
-Vibe Shuffle differs from the cited systems in two study-design choices: a
-fixed baseline-relative mapping and a Random condition drawn from the same
-frozen catalog.
+In the exploratory comparison, mood-fit ratings were 0.56 points higher under
+Vibe Shuffle on average, but the confidence interval crossed zero. Liking
+differed by 0.09 points and was similarly uncertain. These estimates motivate a
+better instrumented test of the policy; they do not show that the system
+improves listening.

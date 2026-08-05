@@ -8,6 +8,7 @@ This folder contains the final paper artifacts:
   section files, bibliography, vector figures, figure scripts, result tables,
   provenance notes, and the generated bibliography file.
 - `SHA256SUMS.txt`: checksums for the three deliverables.
+- `SOURCE_README.md`: build instructions embedded in the source archive.
 
 The source archive can be uploaded directly to Overleaf. With TeX Live and the
 ACM `acmart` package installed, it can also be compiled locally:

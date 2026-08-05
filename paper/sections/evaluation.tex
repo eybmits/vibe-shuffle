@@ -1,127 +1,127 @@
-\section{Results and Limitations}
-\label{sec:evaluation}
-
-\subsection{Mood-fit estimate and uncertainty}
+\subsection{Results}
 
 Mood fit averaged 4.71 under Vibe and 4.15 under Random
-(Table~\ref{tab:pilot}). The paired mean difference was $+0.56$ rating points
-with a 95\% confidence interval from $-0.21$ to $1.33$. The supplied
-directional paired test yielded $t(14)=1.56$, $p=.070$; the signed-rank
-sensitivity check yielded $W^+=74.0$, $p=.088$. The standardized paired effect
-was $d_z=0.40$. Eight participant/session means were higher under Vibe, one was
-tied, and six were lower. The 95\% confidence interval includes effects on
-either side of zero. Figure~\ref{fig:pilot} plots the paired participant/session
-means
-and Vibe--Random differences.
+(Table~\ref{tab:pilot}). The paired difference was $+0.56$ rating points, with
+a 95\% confidence interval from $-0.21$ to $1.33$ and a standardized paired
+effect of $d_z=0.40$. Eight participant/session means were higher under Vibe,
+one was tied, and six were lower. The retained directional paired test yielded
+$t(14)=1.56$, $p=.070$; the supplied signed-rank sensitivity check yielded
+$W^+=74.0$, $p=.088$. The interval includes effects on both sides of zero.
 
 Liking averaged 4.56 under Vibe and 4.47 under Random. The paired difference
-was $+0.09$ with a 95\% confidence interval from $-0.52$ to $0.71$,
-$t(14)=0.32$, $p=.375$, and $W^+=58.5$, $p=.353$. The liking confidence
-interval includes zero; the study did not specify an equivalence margin.
+was $+0.09$, with a 95\% confidence interval from $-0.52$ to $0.71$ and
+$d_z=0.08$. The directional tests yielded $t(14)=0.32$, $p=.375$, and
+$W^+=58.5$, $p=.353$. No equivalence margin was specified, so the near-zero
+estimate does not establish equivalence.
+
+\begin{table*}[t]
+  \caption{Exploratory summaries of 15 participant/session five-trial means.
+  Confidence intervals are two-sided; retained tests use one-sided
+  Vibe-over-Random alternatives.}
+  \label{tab:pilot}
+  \centering
+  \small
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    Outcome & Vibe $M$ (SD) & Random $M$ (SD) &
+    Difference [95\% CI] & $t(14)$, $p$ & $W^+$, $p$ & $d_z$ \\
+    \midrule
+    Mood fit & 4.71 (0.99) & 4.15 (1.30) &
+    $+0.56$ [$-0.21,1.33$] & 1.56, .070 & 74.0, .088 & 0.40 \\
+    Liking & 4.56 (1.18) & 4.47 (0.77) &
+    $+0.09$ [$-0.52,0.71$] & 0.32, .375 & 58.5, .353 & 0.08 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{fig3_pilot_evidence.pdf}
   \caption{\textbf{Paired participant/session outcomes.} Panels (a)--(b) show
   mood fit; panels (c)--(d) show liking. Left panels connect Random and Vibe
-  five-trial means and show condition means with 95\% CIs. Right panels show
-  paired differences, bootstrap mean distributions, and reported paired means
-  with $t$-based 95\% CIs. Both paired intervals cross zero.}
-  \Description{Four compact panels compare mood fit and liking. For each
-  outcome, a connected-pairs panel shows 15 Random and Vibe
-  participant/session five-trial means, and an estimation panel shows all
-  Vibe-minus-Random differences, a bootstrap distribution, and the reported
-  mean with its t-based confidence interval. The mood-fit point estimate is
-  positive, the liking point estimate is close to zero, and both confidence
-  intervals include zero.}
+  five-trial means and summarize condition means. Right panels show all paired
+  differences, fixed-seed bootstrap mean distributions, and reported paired
+  means with $t$-based 95\% CIs. Both paired intervals cross zero.}
+  \Description{Four compact panels compare mood fit and liking for 15
+  participant-session means. Connected pairs show Random and Vibe ratings;
+  estimation panels show paired differences and mean confidence intervals.}
   \label{fig:pilot}
 \end{figure}
 
-\subsection{Computational verification}
+The pilot does not answer RQ2 decisively. Mood-fit ratings were higher on
+average under Vibe Shuffle, whereas liking changed little, but neither estimate
+excludes zero or establishes a recommendation benefit.
 
-The selection and signal-processing rules are pure JavaScript modules, allowing
-deterministic verification without camera, wearable, or Spotify access. The 63
-tests cover catalog size and region balance, CSV finiteness and quality flags,
-facial-rule behavior, RR filtering, baseline-relative cardiac behavior, and
-Random/Vibe selection. All tests pass for the current reported source tree.
-They verify module-level computational behavior and contain no labeled affect
-data, independent sensor ground truth, or end-to-end browser, MediaPipe,
-Bluetooth, Spotify, and hardware checks. The archive does not identify the code
-revision used during the pilot sessions.
+The paired display also shows heterogeneity that a condition mean would hide.
+Several participant/session differences exceed one rating point in either
+direction. That variation could reflect music familiarity, starting context,
+order, signal availability, or genuine differences in how useful matching is.
+The retained means cannot separate these explanations, but they argue against
+treating one average response as a universal personalization effect.
 
-Both policies used the same playback path, rating questions, exposure count,
-and catalog. Their selected tracks could differ in artist, genre, language,
-familiarity, and popularity.
+\subsection{Reflection and design refinement}
 
-\subsection{Measurement and study limits}
+The study and subsequent artifact audit clarify what the project can support.
+Personal references provide a local comparison point, but they do not validate
+the facial or cardiac mappings. A trajectory makes the decision easier to
+inspect, but its arithmetic mean gives more weight to periods with more
+coordinate changes. The matched Random condition controls catalog size,
+playback path, exposure count, and rating procedure; selected songs can still
+differ in artist, genre, language, familiarity, and popularity.
 
-The facial and cardiac mappings have not been validated against ground truth.
-Facial behavior cannot be reduced reliably to a universal readout of felt emotion
-~\cite{barrett2019}. Vibe's rule weights were not learned or validated on a
-labeled affect dataset. Lighting, pose, occlusion, morphology, culture, and
-deliberate display can all change the output.
+The audit produced concrete refinements to the research specification.
+Emotion-detection language was replaced with baseline-relative evidence,
+diagnostic coherence was separated from the selection policy, and the decision
+record was defined around target, region, distance, signal source, and quality
+flags. These changes improve interpretability without strengthening the
+historical outcome evidence. No qualitative feedback archive supports claims
+of participant-driven redesign.
 
-Heart rate and RMSSD also vary with respiration, posture, speaking, movement,
-fitness, medication, contact quality, and vendor
-processing~\cite{shaffer2017,quigley2024}. The listening window is short for
-HRV, respiration is not measured, and the research system receives processed RR
-intervals without access to raw peaks. Personal baselining adjusts
-between-person levels but leaves within-session physiological changes and sensor
-artifacts in the estimate.
+The signal-processing and selection rules are deterministic JavaScript
+modules. Sixty-three tests cover catalog size and balance, export finiteness
+and quality flags, facial-rule behavior, RR filtering, baseline-relative
+cardiac behavior, and Random/Vibe selection. They validate the present modules,
+not sensor accuracy, Spotify playback, the end-to-end study flow, or the code
+run during the pilot.
 
-Movement can affect the camera channel, raise heart rate, and introduce RR
-artifacts at the same time. One behavior can be counted by both channels. The
-trajectory mean weights coordinate-change events instead of elapsed time, and
-the first selection may occur before both references are fully established.
-Because sensing is optional, a Vibe selection can follow a camera-only,
-cardiac-only, fused, or no-signal path. The archived participant means do not
-report how often each path occurred.
+\subsection{Limitations and threats to validity}
 
-At the exact no-signal center, current code paths disagree on which region
-owns the boundary: the fallback label is Calm, whereas the numerical
-greater-than-or-equal rule assigns $(0.5,0.5)$ to Energetic. This edge case
-should be unified before a confirmatory study.
+Three limitations define the evidence boundary. First, the facial and cardiac
+mappings are fixed heuristics rather than independently validated measures.
+Movement may alter camera evidence, raise heart rate, and degrade RR quality at
+the same time, allowing one behavior to influence both axes. Short HRV windows
+and unmeasured respiration further constrain interpretation.
 
-The study archive lacks raw trial rows, participant characteristics, recruitment
-and compensation details, the exact sensor model, room conditions, consent
-documentation, and the ethics procedure. The available archive therefore
-cannot establish recruitment, ethics, sensor setup, or trial-level data
-processing.
+Second, the small exploratory crossover and incomplete archive prevent
+trial-level, order, carryover, missing-data, and subgroup analyses. The
+retained files contain no recruitment, ethics, hardware, or trial-level
+records, so those parts of the study cannot be reconstructed. One-sided tests
+should not be treated as confirmatory without preregistration. The first
+adaptive choice may precede completed references, sensing is optional, and the
+historical summaries do not identify the signal path behind each choice.
 
-\subsection{Materials and evidence availability}
+Third, the frozen catalog improves experimental control but does not represent
+a dynamic streaming service. The conditions share a catalog, not identical
+tracks. The system also uses event-weighted rather than time-weighted
+aggregation. At the exact no-signal center, current code paths disagree over
+whether the boundary belongs to Calm or Energetic. That edge case should be
+unified before another study.
 
-Source code, the frozen catalog, deterministic tests, figure scripts, and the
-15 participant/session means are available at
-\url{https://github.com/eybmits/vibe-shuffle}. The JavaScript dependency
-versions are fixed in \texttt{package-lock.json}; the computational check is
-run with Node.js 20 using \texttt{npm ci} followed by \texttt{npm test}. A final
-submission should cite an immutable release of this archive.
+\subsection{Next evaluation}
 
-The participant means and inferential summary were transcribed from the
-supplied reports; their source-file hashes are documented in
-\texttt{paper/RESULTS\_PROVENANCE.md}. Trial-level ratings, sensor streams,
-administration records, and a code revision tied to pilot collection are not
-present. The current export schema and tests therefore describe the current
-implementation, not properties independently verified in the historical pilot
-sessions.
+The next evaluation should begin with controlled changes in expression,
+lighting, posture, movement, and respiration applied to the frozen mappings.
+An instrumented pilot should then require completed references, timing and
+missing-data flags, and a complete ten-trial record. Camera-only,
+cardiac-only, fused, and Random conditions would identify which evidence path
+contributes. Time-weighted and event-weighted trajectory summaries should be
+compared directly.
 
-\subsection{Next validation steps}
-
-Validation should begin with controlled changes in expression, lighting,
-posture, movement, and respiration applied to the frozen facial and cardiac
-mappings. A confirmatory study should then require successful calibration,
-timing, missing-data flags, and a complete ten-trial record. Before collecting
-a larger crossover sample, preregister the meaningful mood-fit effect, sample
-size, exclusions, primary paired analysis, order analysis, and
-sensor-quality checks.
-Base sample size on interval precision or a prespecified smallest relevant
-effect~\cite{lakens2022}; the pilot estimate is too uncertain to serve as the
-target.
-
-Future protocols should specify whether the policy is intended to maintain,
-intensify, or shift the recent region. The outcome measure should match that
-stated goal.
-
-A later study could evaluate the same policy on a larger, changing catalog. Its
-protocol should record playback failures, unavailable features, catalog
-changes, and recommendation coverage.
+Before a larger crossover, preregister the smallest relevant mood-fit effect,
+sample-size justification, exclusions, primary paired analysis, order
+analysis, and signal-quality rules~\cite{lakens2022}. A subsequent
+dynamic-catalog study should record candidate availability, playback failures,
+coverage, catalog revisions, explanations, override behavior, and privacy
+expectations. That sequence separates measurement failure from recommendation
+failure and tests whether session-aware re-ranking adds value above a
+conventional preference model.

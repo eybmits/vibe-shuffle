@@ -1,76 +1,59 @@
-\section{Exploratory Crossover Study}
+\section{User Study \& Reflection}
 \label{sec:study}
 
-\subsection{Protocol}
+\subsection{Study design and evaluation plan}
 
-The study compares the perceived appropriateness of the relative adaptive
-policy with Random selection from the same catalog. The protocol schedules
-five tracks in each condition. Two masked protocols reverse block order, and
-the study interface uses odd/even participant numbers to suggest an
-assignment. In
-participant-facing mode, the condition name is replaced by a protocol
-identifier. The experimenter can access the view toggle, protocol controls, and
-condition order in exported data. Masking depended on study administration and
-was not enforced by the study interface. The study was not double blind.
-Practice and carryover remain possible in the paired design; reversing block
-order helps control those effects~\cite{greenwald1976}.
+The exploratory study used a within-participant crossover with one five-track
+Random block and one five-track Vibe block. Both conditions drew from the same
+frozen catalog. Two protocols reversed block order, and the current interface
+uses odd/even participant numbers to suggest an assignment. Participant-facing
+mode replaces condition names with protocol identifiers, although masking
+depends on study administration and is not enforced by the interface. The
+study was not double blind. Reversing order can reduce, but not remove,
+practice, fatigue, and carryover risks in a paired design~\cite{greenwald1976}.
 
-Each track plays for up to 60 seconds. Participants may select \emph{Rate now};
-the actual duration and an early-rating flag are preserved. After each track,
-the study interface collects a seven-point liking rating, a seven-point mood-fit
-rating, and a categorical current-mood report. For this exploratory analysis,
-mood fit is treated as the primary outcome because it measures the proposed
-match directly. Liking is secondary and separates contextual fit from general
-song preference. The prompts were \emph{How much do you like this song?}
-(1, \emph{Don't like it}; 7, \emph{Love it}) and \emph{How well did it fit your
-current mood?} (1, \emph{Not at all}; 7, \emph{Perfect fit}). The current-mood
-prompt offered Energetic, Calm, Tense, Melancholic, and Neutral in randomized
-order.
+Each track plays for up to 60 seconds, with an option to rate earlier. After
+each track, participants answer \emph{How much do you like this song?} and
+\emph{How well did it fit your current mood?} on seven-point scales. They also
+select Energetic, Calm, Tense, Melancholic, or Neutral as a categorical mood
+report. Mood fit measures the proposed contextual match; liking distinguishes
+that judgment from general song preference. Listening duration, early rating,
+condition order, and the current implementation's selection fields are
+exported.
 
-\subsection{Available evidence}
+The current protocol specifies the following sequence. After Spotify
+authentication, the experimenter selects a masked order protocol and
+pseudonymous participant number. The participant completes the available
+camera and cardiac references, hears five tracks in the first condition, rates
+each track, and then completes five tracks under the second condition. Vibe
+uses the preceding listening window for later adaptive choices; Random ignores
+the trajectory. The local study file is downloaded when the protocol finishes
+and can also be saved manually. Because the exact historical software revision
+is unavailable, this sequence describes the present protocol rather than
+independently proving every pilot-session step.
 
-The supplied analysis report contains one five-trial condition mean per
-participant/session for 15 participants, together with paired tests and
-condition summaries. The archived analysis dataset contains 15
-participant/session rows under generic analysis IDs. The protocol implies 75
-planned ratings for each condition and outcome. Without the trial rows,
-completeness, exclusions, and within-session
-variation cannot be checked. Recruitment records, demographics, and the
-complete study-administration file are also unavailable. The available files
-limit the analysis to the 15 participant/session means. The human-study archive
-remains incomplete. In particular, the archive does not show how often a Vibe
-selection followed a camera-only, cardiac-only, fused, or no-signal path.
+\subsection{Available evidence and analysis}
 
-Paired differences are defined as Vibe minus Random. The analysis includes the
-supplied participant/session means, condition means and standard deviations,
-paired mean differences with two-sided 95\% confidence intervals, and the
-originally supplied paired tests. No dated preregistration was available. We
-report the paired estimates, 95\% confidence intervals, and supplied $p$-values
-as exploratory results~\cite{nosek2018,cumming2014}; no confirmatory
-significance threshold was specified. The participant/session five-trial mean
-is the unit of analysis. Confidence intervals use the paired $t$ distribution
-with 14 degrees of freedom. Figure~\ref{fig:pilot} adds 20,000 paired bootstrap
-resamples with fixed seeds to show the distribution of the mean; its interval
-bars remain the $t$ intervals, not bootstrap intervals.
+The retained analysis data contain 15 participant/session rows under generic
+identifiers. Each row reports one five-trial mean per condition for mood fit
+and liking. Trial rows, participant characteristics, recruitment and
+compensation records, consent and ethics documentation, study dates, hardware,
+room conditions, administered condition order, and a code revision tied to
+collection are unavailable. These gaps prevent reconstruction of trial
+completeness, exclusions, within-session variation, or the frequency of
+camera-only, cardiac-only, fused, and no-signal decisions.
 
-The archived means are rounded to one decimal place. They reproduce the
-condition means, paired means, $t$ statistics, and $t$ intervals to rounding.
-Exact signed-rank results depend on the unavailable precision and tie
-convention, so the paper retains the supplied signed-rank values.
+Paired differences are Vibe minus Random, and the participant/session
+five-trial mean is the unit of analysis. We report condition means and standard
+deviations, paired mean differences, two-sided 95\% confidence intervals,
+standardized paired effects, and the supplied directional paired tests.
+Confidence intervals use the paired $t$ distribution with 14 degrees of
+freedom. Figure~\ref{fig:pilot} adds 20,000 fixed-seed bootstrap resamples to
+show the mean distribution; its interval bars remain $t$-based.
 
-\begin{table}[t]
-  \caption{Exploratory summaries of 15 participant/session five-trial means.
-  Confidence intervals are two-sided; tests use one-sided Vibe-over-Random
-  alternatives.}
-  \label{tab:pilot}
-  \centering
-  \small
-  \begin{tabular}{@{}lccc@{}}
-    \toprule
-    Outcome & Vibe $M$ (SD) & Random $M$ (SD) & Vibe--Random [95\% CI] \\
-    \midrule
-    Mood fit & 4.71 (0.99) & 4.15 (1.30) & $+0.56$ [$-0.21,1.33$] \\
-    Liking   & 4.56 (1.18) & 4.47 (0.77) & $+0.09$ [$-0.52,0.71$] \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+The archived means are rounded to one decimal place and reproduce the supplied
+condition summaries and paired $t$ results to rounding. Exact signed-rank
+values depend on unavailable precision and tie handling, so we retain the
+supplied values. No dated preregistration or confirmatory threshold was
+available. Estimation and two-sided uncertainty are primary; the one-sided tests
+are reported descriptively~\cite{cumming2014,nosek2018}.

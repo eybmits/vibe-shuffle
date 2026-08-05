@@ -1,25 +1,45 @@
-\section{Conclusion}
+\section{Conclusion \& Future Work}
 
-In the 15-participant crossover, the estimated Vibe--Random difference was
-$+0.56$ rating points for mood fit (95\% CI $[-0.21,1.33]$) and $+0.09$ points
-for liking (95\% CI $[-0.52,0.71]$). Both intervals include zero. Within the
-fixed catalog, the pilot leaves both effects unresolved and does not establish
-that baseline-relative selection improves what listeners hear next.
+Vibe Shuffle studies whether within-listener camera and cardiac changes can
+inform the next song without being presented as an emotion diagnosis. Personal
+references center the observations, a listening trajectory preserves their
+recent movement, and an explicit region-and-distance rule converts the
+trajectory into a reviewable catalog decision. This answers RQ1 at the level
+of system design.
 
-Vibe Shuffle supplies a specified policy that can be tested and audited.
-Personal references express camera and cardiac observations as relative
-Valence and Arousal evidence without assigning emotion labels. The
-trajectory-to-region-to-nearest-song rule turns those observations into a
-reviewable selection, and the paired means quantify direction and uncertainty
-against Random. The sensor mappings lack independent validation, while the
-historical archive lacks trial rows, signal-path frequencies, and a code
-revision tied to collection. Current tests cover the present source tree, not
-the historical sessions.
+The exploratory crossover does not establish improved mood fit or liking.
+Mood-fit estimates favored Vibe Shuffle, but both outcome intervals included
+zero, and the incomplete study archive prevents deeper explanation of the
+differences. The result defines an open empirical question rather than a
+performance claim.
 
-A confirmatory study should validate both mappings, resolve the no-signal
-boundary, compare camera-only, cardiac-only, fused, and Random conditions,
-evaluate time-weighted trajectory aggregation, preserve complete records, and
-preregister the target effect and analysis. A changing-catalog platform study
-can then test generalization. Vibe Shuffle makes the hypothesis precise and
-auditable; evidence that baseline-relative sensing improves what plays next
-remains to be produced.
+If later evidence supports the policy, session-aware re-ranking could be
+examined for exercise, focus, relaxation, games, or accessibility settings in
+which listening context changes faster than durable preference. Real-world use
+would require visible uncertainty, an immediate opt-out, local or
+data-minimizing processing, and adaptation subordinate to the listener's
+explicit choices.
+
+With validated mappings, complete trial records, preregistered analyses, and a
+dynamic candidate pool, future work can test the policy as an auditable
+re-ranking layer above preference-based recommendation. Vibe Shuffle leaves a
+clear standard for that test: moment-aware music adaptation should be
+measurable in its effects, inspectable in its decisions, and falsifiable in its
+claims.
+
+\section{Contribution Statement}
+
+Markus Baumann, Felix Hajuj, and Miriam Janner jointly contributed to the
+project concept, study execution, interpretation, and preparation and revision
+of the report. Markus Baumann additionally implemented and tested the archived
+repository version, reproduced the participant-level statistics, and prepared
+the visual analysis. All authors reviewed and approved the manuscript.
+
+\section*{Open Science and Transparency}
+
+The project repository contains source code, the frozen catalog, tests, figure
+scripts, participant/session means, and result-provenance records:
+\url{https://github.com/eybmits/vibe-shuffle}. It contains no raw trial rows,
+sensor streams, recruitment records, administration logs, or code revision tied
+to the pilot sessions. The computational tests verify the reported source tree,
+not the historical data-collection environment.

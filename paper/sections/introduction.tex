@@ -1,58 +1,22 @@
-\section{Introduction}
+\section{Motivation}
 
-Music choice is contextual. A track that suits exercise may be unwelcome during
-a quiet break. People use music to regulate mood and
-activation~\cite{juslin2008,schaefer2013}. Most recommenders prioritize stable
-signals such as listening history, favorite artists, similar users, and item
-features. These signals characterize usual preference and capture momentary fit
-only indirectly, a known challenge in contextual music
-recommendation~\cite{kaminskas2012,schedl2018}.
+\subsection{Momentary fit in music recommendation}
 
-Vibe Shuffle studies a baseline-relative policy for music selection. Camera
-observations and optional wearable signals are expressed as within-listener
-changes and used to choose the next song rather than to assign absolute emotion
-labels. Full affect
-recognition would require reliable links among facial behavior, physiology,
-context, and subjective experience. A camera captures visible movement.
-Cardiac timing also varies with respiration, posture, activity, medication, and
-fitness. Neither channel directly identifies emotion.
+Music selection presents a temporal mismatch. Recommender systems learn what a
+listener usually prefers, whereas the track that fits may depend on the present
+activity, recent listening, and level of activation. People already use music
+to regulate mood and arousal~\cite{juslin2008,schaefer2013}, and contextual
+music-recommendation research recognizes that stable preference signals cannot
+describe every listening situation~\cite{kaminskas2012,schedl2018}. An
+energetic track may support exercise and disturb a quiet break. The problem is
+the gap between general taste and what fits now.
 
-During setup, the listener supplies short personal references. Later facial and
-cardiac observations are expressed as changes from those references. The
-horizontal axis represents relative Valence evidence, and the vertical axis
-represents relative Arousal evidence. Each point falls into a Tense, Energetic,
-Melancholic, or Calm recommendation region. The names identify catalog regions.
-
-The catalog uses corresponding Valence and Energy coordinates. Vibe Shuffle
-averages the recent listener trajectory, retains unplayed songs from the
-matching region, and chooses the nearest one. A Random condition draws from the
-same remaining catalog without using the trajectory. The adaptive rule is
-\emph{relative signals $\rightarrow$ recent point $\rightarrow$ region
-$\rightarrow$ nearest available song}.
-
-\paragraph{Research question.}
-How large and uncertain are the differences in participant-rated mood fit
-between the baseline-relative policy and Random selection from the same fixed
-catalog? Liking is treated as a secondary outcome.
-
-\paragraph{Research contributions.}
-\begin{itemize}
-  \setlength{\itemsep}{2pt}
-  \setlength{\parskip}{0pt}
-  \setlength{\parsep}{0pt}
-  \item \textbf{Baseline-relative operationalization.} Personal reference
-  periods center camera and cardiac observations before they enter the relative
-  Valence and Arousal coordinates.
-  \item \textbf{Specified selection policy.} Event-driven observations
-  form a trajectory; its mean defines a region, and distance selects the
-  nearest unplayed song from the matching region.
-  \item \textbf{Paired evidence.} The 15-participant crossover
-  estimates mood-fit and liking differences against Random selection from the
-  same frozen catalog under masked condition labels and identical rating
-  questions.
-\end{itemize}
-
-The crossover left both effects unresolved and does not establish performance
-in a live streaming catalog. A platform study would require validated sensor
-mappings, complete trial records, preregistration, and a dynamic-catalog
-protocol.
+Explicit mood selection can interrupt an otherwise continuous experience.
+Automatic adaptation offers another route, but its inputs are uncertain.
+Facial movement does not uniquely reveal felt emotion, and cardiac timing also
+changes with respiration, posture, activity, fitness, medication, and sensor
+quality~\cite{barrett2019,shaffer2017,quigley2024}. Vibe Shuffle studies a
+narrower question: whether changes from a listener's own recent references can
+guide the next song through a fixed, inspectable rule. The camera is a
+visual-behavioral channel and the wearable is a physiological channel. Neither
+assigns an emotion label.

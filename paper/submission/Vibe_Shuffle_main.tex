@@ -11,7 +11,7 @@
 \usepackage{tabularx}
 
 \graphicspath{{figures/}}
-\setlength{\emergencystretch}{1em}
+\setlength{\emergencystretch}{2em}
 
 \newcommand{\writeestimatedcharactercount}[1]{%
   \immediate\write18{expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 > chars.txt}%
@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\title[Vibe Shuffle]{Vibe Shuffle: Relative Valence--Arousal Adaptation for Music Selection}
+\title[Vibe Shuffle]{Vibe Shuffle: Baseline-Relative Multimodal Sensing for Adaptive Next-Song Selection}
 
 \author{Markus Baumann}
 \authornote{Corresponding author.}

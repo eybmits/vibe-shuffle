@@ -66,8 +66,14 @@ from paper_palette import (
 )
 
 HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[1]
-CATALOG_PATH = REPO_ROOT / "src" / "studyCatalog.js"
+PAPER_ROOT = HERE.parent
+REPOSITORY_CATALOG_PATH = HERE.parents[1] / "src" / "studyCatalog.js"
+PACKAGED_CATALOG_PATH = PAPER_ROOT / "src" / "studyCatalog.js"
+CATALOG_PATH = (
+    REPOSITORY_CATALOG_PATH
+    if REPOSITORY_CATALOG_PATH.exists()
+    else PACKAGED_CATALOG_PATH
+)
 
 QUADRANTS = {
     "happy": {

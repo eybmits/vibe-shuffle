@@ -1,15 +1,16 @@
 \begin{abstract}
-Music recommenders model durable preferences, but track fit also depends on
-current context. We study a baseline-relative next-song policy in
-\emph{Vibe Shuffle}. Fixed heuristics express available facial cues relative
-to a personal reference on the Valence axis and available heart rate and
-beat-to-beat variability relative to a cardiac reference on the Arousal axis.
-Measurements collected during a track form a trajectory whose mean defines
-one of four recommendation regions. The policy selects the nearest unplayed
-song in the corresponding Valence--Energy region of a fixed catalog. The
-current export schema records the target, signal source, region, distance,
-quality flags, and ratings while excluding raw sensor data. An exploratory
-crossover left the effects on mood fit and liking unresolved. Evaluation is
-limited to the fixed catalog; sensor validation, complete trial records, and a
-larger preregistered study are needed.
+Music recommender systems learn durable preferences, but the track that fits
+can change from one moment to the next. \emph{Vibe Shuffle} examines whether
+lightweight camera and cardiac observations can inform next-song selection
+without being presented as a readout of emotion. It expresses each channel as
+change from a personal reference, collects successive relative
+Valence--Arousal points during playback, and uses their mean to select the
+nearest eligible track from the matching region of a fixed catalog. An
+exploratory within-participant crossover compared this policy with Random
+selection from the same catalog. Mood fit was higher on average under Vibe
+Shuffle, while liking changed little; both estimates were uncertain and did
+not establish a recommendation benefit. The project provides an inspectable
+research system that connects personal references, multimodal observations,
+and song choice. It also defines the validation needed before evaluation as a
+session-aware re-ranking layer in a music service.
 \end{abstract}
