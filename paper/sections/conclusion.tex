@@ -1,22 +1,25 @@
 \section{Conclusion}
 
-Vibe Shuffle studies baseline-relative music selection from camera and cardiac
-observations. It tracks recent movement in Valence--Arousal space, averages the
-trajectory, maps that point to one of four regions, and chooses the nearest
-eligible song. The trial record identifies the target, region, and distance
-used for each recommendation.
+In the 15-participant crossover, the estimated Vibe--Random difference was
+$+0.56$ rating points for mood fit (95\% CI $[-0.21,1.33]$) and $+0.09$ points
+for liking (95\% CI $[-0.52,0.71]$). Both intervals include zero. Within the
+fixed catalog, the pilot leaves both effects unresolved and does not establish
+that baseline-relative selection improves what listeners hear next.
 
-In the 15-participant crossover, average mood fit was $0.56$ points higher under
-Vibe (95\% CI $[-0.21,1.33]$), and liking was $0.09$ points higher (95\% CI
-$[-0.52,0.71]$). Current mood was self-reported; no objective emotion labels
-were collected or inferred. The current export schema contains the target,
-signal-source summary, region, and song distance but omits point-level
-trajectory samples.
+Vibe Shuffle supplies a specified policy that can be tested and audited.
+Personal references express camera and cardiac observations as relative
+Valence and Arousal evidence without assigning emotion labels. The
+trajectory-to-region-to-nearest-song rule turns those observations into a
+reviewable selection, and the paired means quantify direction and uncertainty
+against Random. The sensor mappings lack independent validation, while the
+historical archive lacks trial rows, signal-path frequencies, and a code
+revision tied to collection. Current tests cover the present source tree, not
+the historical sessions.
 
-A larger preregistered study should validate the sensor mappings, use
-time-weighted fusion, retain complete trial records, and compare camera-only,
-cardiac-only, fused, and Random conditions. Only if those studies establish a
-reproducible benefit should a platform study evaluate the policy as a
-recommendation layer within a music-streaming service. The decisive question
-remains whether baseline-relative selection improves the perceived fit of what
-plays next enough to justify its sensing uncertainty and participant burden.
+A confirmatory study should validate both mappings, resolve the no-signal
+boundary, compare camera-only, cardiac-only, fused, and Random conditions,
+evaluate time-weighted trajectory aggregation, preserve complete records, and
+preregister the target effect and analysis. A changing-catalog platform study
+can then test generalization. Vibe Shuffle makes the hypothesis precise and
+auditable; evidence that baseline-relative sensing improves what plays next
+remains to be produced.
