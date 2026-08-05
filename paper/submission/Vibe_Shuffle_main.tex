@@ -1,0 +1,79 @@
+\documentclass[sigconf,nonacm,screen]{acmart}
+
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{tabularx}
+
+\graphicspath{{figures/}}
+\setlength{\emergencystretch}{1em}
+
+\newcommand{\writeestimatedcharactercount}[1]{%
+  \immediate\write18{expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 > chars.txt}%
+}
+
+\AtBeginDocument{\providecommand\BibTeX{{Bib\TeX}}}
+
+\setcopyright{CC}
+\setcctype{by-sa}
+
+\begin{document}
+
+\title[Vibe Shuffle]{Vibe Shuffle: Relative Valence--Arousal Adaptation for Music Selection}
+
+\author{Markus Baumann}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+\email{markus.baumann@campus.lmu.de}
+
+\author{Felix Hajuj}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+
+\author{Miriam Janner}
+\affiliation{%
+  \institution{Ludwig-Maximilians-Universit\"at M\"unchen}
+  \city{Munich}
+  \country{Germany}}
+
+\input{sections/abstract}
+
+\begin{CCSXML}
+<ccs2012>
+  <concept>
+    <concept_id>10003120.10003121.10003128</concept_id>
+    <concept_desc>Human-centered computing~Human computer interaction (HCI)</concept_desc>
+    <concept_significance>500</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10002951.10003317.10003347.10003350</concept_id>
+    <concept_desc>Information systems~Recommender systems</concept_desc>
+    <concept_significance>300</concept_significance>
+  </concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Human-centered computing~Human computer interaction (HCI)}
+\ccsdesc[300]{Information systems~Recommender systems}
+
+\keywords{affective computing, music recommendation, relative affect,
+valence and arousal, heart-rate variability, facial cues, baseline-relative adaptation}
+
+\maketitle
+
+\input{content}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibliography}
+
+\writeestimatedcharactercount{count}
+
+\end{document}
