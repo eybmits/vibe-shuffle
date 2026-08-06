@@ -34,20 +34,6 @@ estimate does not establish equivalence.
   \end{tabular}
 \end{table*}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{fig3_pilot_evidence.pdf}
-  \caption{\textbf{Paired participant/session outcomes.} Panels (a)--(b) show
-  mood fit; panels (c)--(d) show liking. Left panels connect Random and Vibe
-  five-trial means and summarize condition means. Right panels show all paired
-  differences, fixed-seed bootstrap mean distributions, and reported paired
-  means with $t$-based 95\% CIs. Both paired intervals cross zero.}
-  \Description{Four compact panels compare mood fit and liking for 15
-  participant-session means. Connected pairs show Random and Vibe ratings;
-  estimation panels show paired differences and mean confidence intervals.}
-  \label{fig:pilot}
-\end{figure}
-
 The pilot does not answer the research question decisively. Mood-fit ratings
 were higher on average under Vibe Shuffle, whereas liking changed little, but
 neither estimate excludes zero or establishes a recommendation benefit.
@@ -57,7 +43,7 @@ one rating point. The retained means cannot distinguish familiarity, context,
 order, signal availability, or differences in the value of matching; one
 average should not be treated as a universal personalization effect.
 
-\subsection{Reflection and design refinement}
+\subsection{Reflection, limitations, and next evaluation}
 
 The study and subsequent artifact audit clarify what the project can support.
 Personal references provide a local comparison point, but they do not validate
@@ -78,7 +64,21 @@ facial rules, RR filtering, baseline-relative cardiac behavior, and song
 selection. They validate the present modules, not sensor accuracy, playback,
 the end-to-end study flow, or the pilot software revision.
 
-\subsection{Limitations and threats to validity}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig3_pilot_evidence.pdf}
+  \caption{\textbf{Paired participant/session outcomes.} Panels (a)--(b) show
+  mood fit; panels (c)--(d) show liking. Left panels connect Random and Vibe
+  five-trial means and summarize condition means. Right panels show all paired
+  differences, fixed-seed bootstrap mean distributions, and reported paired
+  means with $t$-based 95\% CIs. Both paired intervals cross zero.}
+  \Description{Four compact panels compare mood fit and liking for 15
+  participant-session means. Connected pairs show Random and Vibe ratings;
+  estimation panels show paired differences and mean confidence intervals.}
+  \label{fig:pilot}
+\end{figure}
+
+\paragraph{Validity limits.}
 
 Three limitations define the evidence boundary. First, the facial and cardiac
 mappings are fixed heuristics rather than independently validated measures.
@@ -101,7 +101,7 @@ aggregation. At the exact no-signal center, current code paths disagree over
 whether the boundary belongs to Calm or Energetic. That edge case should be
 unified before another study.
 
-\subsection{Next evaluation}
+\paragraph{Next evaluation.}
 
 The next evaluation should test the frozen mappings under controlled changes
 in expression, lighting, posture, movement, and respiration. An instrumented

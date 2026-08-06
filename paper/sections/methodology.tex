@@ -1,8 +1,6 @@
 \section{Concept Overview}
 \label{sec:concept}
 
-\subsection{Design objectives}
-
 Three objectives guided the concept. First, interpretation should be personal:
 observations are expressed as changes from the listener's own reference rather
 than population thresholds. Second, the decision should remain inspectable:
@@ -15,8 +13,6 @@ that an energetic track should calm activation or that positive Valence should
 repair a negative state. Maintaining, intensifying, and shifting would require
 separate policies.
 
-\subsection{Ideation and refinement}
-
 The archive preserves the final research system but not sketches, interviews,
 or a dated prototype history. Its visible refinements are a personal reference
 for within-listener change, a trajectory rather than one sample, a fixed
@@ -27,14 +23,35 @@ specification and reporting changes; no qualitative feedback log supports
 participant-driven redesign. Optional inputs and explicit signal-path export
 let a session continue when a channel is missing.
 
-\subsection{Final concept and intended use}
-
 Vibe Shuffle follows a six-step loop: acquire personal references, collect
 camera and cardiac observations during playback, express them as relative
 Valence--Arousal points, summarize the trajectory, choose the nearest eligible
 song in the corresponding catalog region, and record the rating and decision
 trace. Adaptation occurs between tracks, so brief fluctuations cannot
 interrupt the current song. Figure~\ref{fig:trajectory} shows this loop.
+
+The intended use is scientific evaluation of baseline-relative adaptation. A
+future music service could test the policy as a re-ranking layer above a
+conventional preference model. The present project neither implements nor
+validates that deployment.
+
+\section{Signal \& Pipeline}
+\label{sec:signals}
+
+\subsection{Personal references}
+
+The multimodal input has two distinct channels. A camera supplies visual and
+behavioral cues; an optional wearable supplies physiological timing. The
+camera reference runs for up to 14 seconds and may be skipped. The cardiac
+reference records 120 seconds of device-produced heart rate and RR intervals.
+Subsequent observations are centered on these personal values. The references
+do not define a neutral or true emotional state; they provide local comparison
+points for the session.
+
+The camera supplies visible evidence primarily for relative Valence; cardiac
+change supplies relative activation. Both are accessible through commodity
+interfaces, but each mapping requires separate validation. Figure~\ref{fig:trajectory}
+shows how the relative inputs enter the trajectory and catalog decision.
 
 \begin{figure*}[t]
   \centering
@@ -54,29 +71,7 @@ interrupt the current song. Figure~\ref{fig:trajectory} shows this loop.
   \label{fig:trajectory}
 \end{figure*}
 
-The intended use is scientific evaluation of baseline-relative adaptation. A
-future music service could test the policy as a re-ranking layer above a
-conventional preference model. The present project neither implements nor
-validates that deployment.
-
-\section{Signal \& Pipeline}
-\label{sec:signals}
-
-\subsection{Personal references and measurement boundary}
-
-The multimodal input has two distinct channels. A camera supplies visual and
-behavioral cues; an optional wearable supplies physiological timing. The
-camera reference runs for up to 14 seconds and may be skipped. The cardiac
-reference records 120 seconds of device-produced heart rate and RR intervals.
-Subsequent observations are centered on these personal values. The references
-do not define a neutral or true emotional state; they provide local comparison
-points for the session.
-
-The camera supplies visible evidence primarily for relative Valence; cardiac
-change supplies relative activation. Both are accessible through commodity
-interfaces, but each mapping requires separate validation.
-
-\subsection{Camera-derived relative Valence}
+\subsection{Relative Valence and Arousal signals}
 
 MediaPipe Face Landmarker runs locally and returns facial blendshape
 activations~\cite{mediapipe2019}. A fixed heuristic combines selected smile,
@@ -93,8 +88,6 @@ rule, not felt emotion. Lighting, pose, occlusion, morphology, culture,
 deliberate expression, dancing, and repositioning may change the
 output~\cite{barrett2019,aviezer2012,kuppens2017}. The complete coefficients and
 gates are retained in \texttt{src/expressionModel.js}.
-
-\subsection{Cardiac relative Arousal}
 
 A compatible Bluetooth Heart Rate Service device supplies beats per minute
 and, when available, RR intervals. The research system has no raw
@@ -120,7 +113,7 @@ physiology coherence. It differs from the coherence measure associated with
 post-session emotion labels in large-scale biofeedback data
 ~\cite{balaji2025}. It is diagnostic only and does not affect song selection.
 
-\subsection{Fusion, quality, and local data flow}
+\subsection{Fusion, quality, and data flow}
 
 The pipeline is acquisition, plausibility filtering, personal-reference
 centering, smoothing, quality assessment, and coordinate fusion. Usable
@@ -140,7 +133,7 @@ Spotify playback, MediaPipe assets, and hosting still require network traffic.
 \section{Inference \& Adaptation}
 \label{sec:inference}
 
-\subsection{Listening trajectory}
+\subsection{Trajectory and catalog target}
 
 During confirmed playback, a change in the fused coordinate appends a point to
 the trial trajectory
@@ -156,8 +149,6 @@ one observation but is event-weighted, because points are added when the
 coordinate changes rather than at a fixed rate. The export records sample
 count and listening duration for review.
 
-\subsection{Recommendation regions and catalog}
-
 Splitting both axes at 0.5 produces four catalog regions: Energetic, Calm,
 Tense, and Melancholic. These names identify Valence--Energy partitions; they
 do not classify the participant. Listener Arousal and song Energy are
@@ -170,7 +161,7 @@ dataset~\cite{spotifydataset}. The repository preserves the track records but
 not the download date or a script reproducing their curation. The preserved
 catalog is a frozen stimulus set, not a fresh derivation.
 
-\subsection{Selection policy and Random comparator}
+\subsection{Selection policy and decision trace}
 
 Both conditions exclude the current and all previously played tracks. Vibe
 keeps unplayed tracks in the target region and selects the smallest Euclidean
@@ -188,8 +179,6 @@ selection rule more closely than a comparison between different interfaces.
 Because sensing is optional, a Vibe decision can use camera evidence, cardiac
 evidence, both, or neither. The retained summaries do not report these
 frequencies; the first track may also precede a completed facial reference.
-
-\subsection{Decision trace and prospective service role}
 
 Adaptation changes only the next-song ranking. The completed trajectory
 produces a target, region, eligible set, distance ranking, and selected track.
