@@ -2131,12 +2131,13 @@ function TopNav() {
         <BrandMark compact />
         <div className="flex items-center gap-5 sm:gap-8">
           <a
-            className={linkClass}
+            aria-label="Open the Vibe Shuffle research paper (PDF, opens in a new tab)"
+            className={`${linkClass} inline-flex items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-cyan-100 hover:border-cyan-200/40 hover:bg-cyan-300/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05060f]`}
             href={`${import.meta.env.BASE_URL}paper.pdf`}
             rel="noreferrer"
             target="_blank"
           >
-            Paper (WIP)
+            Research paper
           </a>
           <a
             className={`hidden sm:inline ${linkClass}`}
