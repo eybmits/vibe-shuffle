@@ -1,7 +1,5 @@
 \section{Background}
 
-\subsection{Valence--Arousal as a retrieval space}
-
 Dimensional affect models provide a shared vocabulary for listeners and music.
 Russell's circumplex represents Valence, from unpleasant to pleasant, and
 Arousal, from low to high activation~\cite{russell1980,posner2005}. Thayer's
@@ -26,12 +24,11 @@ that changes over time~\cite{yang2012,aljanaki2017}.
 
 Splitting both axes at 0.5 yields four recommendation regions. The listener's
 relative position selects a region, region membership determines eligibility,
-and Euclidean distance ranks the eligible songs. The coordinate is thus a
-controlled retrieval space rather than a ground-truth emotion measure.
+and Euclidean distance ranks the eligible songs. The coordinate functions as a
+controlled retrieval space and makes no claim to ground-truth emotion.
 
-\subsection{HRV as relative evidence}
-
-HRV describes beat-to-beat variation, and RMSSD summarizes short-term
+Cardiac timing supplies one source of relative Arousal information. HRV
+describes beat-to-beat variation, and RMSSD summarizes short-term
 RR-interval variation~\cite{shaffer2017}. Recording length, respiration,
 movement, posture, fitness, medication, contact quality, and vendor processing
 limit interpretation~\cite{laborde2017,quigley2024}. Vibe Shuffle uses heart

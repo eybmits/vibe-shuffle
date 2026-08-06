@@ -1,27 +1,25 @@
 \section{Concept Overview}
 \label{sec:concept}
 
-Three objectives guided the concept. First, interpretation should be personal:
-observations are expressed as changes from the listener's own reference rather
-than population thresholds. Second, the decision should remain inspectable:
-the research record should expose the path from observations to the selected
-song. Third, adaptation should be conservative: sensor outputs guide
-recommendation but are not shown as the listener's emotion.
+Vibe Shuffle was designed around personal calibration, inspectable decisions,
+and cautious interpretation. Observations are expressed as changes from the
+listener's own reference instead of population thresholds. The research
+record exposes the path from those observations to the selected song, while
+sensor outputs guide recommendation without being shown as the listener's
+emotion.
 
-The project tests matching rather than mood regulation. It does not assume
-that an energetic track should calm activation or that positive Valence should
-repair a negative state. Maintaining, intensifying, and shifting would require
-separate policies.
+The project evaluates whether tracks match the present session. It does not
+attempt to regulate mood or assume that an energetic track should calm
+activation or that positive Valence should repair a negative state.
+Maintaining, intensifying, and shifting would require separate policies.
 
-The archive preserves the final research system but not sketches, interviews,
-or a dated prototype history. Its visible refinements are a personal reference
-for within-listener change, a trajectory rather than one sample, a fixed
-region-and-distance rule, and a Random comparator from the same catalog. A
-later audit separated diagnostic coherence from selection, documented
-provenance and limitations, and clarified the claim boundary. These are
-specification and reporting changes; no qualitative feedback log supports
-participant-driven redesign. Optional inputs and explicit signal-path export
-let a session continue when a channel is missing.
+The final design combines a personal reference, a trajectory built from
+multiple samples, a fixed region-and-distance rule, and a Random comparator
+from the same catalog. Optional inputs and explicit signal-path fields let a
+session continue when a channel is missing. The repository documents the
+implemented system and its later methodological audit, but it contains no
+sketches, interviews, dated prototype history, or qualitative feedback log
+from which participant-driven design changes could be reconstructed.
 
 Vibe Shuffle follows a six-step loop: acquire personal references, collect
 camera and cardiac observations during playback, express them as relative
@@ -37,8 +35,6 @@ validates that deployment.
 
 \section{Signal \& Pipeline}
 \label{sec:signals}
-
-\subsection{Personal references}
 
 The multimodal input has two distinct channels. A camera supplies visual and
 behavioral cues; an optional wearable supplies physiological timing. The
@@ -56,12 +52,12 @@ shows how the relative inputs enter the trajectory and catalog decision.
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig2_relative_trajectory.pdf}
-  \caption{\textbf{Baseline-relative sensing, trajectory aggregation, and
-  catalog selection.} (a) Signed camera and cardiac changes use personal
-  references. (b) The arithmetic mean (gold diamond) summarizes the trajectory
-  between its open start and filled endpoint. (c) \emph{As It Was} is nearest
-  but hypothetically marked as played, so \emph{CUFF IT} is the nearest eligible
-  choice. Panels (a)--(b) are schematic; panel (c) uses catalog-derived
+  \caption{Panel (a) shows signed camera and cardiac changes measured against
+  personal references. Panel (b) summarizes the trajectory between its open
+  start and filled endpoint using the arithmetic mean (gold diamond). In panel
+  (c), \emph{As It Was} is nearest but hypothetically marked as played, so
+  \emph{CUFF IT} is the nearest eligible choice. Panels (a)--(b) are schematic;
+  panel (c) uses catalog-derived
   candidates and distances with an illustrative played state. Coherence is
   logged but not used for selection.}
   \Description{Three equal square panels show camera and cardiac changes from
@@ -71,7 +67,8 @@ shows how the relative inputs enter the trajectory and catalog decision.
   \label{fig:trajectory}
 \end{figure*}
 
-\subsection{Relative Valence and Arousal signals}
+Once the references are established, each channel contributes to the relative
+coordinate.
 
 MediaPipe Face Landmarker runs locally and returns facial blendshape
 activations~\cite{mediapipe2019}. A fixed heuristic combines selected smile,
@@ -89,7 +86,8 @@ deliberate expression, dancing, and repositioning may change the
 output~\cite{barrett2019,aviezer2012,kuppens2017}. The complete coefficients and
 gates are retained in \texttt{src/expressionModel.js}.
 
-A compatible Bluetooth Heart Rate Service device supplies beats per minute
+Cardiac evidence enters through a compatible Bluetooth Heart Rate Service
+device, which supplies beats per minute
 and, when available, RR intervals. The research system has no raw
 electrocardiogram and cannot inspect the device's beat detector. Implausible
 or abruptly changing intervals are rejected before variability is calculated.
@@ -113,10 +111,9 @@ physiology coherence. It differs from the coherence measure associated with
 post-session emotion labels in large-scale biofeedback data
 ~\cite{balaji2025}. It is diagnostic only and does not affect song selection.
 
-\subsection{Fusion, quality, and data flow}
-
-The pipeline is acquisition, plausibility filtering, personal-reference
-centering, smoothing, quality assessment, and coordinate fusion. Usable
+The channel-specific values enter a shared pipeline for acquisition,
+plausibility filtering, personal-reference centering, smoothing, quality
+assessment, and coordinate fusion. Usable
 cardiac evidence sets the Arousal base, while camera movement can add upward
 evidence. Camera movement supplies an upward-only fallback when cardiac data
 are unavailable. If neither channel is usable, the coordinate returns to the
@@ -132,8 +129,6 @@ Spotify playback, MediaPipe assets, and hosting still require network traffic.
 
 \section{Inference \& Adaptation}
 \label{sec:inference}
-
-\subsection{Trajectory and catalog target}
 
 During confirmed playback, a change in the fused coordinate appends a point to
 the trial trajectory
@@ -161,11 +156,9 @@ dataset~\cite{spotifydataset}. The repository preserves the track records but
 not the download date or a script reproducing their curation. The preserved
 catalog is a frozen stimulus set, not a fresh derivation.
 
-\subsection{Selection policy and decision trace}
-
-Both conditions exclude the current and all previously played tracks. Vibe
-keeps unplayed tracks in the target region and selects the smallest Euclidean
-distance:
+Selection applies the same exclusion rule in both conditions: the current track
+and every previously played track are removed. Vibe then keeps unplayed tracks
+in the target region and selects the smallest Euclidean distance:
 \[
  s^*=\arg\min_{s\in Q(\bar V,\bar A)}
  \sqrt{(V_s-\bar V)^2+(E_s-\bar A)^2}.
@@ -188,10 +181,9 @@ replay every sensing step.
 In a future service, a long-term preference model could first generate a
 suitable candidate pool. A confidence-gated Vibe policy could then adjust the
 ordering for the current session while preserving an override and a visible
-explanation. This is a proposed deployment model, not an evaluated feature of
-the present system.
+explanation. That deployment model has not been evaluated.
 
-Every transformation has a named output: personal reference, relative
-coordinate, trajectory mean, catalog region, eligible set, distance, and chosen
-track. A service should explain a re-ranking, withhold adaptation under weak
-signals, and offer immediate preference-only selection.
+The decision record contains the personal reference, relative coordinate,
+trajectory mean, catalog region, eligible set, distances, and chosen track. In
+a service, these fields could support an explanation, suppress adaptation under
+weak signals, and preserve immediate preference-only selection.
