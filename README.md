@@ -12,6 +12,7 @@ controlled pool.
 - **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
 - **Paper:** [`public/paper.pdf`](public/paper.pdf)
 - **Submission package:** [`paper/submission/`](paper/submission/)
+- **Cross-computer handoff:** [`HANDOFF.md`](HANDOFF.md)
 - **Live study implementation:** https://eybmits.github.io/vibe-shuffle/
 
 ## Research question
