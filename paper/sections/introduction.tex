@@ -1,22 +1,62 @@
 \section{Motivation}
 
-\subsection{Momentary fit in music recommendation}
+\subsection{Contextual music choice}
 
-Music selection presents a temporal mismatch. Recommender systems learn what a
-listener usually prefers, whereas the track that fits may depend on the present
-activity, recent listening, and level of activation. People already use music
-to regulate mood and arousal~\cite{juslin2008,schaefer2013}, and contextual
-music-recommendation research recognizes that stable preference signals cannot
-describe every listening situation~\cite{kaminskas2012,schedl2018}. An
-energetic track may support exercise and disturb a quiet break. The problem is
-the gap between general taste and what fits now.
+Music choice is contextual. A track that suits exercise may be unwelcome during
+a quiet break. People use music to regulate mood and activation
+~\cite{juslin2008,schaefer2013}. Most recommender systems prioritize durable
+signals such as listening history, favorite artists, similar users, and item
+features. Those signals characterize usual preference and capture momentary
+fit only indirectly, a known challenge in contextual music recommendation
+~\cite{kaminskas2012,schedl2018}. The resulting gap is practical: the listener
+may like a song in general without wanting it next.
 
-Explicit mood selection can interrupt an otherwise continuous experience.
-Automatic adaptation offers another route, but its inputs are uncertain.
-Facial movement does not uniquely reveal felt emotion, and cardiac timing also
-changes with respiration, posture, activity, fitness, medication, and sensor
-quality~\cite{barrett2019,shaffer2017,quigley2024}. Vibe Shuffle studies a
-narrower question: whether changes from a listener's own recent references can
-guide the next song through a fixed, inspectable rule. The camera is a
-visual-behavioral channel and the wearable is a physiological channel. Neither
-assigns an emotion label.
+Explicit mood selection can address that gap, but it also interrupts an
+otherwise continuous experience. Automatic adaptation offers another route.
+Its observations, however, are uncertain. Facial behavior depends on pose,
+lighting, culture, context, and deliberate expression
+~\cite{barrett2019,aviezer2012,kuppens2017}. Cardiac timing varies with
+respiration, posture, movement, fitness, medication, and sensor quality
+~\cite{shaffer2017,laborde2017,quigley2024}. Neither channel directly identifies
+emotion.
+
+\subsection{Baseline-relative next-song adaptation}
+
+\emph{Vibe Shuffle} studies whether such observations can guide the next song
+without being presented as absolute emotion labels. During setup, the listener
+provides short personal camera and cardiac references. Later observations are
+expressed as changes from those references. The horizontal axis represents
+relative Valence evidence; the vertical axis represents relative Arousal
+evidence. Each point falls into a Tense, Energetic, Melancholic, or Calm
+recommendation region. These names identify catalog regions, not the
+listener's emotional state.
+
+The catalog uses song Valence and Energy coordinates. Vibe Shuffle averages
+the recent trajectory, retains unplayed tracks in its region, and selects the
+nearest eligible track. Random draws from the same remaining catalog without
+the trajectory. The adaptive chain is explicit: personal references, relative
+observations, trajectory, region, and nearest available song.
+
+\subsection{Research question and contributions}
+
+\paragraph{Research question.}
+How large and uncertain are the differences in participant-rated mood fit
+between the baseline-relative policy and Random selection from the same fixed
+catalog? Liking is treated as a secondary outcome.
+
+\paragraph{Research contributions.}
+\begin{itemize}
+  \item \textbf{Baseline-relative operationalization.} Personal reference
+  periods center camera and cardiac observations before they enter the relative
+  Valence and Arousal coordinates.
+  \item \textbf{Specified selection policy.} Event-driven observations form a
+  trajectory; its mean defines a region, and distance selects the nearest
+  unplayed song from that region.
+  \item \textbf{Paired evidence.} The exploratory crossover estimates mood-fit
+  and liking differences against Random selection from the same frozen catalog
+  under matched exposure and rating procedures.
+\end{itemize}
+
+Mood-fit estimates favored Vibe Shuffle, whereas liking barely changed; both
+intervals crossed zero. A service-level evaluation would require validated
+sensor mappings, complete trial records, preregistration, and a dynamic catalog.

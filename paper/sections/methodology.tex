@@ -11,33 +11,21 @@ song. Third, adaptation should be conservative: sensor outputs guide
 recommendation but are not shown as the listener's emotion.
 
 The project tests matching rather than mood regulation. It does not assume
-that an energetic track should calm an activated listener or that a positive
-track should repair negative Valence. A later system could offer maintaining,
-intensifying, or shifting as explicit goals. Combining them in the present
-policy would make a successful recommendation difficult to interpret.
+that an energetic track should calm activation or that positive Valence should
+repair a negative state. Maintaining, intensifying, and shifting would require
+separate policies.
 
 \subsection{Ideation and refinement}
 
-The repository begins with an integrated research system and does not preserve
-sketches, interviews, or a dated sequence of early prototypes. This section
-reconstructs only the design decisions visible in the final artifact. A
-personal reference bounds interpretation to within-listener change. Successive
-observations form a trajectory instead of reducing a track to one frame or
-cardiac sample. A fixed region-and-distance rule makes the resulting choice
-inspectable. Finally, a Random condition from the same catalog separates the
-adaptive rule from exposure count and rating procedure.
-
-A later artifact and manuscript audit clarified the claim boundary, separated
-diagnostic coherence from the selection rule, documented result provenance,
-and exposed unresolved implementation and study limitations. These are
-specification and reporting refinements, not participant-driven redesigns; the
-archive contains no qualitative feedback log.
-
-The research system also preserves graceful degradation. Camera and cardiac
-inputs are optional, the export records which evidence path was available, and
-adaptation waits until the next track. These choices keep a session operable
-when signals are missing while making missingness part of the analysis rather
-than hiding it behind a recommendation score.
+The archive preserves the final research system but not sketches, interviews,
+or a dated prototype history. Its visible refinements are a personal reference
+for within-listener change, a trajectory rather than one sample, a fixed
+region-and-distance rule, and a Random comparator from the same catalog. A
+later audit separated diagnostic coherence from selection, documented
+provenance and limitations, and clarified the claim boundary. These are
+specification and reporting changes; no qualitative feedback log supports
+participant-driven redesign. Optional inputs and explicit signal-path export
+let a session continue when a channel is missing.
 
 \subsection{Final concept and intended use}
 
@@ -84,13 +72,9 @@ Subsequent observations are centered on these personal values. The references
 do not define a neutral or true emotional state; they provide local comparison
 points for the session.
 
-The channels were chosen because they are accessible through commodity
-client-side interfaces and offer complementary evidence: visible behavior is
-used primarily for relative Valence, while cardiac change is used primarily
-for relative activation. Their accessibility makes them practical for an HCI
-research system, without making them inherently valid measures of emotion.
-Evaluation must test the complete decision and validate each mapping
-separately.
+The camera supplies visible evidence primarily for relative Valence; cardiac
+change supplies relative activation. Both are accessible through commodity
+interfaces, but each mapping requires separate validation.
 
 \subsection{Camera-derived relative Valence}
 
@@ -201,11 +185,9 @@ but ranks candidates by a session-seeded pseudorandom score. Catalog, playback
 path, exposure count, and rating questions remain constant, isolating the
 selection rule more closely than a comparison between different interfaces.
 
-The first track is selected from the setup-time estimate before the facial
-reference finishes. Later choices use the preceding listening window. Because
-sensing is optional, a Vibe decision can be camera-only, cardiac-only, fused,
-or no-signal. Historical participant summaries do not report how often each
-path occurred.
+Because sensing is optional, a Vibe decision can use camera evidence, cardiac
+evidence, both, or neither. The retained summaries do not report these
+frequencies; the first track may also precede a completed facial reference.
 
 \subsection{Decision trace and prospective service role}
 
@@ -220,9 +202,7 @@ ordering for the current session while preserving an override and a visible
 explanation. This is a proposed deployment model, not an evaluated feature of
 the present system.
 
-This design answers RQ1 operationally. Within-listener observations become an
-inspectable decision because every transformation has a named output: personal
-reference, relative coordinate, trajectory mean, catalog region, eligible set,
-distance, and chosen track. A service implementation should expose the reason
-for a re-ranking, suppress adaptation when signal quality is insufficient, and
-let the listener return immediately to preference-only selection.
+Every transformation has a named output: personal reference, relative
+coordinate, trajectory mean, catalog region, eligible set, distance, and chosen
+track. A service should explain a re-ranking, withhold adaptation under weak
+signals, and offer immediate preference-only selection.

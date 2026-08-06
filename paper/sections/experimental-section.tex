@@ -3,14 +3,12 @@
 
 \subsection{Study design and evaluation plan}
 
-The exploratory study used a within-participant crossover with one five-track
-Random block and one five-track Vibe block. Both conditions drew from the same
-frozen catalog. Two protocols reversed block order, and the current interface
-uses odd/even participant numbers to suggest an assignment. Participant-facing
-mode replaces condition names with protocol identifiers, although masking
-depends on study administration and is not enforced by the interface. The
-study was not double blind. Reversing order can reduce, but not remove,
-practice, fatigue, and carryover risks in a paired design~\cite{greenwald1976}.
+The exploratory study used a within-participant crossover with five-track
+Random and Vibe blocks drawn from the same frozen catalog. Two protocols
+reversed block order; the current interface suggests an assignment from the
+participant number and masks condition names. Administration can still reveal
+the condition, and the study was not double blind. Reversing order reduces but
+does not remove practice, fatigue, or carryover risks~\cite{greenwald1976}.
 
 Each track plays for up to 60 seconds, with an option to rate earlier. After
 each track, participants answer \emph{How much do you like this song?} and
@@ -21,27 +19,21 @@ that judgment from general song preference. Listening duration, early rating,
 condition order, and the current implementation's selection fields are
 exported.
 
-The current protocol specifies the following sequence. After Spotify
-authentication, the experimenter selects a masked order protocol and
-pseudonymous participant number. The participant completes the available
-camera and cardiac references, hears five tracks in the first condition, rates
-each track, and then completes five tracks under the second condition. Vibe
-uses the preceding listening window for later adaptive choices; Random ignores
-the trajectory. The local study file is downloaded when the protocol finishes
-and can also be saved manually. Because the exact historical software revision
-is unavailable, this sequence describes the present protocol rather than
-independently proving every pilot-session step.
+In the current protocol, the experimenter selects a masked order and
+pseudonymous participant number after Spotify authentication. The participant
+completes available references, hears and rates five tracks per condition, and
+downloads the local study file. Vibe uses the preceding listening window;
+Random ignores it. The historical software revision is unknown, so this is the
+present protocol rather than a reconstruction of every pilot session.
 
 \subsection{Available evidence and analysis}
 
-The retained analysis data contain 15 participant/session rows under generic
-identifiers. Each row reports one five-trial mean per condition for mood fit
-and liking. Trial rows, participant characteristics, recruitment and
-compensation records, consent and ethics documentation, study dates, hardware,
-room conditions, administered condition order, and a code revision tied to
-collection are unavailable. These gaps prevent reconstruction of trial
-completeness, exclusions, within-session variation, or the frequency of
-camera-only, cardiac-only, fused, and no-signal decisions.
+The retained data contain 15 participant/session rows under generic
+identifiers, each with one five-trial condition mean for mood fit and liking.
+Trial rows, participant characteristics, study administration, hardware, and a
+code revision tied to collection are unavailable. These records cannot
+reconstruct trial completeness, exclusions, within-session variation, or
+signal-path frequencies.
 
 Paired differences are Vibe minus Random, and the participant/session
 five-trial mean is the unit of analysis. We report condition means and standard

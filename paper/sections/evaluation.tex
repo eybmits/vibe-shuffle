@@ -48,16 +48,14 @@ estimate does not establish equivalence.
   \label{fig:pilot}
 \end{figure}
 
-The pilot does not answer RQ2 decisively. Mood-fit ratings were higher on
-average under Vibe Shuffle, whereas liking changed little, but neither estimate
-excludes zero or establishes a recommendation benefit.
+The pilot does not answer the research question decisively. Mood-fit ratings
+were higher on average under Vibe Shuffle, whereas liking changed little, but
+neither estimate excludes zero or establishes a recommendation benefit.
 
-The paired display also shows heterogeneity that a condition mean would hide.
-Several participant/session differences exceed one rating point in either
-direction. That variation could reflect music familiarity, starting context,
-order, signal availability, or genuine differences in how useful matching is.
-The retained means cannot separate these explanations, but they argue against
-treating one average response as a universal personalization effect.
+Participant/session differences span both directions, with several exceeding
+one rating point. The retained means cannot distinguish familiarity, context,
+order, signal availability, or differences in the value of matching; one
+average should not be treated as a universal personalization effect.
 
 \subsection{Reflection and design refinement}
 
@@ -69,20 +67,16 @@ coordinate changes. The matched Random condition controls catalog size,
 playback path, exposure count, and rating procedure; selected songs can still
 differ in artist, genre, language, familiarity, and popularity.
 
-The audit produced concrete refinements to the research specification.
-Emotion-detection language was replaced with baseline-relative evidence,
-diagnostic coherence was separated from the selection policy, and the decision
-record was defined around target, region, distance, signal source, and quality
-flags. These changes improve interpretability without strengthening the
-historical outcome evidence. No qualitative feedback archive supports claims
-of participant-driven redesign.
+The audit replaced emotion-detection language with baseline-relative evidence,
+separated diagnostic coherence from selection, and defined the decision record
+around target, region, distance, signal source, and quality flags. These
+reporting changes do not strengthen the historical evidence, and no qualitative
+feedback archive supports participant-driven redesign.
 
-The signal-processing and selection rules are deterministic JavaScript
-modules. Sixty-three tests cover catalog size and balance, export finiteness
-and quality flags, facial-rule behavior, RR filtering, baseline-relative
-cardiac behavior, and Random/Vibe selection. They validate the present modules,
-not sensor accuracy, Spotify playback, the end-to-end study flow, or the code
-run during the pilot.
+Sixty-three deterministic tests cover catalog balance, export quality flags,
+facial rules, RR filtering, baseline-relative cardiac behavior, and song
+selection. They validate the present modules, not sensor accuracy, playback,
+the end-to-end study flow, or the pilot software revision.
 
 \subsection{Limitations and threats to validity}
 
@@ -109,19 +103,16 @@ unified before another study.
 
 \subsection{Next evaluation}
 
-The next evaluation should begin with controlled changes in expression,
-lighting, posture, movement, and respiration applied to the frozen mappings.
-An instrumented pilot should then require completed references, timing and
-missing-data flags, and a complete ten-trial record. Camera-only,
-cardiac-only, fused, and Random conditions would identify which evidence path
-contributes. Time-weighted and event-weighted trajectory summaries should be
-compared directly.
+The next evaluation should test the frozen mappings under controlled changes
+in expression, lighting, posture, movement, and respiration. An instrumented
+pilot should require completed references, timing and missing-data flags, and
+all ten trial records. Camera-only, cardiac-only, fused, and Random conditions
+would identify the useful evidence path; time-weighted and event-weighted
+trajectory summaries should be compared directly.
 
 Before a larger crossover, preregister the smallest relevant mood-fit effect,
-sample-size justification, exclusions, primary paired analysis, order
-analysis, and signal-quality rules~\cite{lakens2022}. A subsequent
-dynamic-catalog study should record candidate availability, playback failures,
-coverage, catalog revisions, explanations, override behavior, and privacy
-expectations. That sequence separates measurement failure from recommendation
-failure and tests whether session-aware re-ranking adds value above a
-conventional preference model.
+sample size, exclusions, paired and order analyses, and signal-quality
+rules~\cite{lakens2022}. A dynamic-catalog study should record availability,
+playback failures, coverage, revisions, explanations, overrides, and privacy
+expectations. This separates measurement failure from recommendation failure
+and tests whether session-aware re-ranking adds value above a preference model.

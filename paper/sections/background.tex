@@ -1,13 +1,15 @@
-\subsection{Conceptual foundation}
+\section{Background}
+
+\subsection{A relative Valence--Arousal coordinate}
 
 Dimensional affect models provide a shared vocabulary for listeners and music.
-Russell's circumplex describes Valence, from unpleasant to pleasant, and
+Russell's circumplex represents Valence, from unpleasant to pleasant, and
 Arousal, from low to high activation~\cite{russell1980,posner2005}. Thayer's
-account adds complementary categories for energetic and tense
-activation~\cite{thayer1991}. Both dimensional and categorical models occur in
-music-emotion research, and their interpretation depends on the chosen labels
-and stimuli~\cite{eerola2013}. Vibe Shuffle adopts this two-axis vocabulary as
-an interface coordinate, not as a complete model of experience.
+account adds complementary categories for energetic and tense activation
+~\cite{thayer1991}. Both dimensional and categorical models occur in
+music-emotion research, and results depend on the selected model, labels, and
+stimuli~\cite{eerola2013}. Vibe Shuffle adopts this vocabulary as a coordinate
+for recommendation, not as a complete account of experience.
 
 \begin{figure*}[t]
   \centering
@@ -24,20 +26,32 @@ an interface coordinate, not as a complete model of experience.
   \label{fig:affect-space}
 \end{figure*}
 
-Figure~\ref{fig:affect-space} relates the continuous coordinate, category
-vocabulary, and HRV-frequency context. Its emotion words and coherence profiles
-are conceptual; the selection policy does not output them. Each listener point
-records change from a personal reference. This choice addresses variation
-across people and contexts without making the signals emotion-specific.
-Facial judgments depend on body context, culture, and individual
-expression~\cite{aviezer2012,kuppens2017}. Personal centering changes the
-comparison, not the meaning of the measurement.
+Figure~\ref{fig:affect-space} contrasts continuous coordinates, a categorical
+vocabulary, and HRV-frequency context. The policy outputs neither emotion words
+nor coherence profiles. Its coordinates encode within-listener change, which
+does not make facial or cardiac observations emotion-specific.
 
-Songs occupy a parallel Valence--Energy space. Valence describes conveyed
-positivity, and Energy describes intensity and activity. Prior interfaces have
-used these features as catalog-side counterparts of affective Valence and
+\subsection{Connecting listener position to music}
+
+Songs occupy a parallel Valence--Energy space. Song Valence describes conveyed
+positivity, whereas Energy describes intensity and activity. Prior interfaces
+have used these catalog features as counterparts of affective Valence and
 Arousal~\cite{helmholz2019}. Vibe Shuffle follows that convention while keeping
 the constructs distinct: musical Energy is not physiological Arousal.
-Music-emotion coordinates depend on subjective annotation and compress a
-course that changes over time~\cite{yang2012,aljanaki2017}. The system uses
-them as a controlled retrieval space rather than ground truth.
+Music-emotion coordinates depend on subjective annotation and compress a course
+that changes over time~\cite{yang2012,aljanaki2017}.
+
+Splitting both axes at 0.5 yields four recommendation regions. The listener's
+relative position selects a region, region membership determines eligibility,
+and Euclidean distance ranks the eligible songs. The coordinate is thus a
+controlled retrieval space rather than a ground-truth emotion measure.
+
+\subsection{Heart-rate variability as relative evidence}
+
+HRV describes beat-to-beat variation, and RMSSD summarizes short-term
+RR-interval variation~\cite{shaffer2017}. Recording length, respiration,
+movement, posture, fitness, medication, contact quality, and vendor processing
+limit interpretation~\cite{laborde2017,quigley2024}. Vibe Shuffle uses heart
+rate and RMSSD only as baseline-relative Arousal evidence. Its custom
+spectral-peakedness field is diagnostic, differs from the group-level coherence
+measure in Balaji et al.~\cite{balaji2025}, and never affects selection.

@@ -1,54 +1,37 @@
-\subsection{Related work}
+\section{Related Work}
 
-Prior music systems connect listener information with song coordinates in
-several ways. \emph{Feel the Moosic} lets the listener choose a position in a
-simplified affect space and requests tracks from corresponding Spotify
-Valence--Energy ranges~\cite{helmholz2019}. Janssen et al.\ learned
-listener-specific relations between music and physiological response and used
-them to steer an affective music player toward a goal~\cite{janssen2012}.
-Ayata et al.\ estimated Valence and Arousal from wearable
-galvanic-skin-response and photoplethysmography measurements~\cite{ayata2018},
-while Tran et al.\ matched a facial estimate with nearby tracks in Spotify
-feature space~\cite{tran2023}. These systems establish several routes from
-explicit or inferred context to music.
+\subsection{Emotion-aware music selection}
 
-Two issues remain. First, classification accuracy does not establish that a
-recommended track improves the listening experience. Second, the path from
-sensor observation to selection can hide consequential assumptions.
-Explanations may support transparency, trust, effectiveness, or
-decision-making~\cite{nunes2017}, while user experience also depends on effort,
-privacy, and context~\cite{knijnenburg2012}. A reviewable policy should expose
-what was observed, how it was summarized, and why one song became eligible.
+Music can evoke, express, maintain, or regulate affect~\cite{juslin2008}.
+Emotion-aware systems use explicit or inferred context to constrain the next
+track. \emph{Feel the Moosic} maps a listener-selected affect position to
+Spotify Valence--Energy ranges~\cite{helmholz2019}. Vibe Shuffle instead derives
+the coordinate from baseline-relative camera and cardiac observations over a
+listening window.
 
-\subsection{Research gap, questions, and contributions}
+\subsection{Personal and multimodal recommenders}
+
+Janssen et al.\ learned listener-specific relations between music and
+physiological response and used them to steer an affective music player toward
+a goal~\cite{janssen2012}. Ayata et al.\ estimated Valence and Arousal from
+wearable galvanic-skin-response and photoplethysmography measurements before
+recommending music~\cite{ayata2018}. Tran et al.\ matched a facial estimate with
+nearby tracks in Spotify feature space~\cite{tran2023}. Together, these systems
+map personal or inferred context to music, but do not show that selected songs
+improve momentary fit.
+
+\subsection{Explanations and research gap}
+
+The path from observation to selection can hide consequential assumptions.
+Explanations may support transparency, trust, effectiveness, or decision
+support~\cite{nunes2017}; perceived quality also depends on effort, privacy, and
+context~\cite{knijnenburg2012}. A reviewable policy should expose what was
+observed, how observations were summarized, and why one song became eligible.
 
 Among the systems reviewed here, few expose a baseline-relative path from
-multimodal observations to a reviewable next-song decision. It also remains
-unclear whether that policy changes listener judgments when catalog, exposure,
-and rating procedure are held constant. Vibe Shuffle addresses this gap with a
-personal reference, an event-driven listening trajectory, a fixed
+multimodal observations to a reviewable next-song decision while holding the
+catalog, exposure, and rating procedure constant. Vibe Shuffle addresses that
+gap with a personal reference, an event-driven listening trajectory, a fixed
 region-and-distance rule, and a Random comparator drawn from the same frozen
-catalog.
-
-\paragraph{RQ1.}
-How can within-listener changes in facial and cardiac observations be
-transformed into an inspectable next-song decision without assigning absolute
-emotion labels?
-
-\paragraph{RQ2.}
-How does Vibe Shuffle compare with Random song selection in participants'
-ratings of mood fit and liking?
-
-The paper makes three concrete contributions. First, it defines a
-baseline-relative formulation of multimodal music adaptation. Second, it
-specifies the path from personal references and listening trajectories to an
-eligible-song decision. Third, it reports a matched exploratory comparison
-that quantifies the direction and uncertainty of mood-fit and liking
-differences. These contributions define a testable policy and its current
-evidence boundary.
-
-In the exploratory comparison, mood-fit ratings were 0.56 points higher under
-Vibe Shuffle on average, but the confidence interval crossed zero. Liking
-differed by 0.09 points and was similarly uncertain. These estimates motivate a
-better instrumented test of the policy; they do not show that the system
-improves listening.
+catalog. Its distinctive claim concerns the specified and testable decision
+path; the exploratory ratings do not establish superiority.
