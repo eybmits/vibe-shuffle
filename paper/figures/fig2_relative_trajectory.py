@@ -12,9 +12,8 @@ Takeaway
     in the corresponding region.
 Evidence
     The relative changes and trajectory are illustrative. Candidate tracks,
-    distances, played-track exclusion, and the selected song are derived from
-    the repository's frozen 100-track catalog. Selection mirrors
-    src/songSelection.js.
+    distances, and the selected song are derived from the repository's frozen
+    100-track catalog. Selection mirrors src/songSelection.js.
 Form
     Three equal square editorial plots with direct labeling and no legend box.
 Renderer
@@ -35,7 +34,7 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import to_rgba
-from matplotlib.patches import FancyArrowPatch, Rectangle
+from matplotlib.patches import Circle, ConnectionPatch, FancyArrowPatch
 import numpy as np
 
 from fig1_affect_space import (
@@ -50,9 +49,9 @@ from fig1_affect_space import (
 from paper_palette import (
     AXIS_LABEL_SIZE,
     BLUE,
+    CONNECTOR,
     CORAL_DARK,
     GOLD,
-    GRID,
     INK,
     MICRO_TEXT_SIZE,
     MID,
@@ -70,9 +69,12 @@ from paper_palette import (
 
 CAMERA = TEAL
 CARDIAC = BLUE
-PLAYED = CORAL_DARK
+SELECTED = CORAL_DARK
 ALTERNATIVE = MID
 SELECTED_FILL = TEAL_LIGHT
+ZOOM_SOURCE_RADIUS = 0.070
+ZOOM_DETAIL_RADIUS = 0.064
+ZOOM_DETAIL_LIMIT = 0.072
 
 
 def select_nearest_unplayed(
@@ -281,6 +283,17 @@ def draw_trajectory(
             zorder=2,
         )
 
+    axis.add_patch(
+        Circle(
+            target,
+            ZOOM_SOURCE_RADIUS,
+            facecolor="none",
+            edgecolor=ALTERNATIVE,
+            linewidth=0.75,
+            zorder=3,
+        )
+    )
+
     smooth_x, smooth_y = _catmull_rom_path(valence, arousal)
     smooth_points = np.column_stack((smooth_x, smooth_y))
     segments = np.stack((smooth_points[:-1], smooth_points[1:]), axis=1)
@@ -359,6 +372,11 @@ def draw_trajectory(
         fontsize=MICRO_TEXT_SIZE,
         fontweight="bold",
         color=INK,
+        bbox={
+            "boxstyle": "square,pad=0.02",
+            "facecolor": SELECTED_FILL,
+            "edgecolor": "none",
+        },
         zorder=9,
     )
     axis.annotate(
@@ -420,126 +438,185 @@ def draw_candidate_ranking(
     axis: plt.Axes,
     candidates: list[tuple[float, dict[str, object]]],
     *,
-    played_titles: set[str],
+    target: tuple[float, float],
     chosen_title: str,
 ) -> None:
-    """Show the selection rule as a direct, collision-free ranked dot plot."""
+    """Show candidate distance and state in a compact radial neighbourhood."""
     _set_panel_label(axis, "(c)")
-    axis.set_xlim(0, 0.10)
-    axis.set_ylim(-0.75, len(candidates) - 0.25)
-    axis.set_xticks((0.0, 0.05, 0.10))
-    axis.set_xticklabels(("0", "0.05", "0.10"), fontsize=TICK_LABEL_SIZE)
-    for tick_label, alignment in zip(
-        axis.get_xticklabels(), ("left", "center", "right")
-    ):
-        tick_label.set_horizontalalignment(alignment)
+    axis.set_xlim(-ZOOM_DETAIL_LIMIT, ZOOM_DETAIL_LIMIT)
+    axis.set_ylim(-ZOOM_DETAIL_LIMIT, ZOOM_DETAIL_LIMIT)
+    axis.set_aspect("equal", adjustable="box")
+    axis.set_facecolor("none")
+    axis.set_xticks([])
     axis.set_yticks([])
-    axis.set_xlabel("Distance from mean", fontsize=AXIS_LABEL_SIZE, labelpad=3)
-    axis.tick_params(axis="x", colors=MUTED, length=2.5, width=0.6, pad=2)
-    axis.grid(axis="x", color=GRID, linewidth=0.6, zorder=0)
 
-    row_y = np.arange(len(candidates) - 1, -1, -1, dtype=float)
-    selected_index = next(
-        index
-        for index, (_, track) in enumerate(candidates)
-        if str(track["title"]) == chosen_title
-    )
-    selected_y = row_y[selected_index]
     axis.add_patch(
-        Rectangle(
-            (0, selected_y - 0.42),
-            0.10,
-            0.84,
+        Circle(
+            (0, 0),
+            ZOOM_DETAIL_RADIUS,
             facecolor=SELECTED_FILL,
-            edgecolor="none",
+            edgecolor=CONNECTOR,
+            linewidth=0.75,
             zorder=0,
         )
     )
 
-    for y_value in row_y:
-        axis.axhline(y_value - 0.50, color=ROW_RULE, linewidth=0.55, zorder=1)
-
-    for y_value, (distance, track) in zip(row_y, candidates):
-        title = str(track["title"])
-        is_played = title in played_titles
-        is_selected = title == chosen_title
-        marker_y = y_value + 0.15
-        axis.text(
-            0.002,
-            marker_y,
-            title,
-            ha="left",
-            va="center",
-            fontsize=AXIS_LABEL_SIZE,
-            fontweight="bold" if is_selected else "normal",
-            color=INK,
-            zorder=5,
+    ring_labels = {
+        0.025: (-0.015, -0.013),
+        0.050: (-0.036, -0.034),
+    }
+    for radius, label_position in ring_labels.items():
+        axis.add_patch(
+            Circle(
+                (0, 0),
+                radius,
+                facecolor="none",
+                edgecolor=ALTERNATIVE,
+                linewidth=0.65,
+                linestyle=(0, (1.4, 1.8)),
+                zorder=1,
+            )
         )
         axis.text(
-            0.002,
-            y_value - 0.15,
-            str(track["artist"]),
-            ha="left",
+            *label_position,
+            f"{radius:.3f}",
+            ha="center",
             va="center",
             fontsize=MICRO_TEXT_SIZE,
             color=MUTED,
+            bbox={
+                "boxstyle": "square,pad=0.03",
+                "facecolor": SELECTED_FILL,
+                "edgecolor": "none",
+            },
             zorder=5,
         )
 
-        if is_played:
+    label_positions = {
+        "As It Was": (0.84, 0.72, "right"),
+    }
+    label_background = {
+        "boxstyle": "square,pad=0.03",
+        "facecolor": SELECTED_FILL,
+        "edgecolor": "none",
+        "alpha": 0.96,
+    }
+
+    for distance, track in candidates:
+        title = str(track["title"])
+        is_selected = title == chosen_title
+        point = (
+            float(track["valence"]) - target[0],
+            float(track["energy"]) - target[1],
+        )
+        if is_selected:
+            axis.plot(
+                [0, point[0]],
+                [0, point[1]],
+                color=SELECTED,
+                linewidth=1.2,
+                zorder=2,
+            )
             axis.scatter(
-                [distance],
-                [marker_y],
-                s=29,
-                marker="x",
-                color=PLAYED,
-                linewidth=1.45,
+                [point[0]],
+                [point[1]],
+                s=66,
+                facecolor="white",
+                edgecolor=SELECTED,
+                linewidth=0.8,
                 zorder=6,
             )
-            status = "PLAYED"
-            status_color = PLAYED
-        elif is_selected:
             axis.scatter(
-                [distance],
-                [marker_y],
-                s=34,
-                marker="D",
-                facecolor=CAMERA,
+                [point[0]],
+                [point[1]],
+                s=27,
+                facecolor=SELECTED,
                 edgecolor="white",
-                linewidth=0.65,
-                zorder=6,
+                linewidth=0.45,
+                zorder=7,
             )
-            status = "SELECTED"
-            status_color = CAMERA
         else:
             axis.scatter(
-                [distance],
-                [marker_y],
-                s=23,
+                [point[0]],
+                [point[1]],
+                s=20,
                 facecolor="white",
                 edgecolor=ALTERNATIVE,
                 linewidth=0.85,
                 zorder=6,
             )
-            status = "eligible"
-            status_color = MUTED
 
+        # Nearby alternatives remain unlabeled: the neutral open points show
+        # that the chosen track was ranked within a candidate neighbourhood
+        # without reintroducing the label collisions this inset was designed
+        # to avoid.
+        if not is_selected:
+            continue
+
+        label_x, label_y, alignment = label_positions[title]
+        display_title = title.upper()
         axis.text(
-            0.097,
-            marker_y,
-            status,
-            ha="right",
-            va="center",
+            label_x,
+            label_y,
+            display_title,
+            transform=axis.transAxes,
+            ha=alignment,
+            va="bottom",
             fontsize=MICRO_TEXT_SIZE,
-            fontweight="bold" if is_selected else "normal",
-            color=status_color,
-            zorder=5,
+            fontweight="bold",
+            color=SELECTED,
+            bbox=label_background,
+            zorder=8,
+        )
+        axis.text(
+            label_x,
+            label_y - 0.065,
+            f"{track['artist']} · d={distance:.3f}",
+            transform=axis.transAxes,
+            ha=alignment,
+            va="top",
+            fontsize=MICRO_TEXT_SIZE,
+            color=MUTED,
+            bbox=label_background,
+            zorder=8,
+        )
+        axis.text(
+            label_x,
+            label_y - 0.135,
+            "selected",
+            transform=axis.transAxes,
+            ha=alignment,
+            va="top",
+            fontsize=MICRO_TEXT_SIZE,
+            fontweight="bold",
+            color=SELECTED,
+            bbox=label_background,
+            zorder=8,
         )
 
-    for location, spine in axis.spines.items():
-        spine.set_visible(location == "bottom")
-        spine.set_color(REFERENCE)
-        spine.set_linewidth(0.7)
+    axis.scatter(
+        [0],
+        [0],
+        s=37,
+        marker="D",
+        facecolor=GOLD,
+        edgecolor="white",
+        linewidth=0.6,
+        zorder=9,
+    )
+    axis.text(
+        0.5,
+        -0.105,
+        r"$d_i^2=(V_i-\bar{V})^2+(E_i-\bar{A})^2$",
+        transform=axis.transAxes,
+        ha="center",
+        va="top",
+        fontsize=MICRO_TEXT_SIZE,
+        color=MUTED,
+        clip_on=False,
+    )
+    for spine in axis.spines.values():
+        spine.set_visible(False)
 
 
 def build_figure() -> plt.Figure:
@@ -561,14 +638,14 @@ def build_figure() -> plt.Figure:
     if not np.allclose(target, (0.62, 0.73)):
         raise ValueError(f"Illustrative target drifted: {target}")
 
-    played_titles = {"As It Was"}
+    played_titles: set[str] = set()
     chosen = select_nearest_unplayed(tracks, target, played_titles)
-    if chosen["title"] != "CUFF IT":
+    if chosen["title"] != "As It Was":
         raise ValueError(
-            f"Expected CUFF IT as nearest eligible example, found {chosen['title']}"
+            f"Expected As It Was as nearest example, found {chosen['title']}"
         )
-    candidates = _ranked_candidates(tracks, target, count=5)
-    if [track["title"] for _, track in candidates[:2]] != ["As It Was", "CUFF IT"]:
+    candidates = _ranked_candidates(tracks, target, count=3)
+    if len(candidates) != 3 or candidates[0][1]["title"] != "As It Was":
         raise ValueError("Nearest-candidate ordering drifted")
 
     figure = plt.figure(figsize=(7.16, 2.68))
@@ -590,9 +667,39 @@ def build_figure() -> plt.Figure:
     draw_candidate_ranking(
         ranking_axis,
         candidates,
-        played_titles=played_titles,
+        target=target,
         chosen_title=str(chosen["title"]),
     )
+
+    diagonal = float(np.sqrt(0.5))
+    for vertical_sign in (1.0, -1.0):
+        source = (
+            target[0] + ZOOM_SOURCE_RADIUS * diagonal,
+            target[1] + vertical_sign * ZOOM_SOURCE_RADIUS * diagonal,
+        )
+        destination = (
+            -ZOOM_DETAIL_RADIUS * diagonal,
+            vertical_sign * ZOOM_DETAIL_RADIUS * diagonal,
+        )
+        # Attach the guides to panel (b), rather than the figure background,
+        # so their short in-panel segments remain visible from the source
+        # circle. Panel (c), drawn afterwards, masks them at the zoom boundary.
+        trajectory_axis.add_artist(
+            ConnectionPatch(
+                xyA=source,
+                coordsA="data",
+                axesA=trajectory_axis,
+                xyB=destination,
+                coordsB="data",
+                axesB=ranking_axis,
+                arrowstyle="-",
+                color=CONNECTOR,
+                linewidth=0.75,
+                linestyle=(0, (2.0, 2.0)),
+                clip_on=False,
+                zorder=2.5,
+            )
+        )
     return figure
 
 
