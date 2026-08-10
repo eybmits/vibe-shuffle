@@ -1,16 +1,18 @@
 \begin{abstract}
-Music recommender systems learn durable preferences, but the track that fits
-can change from one moment to the next. \emph{Vibe Shuffle} examines whether
-lightweight camera and cardiac observations can inform next-song selection
-without being presented as a readout of emotion. It expresses each channel as
-change from a personal reference, collects successive relative
-Valence--Arousal points during playback, and uses their mean to select the
-nearest eligible track from the matching region of a fixed catalog. An
-exploratory within-participant crossover compared this policy with Random
-selection from the same catalog. Mood fit was higher on average under Vibe
-Shuffle, while liking changed little; both estimates were uncertain and did
-not establish a recommendation benefit. Each recommendation can be traced from
-personal references through multimodal observations to song choice. Testing
-the policy as a session-aware re-ranking layer requires further validation of
-the signal mappings and study protocol.
+Music recommenders are good at learning what listeners generally like, but the
+song that fits can depend on how they feel in the moment. \emph{Vibe Shuffle}
+investigates whether camera and cardiac changes relative to personal references
+can support more context-sensitive next-song recommendations. The system records
+personal reference values for the available sensing channels and combines
+camera-based facial and movement cues with heart rate and heart-rate
+variability. During playback, changes from those references form a short
+trajectory in a two-dimensional valence--arousal space without assigning the
+listener a fixed emotion label. The trajectory mean identifies a catalog region,
+and the nearest unplayed song in that region is selected. An exploratory
+within-session crossover across 15 sessions compared Vibe Shuffle with Random
+selection from the same catalog. Mood-fit ratings were higher on average under Vibe
+Shuffle, while general liking changed little, but both estimates were too
+uncertain to establish a recommendation benefit. Vibe Shuffle connects changes
+in camera and cardiac signals to explicit next-song decisions without claiming
+to identify the listener's emotion.
 \end{abstract}

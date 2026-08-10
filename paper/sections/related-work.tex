@@ -1,30 +1,28 @@
 \section{Related Work}
 
 Music can evoke, express, maintain, or regulate affect~\cite{juslin2008}.
-Emotion-aware systems use explicit or inferred context to constrain the next
-track. \emph{Feel the Moosic} maps a listener-selected affect position to
-Spotify Valence--Energy ranges~\cite{helmholz2019}. Vibe Shuffle instead derives
-the coordinate from baseline-relative camera and cardiac observations over a
-listening window.
+Emotion-aware recommenders therefore use the listener's current context to
+guide song selection. \emph{Feel the Moosic} asks listeners to choose a
+position in an affect space and maps it to Spotify valence and energy
+ranges~\cite{helmholz2019}. Vibe Shuffle instead derives its coordinate from
+camera and cardiac observations measured relative to personal references.
 
-Janssen et al.\ learned listener-specific relations between music and
-physiological response and used them to steer an affective music player toward
-a goal~\cite{janssen2012}. Ayata et al.\ estimated Valence and Arousal from
-wearable galvanic-skin-response and photoplethysmography measurements before
-recommending music~\cite{ayata2018}. Tran et al.\ matched a facial estimate with
-nearby tracks in Spotify feature space~\cite{tran2023}. These systems
-demonstrate several routes from personal context to track selection. Their
-reported evaluations provide no clear evidence that the selected songs improve
-momentary fit.
+Other systems infer context from sensor data. Janssen et al.\ learned
+listener-specific relations between music and physiological responses and used
+them to guide an affective music player toward a target
+state~\cite{janssen2012}. Ayata et al.\ estimated valence and arousal from
+wearable measurements before recommending music~\cite{ayata2018}. Tran et al.\
+matched facial estimates with nearby tracks in Spotify feature
+space~\cite{tran2023}. Explicit reports, wearable measurements, and facial
+estimates can each provide recommendation context, but evidence that the
+resulting choices improve momentary fit remains limited.
 
-The path from observation to selection can hide consequential assumptions.
-Explanations may support transparency, trust, effectiveness, or decision
-support~\cite{nunes2017}; perceived quality also depends on effort, privacy, and
-context~\cite{knijnenburg2012}. A reviewable policy should expose what was
-observed, how observations were summarized, and why one song became eligible.
+Because facial and cardiac observations are uncertain and influenced by many
+factors, their role in song selection should remain understandable.
+Explanations can support transparency and trust~\cite{nunes2017}, while
+perceived quality also depends on effort, privacy, and
+context~\cite{knijnenburg2012}.
 
-Vibe Shuffle differs in three connected choices: it centers multimodal
-observations on a personal reference, retains their movement as an event-driven
-trajectory, and applies a fixed region-and-distance rule. Random selection uses
-the same frozen catalog, exposure, and rating procedure. This comparison
-isolates the policy, while the exploratory data leave its benefit uncertain.
+Vibe Shuffle centers multimodal observations on personal reference values,
+aggregates their changes as a trajectory, and applies a fixed
+region-and-distance rule.

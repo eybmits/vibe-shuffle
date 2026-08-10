@@ -1,67 +1,67 @@
-\section{Motivation}
+\section{Introduction}
 
-Music choice is contextual. A track that suits exercise may be unwelcome during
-a quiet break. People use music to regulate mood and activation
-~\cite{juslin2008,schaefer2013}. Most recommender systems prioritize durable
-signals such as listening history, favorite artists, similar users, and item
-features. Those signals characterize usual preference and capture momentary
-fit only indirectly, a known challenge in contextual music recommendation
-~\cite{kaminskas2012,schedl2018}. A listener may like a song in general without
-wanting it next.
+Music recommendation is usually based on what a person tends to like.
+Listening history, favorite artists, similar users, and song features all
+provide useful signals of long-term preference. Yet the song that fits can
+change from one moment to the next. A track that works during exercise may feel
+out of place during a quiet break, and a song that someone likes in general may
+still not be the song they want to hear next. Because people use music to
+maintain, change, and regulate mood and activation~\cite{juslin2008,schaefer2013},
+this difference between general liking and momentary fit is an important
+challenge for contextual music recommendation~\cite{kaminskas2012,schedl2018}.
 
-Explicit mood selection can address that gap, but it also interrupts an
-otherwise continuous experience. Automatic adaptation offers another route.
-Its observations, however, are uncertain. Facial behavior depends on pose,
-lighting, culture, context, and deliberate expression
-~\cite{barrett2019,aviezer2012,kuppens2017}. Cardiac timing varies with
-respiration, posture, movement, fitness, medication, and sensor quality
-~\cite{shaffer2017,laborde2017,quigley2024}. Neither channel directly identifies
-emotion.
+One way to include the current situation is to ask listeners to select their
+mood. This can provide useful context, but it also interrupts the listening
+experience. Automatic adaptation avoids that interruption, although the
+available observations are uncertain. Facial behavior varies with pose,
+lighting, culture, context, and deliberate
+expression~\cite{aviezer2012,barrett2019,kuppens2017}. Cardiac timing is also
+affected by respiration, posture, movement, fitness, medication, and sensor
+quality~\cite{laborde2017,quigley2024,shaffer2017}. Neither channel should
+therefore be treated as a direct measurement of emotion.
 
-\emph{Vibe Shuffle} uses these uncertain observations only as within-listener
-changes that may guide the next song. During setup, the listener
-provides short personal camera and cardiac references. Later observations are
-expressed as changes from those references. The horizontal axis represents
-relative Valence evidence; the vertical axis represents relative Arousal
-evidence. Each point falls into a Tense, Energetic, Melancholic, or Calm
-recommendation region. These names identify catalog regions, not the
-listener's emotional state.
+\emph{Vibe Shuffle} examines whether short-term changes within the same listener
+provide useful context for selecting the next song. At the
+beginning of a session, the system records personal reference values for the
+available camera and cardiac channels. Later observations are expressed only as
+changes from these references and mapped to relative valence and arousal
+coordinates. The observations
+collected during a song form a trajectory. Its mean identifies one of four
+regions in a fixed music catalog, and the nearest unplayed track in that region
+becomes the next recommendation. The region names Energetic, Calm, Tense, and
+Melancholic describe parts of the catalog rather than the listener's emotional
+state. Physiological arousal and musical energy are likewise used as matching
+coordinates without being treated as the same construct.
 
-The catalog uses song Valence and Energy coordinates. Vibe Shuffle averages
-the recent trajectory, retains unplayed tracks in its region, and selects the
-nearest eligible track. Random draws from the same remaining catalog without
-the trajectory. The adaptive chain is explicit: personal references, relative
-observations, trajectory, region, and nearest available song.
-
-The study compares this policy with Random selection from the same fixed
-catalog. Its primary outcome is participant-rated mood fit, analyzed through
-the paired difference and the uncertainty around it. Liking is a secondary
-measure of general song preference. The comparison rests on three reproducible
-elements:
+Vibe Shuffle combines three elements:
 \begin{itemize}
-  \item Personal reference periods center camera and cardiac observations
-  before the relative Valence and Arousal coordinates are calculated.
-  \item Event-driven observations form a trajectory whose mean identifies a
-  catalog region and whose distance ranking yields the nearest unplayed track.
-  \item The exploratory crossover estimates mood-fit and liking differences
-  under matched catalog, exposure, and rating procedures.
+  \item \textbf{Sensing relative to personal references.} Optional camera and
+  cardiac observations are combined without assigning a fixed emotion label.
+  \item \textbf{Explicit next-song selection.} A trajectory mean, catalog
+  region, and nearest-track rule turn those observations into one decision.
+  \item \textbf{Exploratory comparison.} A within-session crossover across 15
+  sessions compared Vibe Shuffle with Random selection from the same catalog
+  and measured momentary mood fit separately from general liking.
 \end{itemize}
 
-Mood-fit estimates favored Vibe Shuffle, whereas liking barely changed; both
-intervals crossed zero. A service-level evaluation would require validated
-sensor mappings, complete trial records, preregistration, and a dynamic catalog.
+Mood-fit ratings were higher on average under Vibe Shuffle, whereas liking
+changed little. However, the uncertainty around both differences included zero,
+so the crossover did not establish improved recommendation quality. In a future
+music service, the method could re-rank tracks
+supplied by a conventional preference model. Evaluating that use will require
+validated signal mappings, complete trial-level records, and a preregistered
+study with a realistic candidate pool.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig1_affect_space.pdf}
-  \caption{Panels (a)--(b) are original redrawings adapted from Helmholz et
-  al.~\cite{helmholz2019}, who
-  operationalized Russell's circumplex~\cite{russell1980} and Thayer's
-  mood--arousal model~\cite{thayer1991}. Panel (c) is an original schematic
-  adapted from the group-level frequency distinction reported by Balaji et
-  al.~\cite{balaji2025}; it contains no empirical observations.}
+  \caption{Panels (a)--(b) adapt the affect-space representations of Helmholz
+  et al.~\cite{helmholz2019}, based on Russell's
+  circumplex~\cite{russell1980} and Thayer's mood--arousal
+  model~\cite{thayer1991}. Panel (c) schematically represents the group-level
+  frequency distinction reported by Balaji et al.~\cite{balaji2025}.}
   \Description{Three square conceptual panels show a continuous
-  valence-arousal plane, a categorical affect vocabulary, and a
+  valence--arousal plane, a categorical affect vocabulary, and a
   coherence-frequency schematic.}
   \label{fig:affect-space}
 \end{figure*}

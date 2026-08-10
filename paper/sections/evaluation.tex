@@ -1,111 +1,101 @@
-Mood fit averaged 4.71 under Vibe and 4.15 under Random
-(Table~\ref{tab:pilot}). The paired difference was $+0.56$ rating points, with
-a 95\% confidence interval from $-0.21$ to $1.33$ and a standardized paired
-effect of $d_z=0.40$. Eight participant/session means were higher under Vibe,
-one was tied, and six were lower. The retained directional paired test yielded
-$t(14)=1.56$, $p=.070$; the supplied signed-rank sensitivity check yielded
-$W^+=74.0$, $p=.088$. The interval includes effects on both sides of zero.
+\section{Discussion, Limitations, and Future Work}
+\label{sec:discussion}
 
-Liking averaged 4.56 under Vibe and 4.47 under Random. The paired difference
-was $+0.09$, with a 95\% confidence interval from $-0.52$ to $0.71$ and
-$d_z=0.08$. The directional tests yielded $t(14)=0.32$, $p=.375$, and
-$W^+=58.5$, $p=.353$. No equivalence margin was specified, so the near-zero
-estimate does not establish equivalence.
+\subsection{Discussion}
 
-\begin{table*}[t]
-  \caption{The values are exploratory five-trial means from 15
-  participant/session records. Confidence intervals are two-sided; the retained
-  tests use one-sided Vibe-over-Random alternatives.}
-  \label{tab:pilot}
-  \centering
-  \small
-  \begin{tabular}{@{}lcccccc@{}}
-    \toprule
-    Outcome & Vibe $M$ (SD) & Random $M$ (SD) &
-    Difference [95\% CI] & $t(14)$, $p$ & $W^+$, $p$ & $d_z$ \\
-    \midrule
-    Mood fit & 4.71 (0.99) & 4.15 (1.30) &
-    $+0.56$ [$-0.21,1.33$] & 1.56, .070 & 74.0, .088 & 0.40 \\
-    Liking & 4.56 (1.18) & 4.47 (0.77) &
-    $+0.09$ [$-0.52,0.71$] & 0.32, .375 & 58.5, .353 & 0.08 \\
-    \bottomrule
-  \end{tabular}
-\end{table*}
+The two outcomes capture different aspects of recommendation quality. Liking
+reflects general preference, whereas mood fit asks whether a song suits the
+present situation. A context-aware method can therefore target momentary fit
+without aiming to increase general liking. The outcomes were analyzed
+separately; neither estimate was precise enough to support a performance
+conclusion.
 
-The data leave both effects unresolved. Mood-fit ratings were higher on average
-under Vibe Shuffle, whereas liking changed little, but neither estimate excludes
-zero or establishes a recommendation benefit.
+The selection rule links camera and cardiac changes to a recommendation through
+four explicit steps: personal references, a relative trajectory, a catalog
+region, and a distance ranking. This sequence keeps the recommendation logic
+understandable without assigning the listener an emotion label. Mood-fit
+differences nevertheless varied across sessions. The available averages cannot
+determine whether this variation arose from signal availability, trajectory
+shape, familiarity, order, or the songs remaining in the catalog.
 
-Participant/session differences span both directions, with several exceeding
-one rating point. The retained means cannot distinguish familiarity, context,
-order, signal availability, or differences in the value of matching; one
-average should not be treated as a universal personalization effect.
+Vibe Shuffle is intended to complement rather than replace preference
+modeling. A conventional recommender could first identify songs that the
+listener is likely to enjoy, after which the relative trajectory could re-rank
+that candidate set for the current session. Whether this combination improves
+momentary fit remains a hypothesis for future evaluation.
 
-Personal references provide a local comparison point, but the facial and
-cardiac mappings remain unvalidated. A trajectory makes the decision easier to
-inspect, but its arithmetic mean gives more weight to periods with more
-coordinate changes. The matched Random condition controls catalog size,
-playback path, exposure count, and rating procedure; selected songs can still
-differ in artist, genre, language, familiarity, and popularity.
+Vibe Shuffle also supports a lightweight deployment model. Camera frames,
+facial landmarks, and Bluetooth notifications are processed in browser memory,
+while stored data are limited to derived summaries, reference and quality
+status, timing, song metadata, and ratings. Raw camera and cardiac streams are
+therefore not retained. Since camera and wearable inputs are optional, a
+session can continue with either channel, both channels, or a fallback
+coordinate. These properties make the method suitable as a re-ranking
+component in an existing music service.
 
-The current specification describes sensor outputs as baseline-relative
-evidence, keeps diagnostic coherence outside the selection rule, and records
-the target, region, distance, signal source, and quality flags. These reporting
-changes do not alter the historical data, and no qualitative feedback archive
-supports claims about participant-driven redesign.
+Sixty-three deterministic unit tests cover catalog structure, data
+serialization, sensing heuristics, and song ranking. They check the implemented
+decision rules; they do not validate sensor accuracy or recommendation benefit.
 
-Sixty-three deterministic tests cover catalog balance, export quality flags,
-facial rules, RR filtering, baseline-relative cardiac behavior, and song
-selection. They validate the present modules, not sensor accuracy, playback,
-the end-to-end study flow, or the pilot software revision.
+\subsection{Limitations}
 
-The facial and cardiac mappings are fixed heuristics without independent
-validation.
-Movement may alter camera evidence, raise heart rate, and degrade RR quality at
-the same time, allowing one behavior to influence both axes. Short HRV windows
-and unmeasured respiration further constrain interpretation.
+The fixed catalog and Random condition improve experimental control but do not
+reproduce candidate generation or preference modeling in a full music service.
+The two conditions could also select different songs and present them in a
+different order. The measured difference therefore reflects the complete
+recommendation experience produced by each method.
 
-The small exploratory crossover and incomplete archive also prevent
-trial-level, order, carryover, missing-data, and subgroup analyses. The
-retained files contain no recruitment, ethics, hardware, or trial-level
-records, so those parts of the study cannot be reconstructed. One-sided tests
-should not be treated as confirmatory without preregistration. The first
-adaptive choice may precede completed references, sensing is optional, and the
-historical summaries do not identify the signal path behind each choice.
+The crossover controls stable differences within a session, although practice,
+fatigue, and carryover may still affect the second block~\cite{greenwald1976}.
+Condition labels were hidden in the interface, but study administration could
+still reveal them. Fifteen sessions leave broad confidence intervals and do not
+support stable order, subgroup, or hardware estimates. The small average liking
+difference does not establish that liking is preserved because no equivalence
+or non-inferiority range was defined. Five-track condition means can also hide
+differences between individual songs.
 
-The frozen catalog improves experimental control but limits ecological
-validity. The conditions share a catalog, not identical tracks. The system also
-uses event-weighted rather than time-weighted
-aggregation. At the exact no-signal center, current code paths disagree over
-whether the boundary belongs to Calm or Energetic. That edge case should be
-unified before another study.
+The sensing layer uses fixed mappings from facial behavior, movement, heart
+rate, and RMSSD to relative valence and arousal. These observations can change
+with pose, lighting, respiration, posture, physical movement, fitness,
+medication, and sensor quality~\cite{aviezer2012,barrett2019,kuppens2017,
+laborde2017,quigley2024,shaffer2017}. Movement may influence camera evidence
+and cardiac measurements simultaneously, and the study did not estimate the
+contribution of each sensing channel. The trajectory mean is event-weighted,
+because it is computed over event-driven fused-state updates rather than
+time-weighted samples. The four-region split also introduces hard boundaries at
+0.5. These choices make the decision rule simple, but they are not the only
+ways to summarize and match a trajectory. The study did not separately measure
+sensor accuracy or playback failures, so their influence on the ratings is
+unknown.
 
-These limitations set the priorities for the next evaluation. It should begin
-by testing the frozen mappings under controlled changes in expression,
-lighting, posture, movement, and respiration. An instrumented
-pilot should require completed references, timing and missing-data flags, and
-all ten trial records. Camera-only, cardiac-only, fused, and Random conditions
-would identify the useful evidence path; time-weighted and event-weighted
-trajectory summaries should be compared directly.
+\subsection{Future Work}
 
-Before a larger crossover, preregister the smallest relevant mood-fit effect,
-sample size, exclusions, paired and order analyses, and signal-quality
-rules~\cite{lakens2022}. A dynamic-catalog study should record availability,
-playback failures, coverage, revisions, explanations, overrides, and privacy
-expectations. Recording these factors would distinguish measurement failures
-from recommendation failures and show whether session-aware re-ranking adds
-value above a preference model.
+The sensing layer should be evaluated separately from song selection. Brief
+within-listener valence and arousal reports collected after selected trials
+could be compared with the system coordinates. Camera-only, cardiac-only,
+combined, and no-signal variants would then show which channels add useful
+information. These reports would assess the mapping rather than enter the
+recommendation rule.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{fig3_pilot_evidence.pdf}
-  \caption{Panels (a)--(b) show mood fit, while panels (c)--(d) show liking.
-  The left panels connect Random and Vibe five-trial means and summarize
-  condition means. The right panels show all paired differences, fixed-seed
-  bootstrap mean distributions, and reported paired means with $t$-based 95\%
-  CIs. Both paired intervals cross zero.}
-  \Description{Four compact panels compare mood fit and liking for 15
-  participant-session means. Connected pairs show Random and Vibe ratings;
-  estimation panels show paired differences and mean confidence intervals.}
-  \label{fig:pilot}
-\end{figure}
+The trajectory summary should also be studied directly. Event-weighted
+averaging can be compared with time-weighted averaging, a recent-window
+estimate, and robust summaries that reduce the influence of isolated changes.
+The region-first rule can be compared with continuous nearest-track matching in
+the full valence--energy space. These comparisons would separate the effects of
+sensing, temporal aggregation, and catalog matching.
+
+A preference-based recommender provides the practical comparator. A standard
+model could generate a small candidate set of songs that the listener is likely
+to enjoy, and Vibe Shuffle could re-rank the same candidates using the current
+trajectory. Holding the candidate set fixed would isolate the value of session
+context from that of general preference modeling.
+
+A larger preregistered crossover~\cite{nosek2018,lakens2022} should use mood
+fit as the primary outcome and liking as a safeguard. Sample size should be
+based on the smallest mood-fit improvement that would matter in practice. A
+predefined equivalence or non-inferiority margin for liking would test whether
+contextual re-ranking improves momentary fit without making the selected songs
+less enjoyable. Track-level analyses could examine how effects develop across
+a session and differ between sensing variants. Effort, privacy, and willingness
+to enable a camera or wearable should be measured alongside recommendation
+quality~\cite{knijnenburg2012}.

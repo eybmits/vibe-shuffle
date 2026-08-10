@@ -607,7 +607,7 @@ def draw_candidate_ranking(
     axis.text(
         0.5,
         -0.105,
-        r"$d_i^2=(V_i-\bar{V})^2+(E_i-\bar{A})^2$",
+        r"$d_s^2=(V_s-\bar{V})^2+(E_s-\bar{A})^2$",
         transform=axis.transAxes,
         ha="center",
         va="top",

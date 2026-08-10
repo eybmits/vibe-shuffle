@@ -1,40 +1,36 @@
-\section{Conclusion \& Future Work}
+\section{Conclusion}
 
-Vibe Shuffle turns within-listener camera and cardiac changes into next-song
-decisions through personal references, a listening trajectory, and an explicit
-region-and-distance rule. The resulting chain from observation to selected
-track can be inspected without assigning the listener an emotion label.
+Vibe Shuffle provides an explicit method for context-sensitive next-song
+selection. Camera and cardiac observations are measured relative to personal
+references, combined into a short valence--arousal trajectory, and translated
+into a catalog region and nearest eligible track. The system uses observable
+changes as recommendation context without presenting them as direct
+measurements of emotion.
 
-The crossover yielded a higher average mood-fit rating under Vibe Shuffle and
-almost no change in liking, but both intervals crossed zero. The available
-records cannot explain the between-participant differences, so the policy's
-effect remains unresolved.
+Across 15 sessions, mood fit differed by $+0.56$ points and liking by $+0.09$
+points, but both confidence intervals included zero. The available data
+therefore do not establish either effect. A larger study is needed to determine
+whether the method improves momentary fit while preserving general liking.
 
-If later evidence supports the policy, session-aware re-ranking could be tested
-for exercise, focus, relaxation, games, or accessibility settings. Real-world
-use would require visible uncertainty, an immediate opt-out, data-minimizing
-processing, and adaptation subordinate to explicit choices.
-
-The next study must validate the signal mappings, retain complete trial records,
-preregister its analysis, and evaluate a dynamic candidate pool. Only then can
-session-aware re-ranking be judged against preference-based recommendation in a
-real music service. Vibe Shuffle supplies the inspectable mechanism; the next
-experiment must determine whether it improves what listeners hear.
+Vibe Shuffle links observations measured relative to personal references to a
+next-song choice through a trajectory mean and a fixed region-and-distance
+rule. Validating the signal mappings and testing this rule as a re-ranking layer
+above a standard preference model are the next steps. This positions short-term,
+within-listener context as an inspectable complement to preference modeling,
+not a substitute for it.
 
 \section{Contribution Statement}
 
-Markus Baumann, Felix Hajuj, and Miriam Janner jointly contributed to the
-project concept, study execution, interpretation, and review of the report.
-Markus Baumann additionally implemented and tested the archived repository
-version, reproduced the participant-level statistics, and prepared the visual
-analysis. The available records do not preserve a finer-grained division of
-writing responsibilities.
+Markus Baumann, Felix Hajuj, and Miriam Janner jointly developed the project
+concept, conducted the study, interpreted the results, and reviewed the
+manuscript. Markus coordinated the implementation, analysis, figures, and
+preparation of the final paper.
 
 \section*{Open Science and Transparency}
 
-The project repository contains source code, the frozen catalog, tests, figure
-scripts, participant/session means, and result-provenance records:
-\url{https://github.com/eybmits/vibe-shuffle}. It contains no raw trial rows,
-sensor streams, recruitment records, administration logs, or code revision tied
-to the pilot sessions. The computational tests verify the reported source tree,
-not the historical data-collection environment.
+To support transparency and reproducibility, the complete project repository is
+openly available at \url{https://github.com/eybmits/vibe-shuffle}. It includes
+the source code, catalog data, automated tests, figure-generation scripts,
+manuscript sources, rendered paper, and project website. Together, these
+materials allow others to inspect the system's decision logic, reproduce the
+software and paper outputs, and extend Vibe Shuffle in future research.

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Create Figure 3: participant-level paired estimation plots.
+"""Create Figure 3: session-level paired estimation plots.
 
 Chart contract
 --------------
 Question:
-    How did participant/session ratings change from Random to Vibe, and how
+    How did session-level ratings change from Random to Vibe, and how
     uncertain is the mean paired change?
 Takeaway:
     Mood fit moves in a positive but heterogeneous direction; liking remains
@@ -15,7 +15,7 @@ Form:
     containing individual differences, a deterministic bootstrap distribution
     of the mean, and the reported t-based 95% confidence interval.
 Data:
-    Fifteen published participant/session means plus the supplied inferential
+    Fifteen published session-level means plus the supplied inferential
     summary. No trial-level values are reconstructed.
 Surface:
     Compact ACM single-column figure, exported as vector PDF and 300 dpi PNG.
@@ -128,10 +128,10 @@ def _load_participants() -> list[dict[str, str]]:
     with PARTICIPANT_PATH.open(newline="", encoding="utf-8") as source_file:
         rows = list(csv.DictReader(source_file))
     if len(rows) != 15:
-        raise ValueError(f"Expected 15 participant/session rows, found {len(rows)}.")
+        raise ValueError(f"Expected 15 session rows, found {len(rows)}.")
     identifiers = [row["participant"] for row in rows]
     if len(set(identifiers)) != len(identifiers):
-        raise ValueError("Participant/session analysis identifiers must be unique.")
+        raise ValueError("Session analysis identifiers must be unique.")
     for row in rows:
         for outcome in OUTCOMES:
             for field in (outcome.random_field, outcome.vibe_field):
@@ -547,9 +547,9 @@ def build_figure() -> mpl.figure.Figure:
 def main() -> None:
     figure = build_figure()
     metadata = {
-        "Title": "Participant-level paired outcomes in the Vibe Shuffle pilot",
+        "Title": "Session-level paired outcomes in the Vibe Shuffle pilot",
         "Subject": (
-            "Random-to-Vibe participant/session means, paired differences, "
+            "Random-to-Vibe session-level means, paired differences, "
             "bootstrap mean distributions, and reported confidence intervals"
         ),
         "Creator": "Vibe Shuffle reproducible figure script",

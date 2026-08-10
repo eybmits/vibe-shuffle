@@ -1,68 +1,68 @@
 \section{Concept Overview}
 \label{sec:concept}
 
-Vibe Shuffle was designed around personal calibration, inspectable decisions,
-and cautious interpretation. Observations are expressed as changes from the
-listener's own reference instead of population thresholds. The research
-record exposes the path from those observations to the selected song, while
-sensor outputs guide recommendation without being shown as the listener's
-emotion.
+Vibe Shuffle expresses camera and cardiac observations as changes from personal
+reference values rather than population thresholds. These relative observations
+form a trajectory mean, which determines a catalog region and selected track.
+Sensor outputs guide selection but do not identify the listener's emotion.
 
-The project evaluates whether tracks match the present session. It does not
-attempt to regulate mood or assume that an energetic track should calm
-activation or that positive Valence should repair a negative state.
-Maintaining, intensifying, and shifting would require separate policies.
+The selection objective is momentary track fit, not mood regulation. The method
+does not assume that an energetic track should reduce activation or that
+positive valence should counteract a negative state. Maintaining, intensifying,
+and shifting affect would require separate adaptation rules.
 
-The final design combines a personal reference, a trajectory built from
-multiple samples, a fixed region-and-distance rule, and a Random comparator
-from the same catalog. Optional inputs and explicit signal-path fields let a
-session continue when a channel is missing. The repository documents the
-implemented system and its later methodological audit, but it contains no
-sketches, interviews, dated prototype history, or qualitative feedback log
-from which participant-driven design changes could be reconstructed.
+The method combines personal reference values, a multi-sample trajectory, a
+fixed region-and-distance rule, and a Random comparator using the same catalog.
+Missing sensing channels do not stop a session, and the active signal path is
+recorded.
 
 Vibe Shuffle follows a six-step loop: acquire personal references, collect
 camera and cardiac observations during playback, express them as relative
-Valence--Arousal points, summarize the trajectory, choose the nearest eligible
+valence--arousal points, summarize the trajectory, choose the nearest eligible
 song in the corresponding catalog region, and record the rating and decision
-trace. Adaptation occurs between tracks, so brief fluctuations cannot
-interrupt the current song. Figure~\ref{fig:trajectory} shows this loop.
+fields. Adaptation occurs between tracks, so brief fluctuations cannot
+interrupt the current song (Figure~\ref{fig:trajectory}).
 
-The intended use is scientific evaluation of baseline-relative adaptation. A
-future music service could test the policy as a re-ranking layer above a
-conventional preference model. The present project neither implements nor
-validates that deployment.
+These design choices serve different purposes. Personal references make the
+system sensitive to changes within one listener rather than differences between
+people. Updating only between tracks keeps playback stable. The four catalog
+regions provide an understandable target, while distance ranking selects the
+closest remaining song within that target. Optional sensing lets the same
+pipeline operate with camera data, cardiac data, both, or a fallback coordinate.
+The result is a direct and inspectable chain from observation to song choice.
 
-\section{Signal \& Pipeline}
+\section{Signal and Pipeline}
 \label{sec:signals}
 
 The multimodal input has two distinct channels. A camera supplies visual and
 behavioral cues; an optional wearable supplies physiological timing. The
 camera reference runs for up to 14 seconds and may be skipped. The cardiac
-reference records 120 seconds of device-produced heart rate and RR intervals.
+reference, when available, records 120 seconds of device-produced heart rate and
+RR intervals.
 Subsequent observations are centered on these personal values. The references
 do not define a neutral or true emotional state; they provide local comparison
 points for the session.
 
-The camera supplies visible evidence primarily for relative Valence; cardiac
-change supplies relative activation. Both are accessible through commodity
-interfaces, but each mapping requires separate validation. Figure~\ref{fig:trajectory}
-shows how the relative inputs enter the trajectory and catalog decision.
+Camera observations primarily provide relative valence evidence, whereas
+cardiac changes provide relative activation evidence. Both mappings require
+independent validation.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig2_relative_trajectory.pdf}
   \caption{Panel (a) shows signed camera and cardiac changes measured against
-  personal references. Panel (b) summarizes the trajectory between its open
-  start and filled endpoint using the arithmetic mean (gold diamond). In panel
+  personal references. It shows the primary signal paths; camera movement may
+  also contribute to relative arousal. Panel (b) summarizes the trajectory
+  between its open start and filled endpoint using the arithmetic mean (gold
+  diamond). In panel
   (c), the nearest catalog track is \emph{As It Was} by Harry Styles, which the
-  policy therefore selects. Its Euclidean distance is shown beside the track;
+  selection rule therefore selects. Its Euclidean distance is shown beside the track;
   two unlabeled open points indicate nearby alternatives, and the equivalent
   squared-distance expression appears below the panel. Panels (a)--(b) are
   schematic, whereas panel (c) uses catalog-derived coordinates and distance.
   Coherence is logged but not used for selection.}
   \Description{Three equal square panels show camera and cardiac changes from
-  personal references, a curved illustrative relative valence-arousal
+  personal references, a curved illustrative relative valence--arousal
   trajectory with its mean, and a circular catalog neighbourhood in which the
   nearest track, As It Was by Harry Styles, is selected in red while two
   unlabeled open points show other nearby catalog candidates.}
@@ -77,27 +77,27 @@ activations~\cite{mediapipe2019}. A fixed heuristic combines selected smile,
 cheek, brow, eye, jaw, frown, and mouth cues into positive, negative, and
 tension-related scores. Samples scheduled at 120\,ms intervals are debiased
 against the reference and smoothed across frames. More positive visible
-evidence moves relative Valence right; negative or tension-related evidence
+evidence moves relative valence right; negative or tension-related evidence
 moves it left. A slowly adapting reference follows longer changes. If no face
-is detected, Valence returns to the center.
+is detected, valence returns to the center.
 
-Visible movement and nodding can also add positive-Valence and upward-Arousal
+Visible movement and nodding can also add positive-valence and upward-arousal
 evidence. The channel represents change in observable behavior under a fixed
 rule, not felt emotion. Lighting, pose, occlusion, morphology, culture,
 deliberate expression, dancing, and repositioning may change the
-output~\cite{barrett2019,aviezer2012,kuppens2017}. The complete coefficients and
-gates are retained in \texttt{src/expressionModel.js}.
+output~\cite{barrett2019,aviezer2012,kuppens2017}. Fixed coefficients and gating
+rules are applied uniformly across sessions.
 
 Cardiac evidence enters through a compatible Bluetooth Heart Rate Service
-device, which supplies beats per minute
-and, when available, RR intervals. The research system has no raw
-electrocardiogram and cannot inspect the device's beat detector. Implausible
-or abruptly changing intervals are rejected before variability is calculated.
+device, which supplies beats per minute and, when available, RR intervals. This
+interface exposes neither raw electrocardiography nor the device's
+beat-detection logic. Implausible or abruptly changing intervals are rejected
+before variability is calculated.
 The reference stores median heart rate, the root mean square of successive
 differences (RMSSD), and robust spread estimates.
 
 During listening, higher-than-reference heart rate and lower-than-reference
-RMSSD provide upward Arousal evidence; changes in the opposite direction
+RMSSD provide upward arousal evidence; changes in the opposite direction
 provide downward evidence. Heart rate receives the larger influence, and
 RMSSD is damped when the indicators disagree. At least 20 accepted RR
 intervals are required for the full estimate. RMSSD is a recognized
@@ -108,32 +108,31 @@ interpretation~\cite{shaffer2017,laborde2017,quigley2024}. Agreement between
 resting conditions, not short listening windows with movement
 ~\cite{munoz2015}.
 
-The export also records SDNN and a custom spectral-peakedness field called
-physiology coherence. It differs from the coherence measure associated with
-post-session emotion labels in large-scale biofeedback data
-~\cite{balaji2025}. It is diagnostic only and does not affect song selection.
+SDNN and a custom spectral-peakedness measure termed physiology coherence are
+computed for diagnostic purposes only. This measure differs from the
+group-level coherence measure associated with post-session emotion labels in
+large-scale biofeedback data~\cite{balaji2025} and does not affect song
+selection.
 
 The channel-specific values enter a shared pipeline for acquisition,
-plausibility filtering, personal-reference centering, smoothing, quality
+plausibility filtering, centering on personal references, smoothing, quality
 assessment, and coordinate fusion. Usable
-cardiac evidence sets the Arousal base, while camera movement can add upward
+cardiac evidence sets the arousal base, while camera movement can add upward
 evidence. Camera movement supplies an upward-only fallback when cardiac data
 are unavailable. If neither channel is usable, the coordinate returns to the
 central reference point.
 
-Raw camera frames, facial landmarks, and Bluetooth notifications remain in
-browser memory. A locally downloaded CSV contains derived summaries, reference
-status, signal source, quality flags, timing, selected-song metadata, and
-ratings. It excludes frames, landmarks, raw packets, waveforms, complete
-trajectories, personal facial-reference values, and the session seed. This is
-a data-minimizing local export, not a formally privacy-preserving system.
-Spotify playback, MediaPipe assets, and hosting still require network traffic.
+Camera frames, facial landmarks, and Bluetooth notifications are processed in
+browser memory. Stored study data comprise derived summaries, reference status,
+signal source, quality flags, timing, selected-song metadata, and ratings.
+Frames, landmarks, raw packets, waveforms, complete trajectories, personal
+facial-reference values, and the session seed are not stored.
 
-\section{Inference \& Adaptation}
+\section{Inference and Adaptation}
 \label{sec:inference}
 
-During confirmed playback, a change in the fused coordinate appends a point to
-the trial trajectory
+During confirmed playback, an event-driven update to the fused state appends a
+point to the trial trajectory
 \[
   \mathcal{T}=\{(V_1,A_1),\ldots,(V_m,A_m)\}.
 \]
@@ -142,50 +141,46 @@ At rating time, the arithmetic mean
   (\bar V,\bar A)=\frac{1}{m}\sum_{i=1}^{m}(V_i,A_i)
 \]
 becomes the target for the next Vibe choice. Aggregation reduces dependence on
-one observation but is event-weighted, because points are added when the
-coordinate changes rather than at a fixed rate. The export records sample
-count and listening duration for review.
+one observation but is event-weighted: periods that generate more fused-state
+updates contribute more points than periods with fewer updates. Sample count
+and listening duration are recorded for each trial.
 
 Splitting both axes at 0.5 produces four catalog regions: Energetic, Calm,
-Tense, and Melancholic. These names identify Valence--Energy partitions; they
-do not classify the participant. Listener Arousal and song Energy are
-operational counterparts for retrieval, not equivalent constructs
+Tense, and Melancholic. These names identify valence--energy partitions; they
+do not classify the listener. Listener arousal and song energy are
+corresponding axes used for matching, not equivalent constructs
 ~\cite{helmholz2019,yang2012}.
 
 The frozen catalog contains 100 unique Spotify tracks, with 25 in each region.
-Its retained Valence and Energy coordinates originate from a public historical
-dataset~\cite{spotifydataset}. The repository preserves the track records but
-not the download date or a script reproducing their curation. The preserved
-catalog is a frozen stimulus set, not a fresh derivation.
+Track valence and energy coordinates were obtained from a public historical
+dataset~\cite{spotifydataset}.
 
 Selection applies the same exclusion rule in both conditions: the current track
-and every previously played track are removed. Vibe then keeps unplayed tracks
-in the target region and selects the smallest Euclidean distance:
+and every previously played track are removed. Let $Q(\bar V,\bar A)$ denote the
+set of remaining tracks in the catalog region containing the mean trajectory
+coordinate. Vibe Shuffle selects the smallest Euclidean distance:
 \[
  s^*=\arg\min_{s\in Q(\bar V,\bar A)}
  \sqrt{(V_s-\bar V)^2+(E_s-\bar A)^2}.
 \]
-A session seed resolves exact ties. If the region is exhausted, the policy
-searches the complete unplayed pool. Random uses the same pool and exclusions
-but ranks candidates by a session-seeded pseudorandom score. Catalog, playback
-path, exposure count, and rating questions remain constant, isolating the
-selection rule more closely than a comparison between different interfaces.
+Equal-distance candidates are ordered by a deterministic score derived from the
+track identifier and session seed. If the region is exhausted, the method
+searches the complete remaining catalog. Both conditions use the same catalog,
+exclusion rules, number of tracks, playback interface, and rating questions.
+Vibe Shuffle selects the nearest remaining track in the target region, whereas
+Random ranks all remaining tracks by a deterministic pseudorandom score derived
+from the track identifier and a session-derived seed.
 
 Because sensing is optional, a Vibe decision can use camera evidence, cardiac
-evidence, both, or neither. The retained summaries do not report these
-frequencies; the first track may also precede a completed facial reference.
+evidence, both, or neither. The first Random track is selected pseudorandomly,
+whereas a first-block Vibe track uses the
+fused coordinate available at session start. At a block transition, a first
+Vibe track uses the final listening window of the preceding block. Later Vibe
+tracks use the mean trajectory from the immediately preceding window.
 
-Adaptation changes only the next-song ranking. The completed trajectory
-produces a target, region, eligible set, distance ranking, and selected track.
-The local record exposes the final coordinate and decision, although it cannot
-replay every sensing step.
-
-In a future service, a long-term preference model could first generate a
-suitable candidate pool. A confidence-gated Vibe policy could then adjust the
-ordering for the current session while preserving an override and a visible
-explanation. That deployment model has not been evaluated.
-
-The decision record contains the personal reference, relative coordinate,
-trajectory mean, catalog region, eligible set, distances, and chosen track. In
-a service, these fields could support an explanation, suppress adaptation under
-weak signals, and preserve immediate preference-only selection.
+Adaptation changes only the next-song ranking. At selection time, the method
+computes a target region, eligible set, distances, and selected track. Recorded
+selection variables include reference status, target coordinate, trajectory
+sample count, selected-track distance, region match, selected track, and
+quality indicators. Complete trajectories, eligible sets, and full distance
+lists are not stored.

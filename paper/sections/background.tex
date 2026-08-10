@@ -1,37 +1,35 @@
 \section{Background}
 
-Dimensional affect models provide a shared vocabulary for listeners and music.
-Russell's circumplex represents Valence, from unpleasant to pleasant, and
-Arousal, from low to high activation~\cite{russell1980,posner2005}. Thayer's
-account adds complementary categories for energetic and tense activation
-~\cite{thayer1991}. Both dimensional and categorical models occur in
-music-emotion research, and results depend on the selected model, labels, and
-stimuli~\cite{eerola2013}. Vibe Shuffle adopts this vocabulary as a coordinate
-for recommendation, not as a complete account of experience.
+Dimensional affect models provide a simple vocabulary for listeners and music.
+Russell's circumplex places valence from unpleasant to pleasant and arousal
+from low to high activation~\cite{posner2005,russell1980}. Thayer's model adds
+categories such as energetic and tense~\cite{thayer1991}. These models are
+common in music-emotion research, but their meaning depends on the labels,
+stimuli, and context~\cite{eerola2013}. Vibe Shuffle uses them as a practical
+coordinate system for recommendation, not as a complete description of
+experience.
 
-Figure~\ref{fig:affect-space} contrasts continuous coordinates, a categorical
-vocabulary, and HRV-frequency context. The policy outputs neither emotion words
-nor coherence profiles. Its coordinates encode within-listener change, which
-does not make facial or cardiac observations emotion-specific.
+The continuous and categorical representations in
+Figure~\ref{fig:affect-space} define the recommendation space, while the HRV
+panel provides frequency context. Vibe Shuffle outputs neither emotion labels
+nor coherence profiles. Its coordinates encode changes from personal reference
+values rather than direct measurements of emotion.
 
-Songs occupy a parallel Valence--Energy space. Song Valence describes conveyed
-positivity, whereas Energy describes intensity and activity. Prior interfaces
-have used these catalog features as counterparts of affective Valence and
-Arousal~\cite{helmholz2019}. Vibe Shuffle follows that convention while keeping
-the constructs distinct: musical Energy is not physiological Arousal.
-Music-emotion coordinates depend on subjective annotation and compress a course
-that changes over time~\cite{yang2012,aljanaki2017}.
+Songs are represented in a parallel valence--energy space. The catalog valence
+coordinate describes
+the positivity conveyed by a track, while energy captures its intensity and
+activity. Catalog valence and energy have served as matching axes for affective
+valence and arousal~\cite{helmholz2019}. Musical energy and physiological
+arousal remain distinct constructs, and music-emotion coordinates are
+subjective and may change during a song~\cite{aljanaki2017,yang2012}.
 
-Splitting both axes at 0.5 yields four recommendation regions. The listener's
-relative position selects a region, region membership determines eligibility,
-and Euclidean distance ranks the eligible songs. The coordinate functions as a
-controlled retrieval space and makes no claim to ground-truth emotion.
+Splitting both axes at 0.5 creates four catalog regions. The mean coordinate of
+the listening trajectory determines the target region, and the remaining tracks
+in that region are ranked by their distance from this mean.
 
-Cardiac timing supplies one source of relative Arousal information. HRV
-describes beat-to-beat variation, and RMSSD summarizes short-term
-RR-interval variation~\cite{shaffer2017}. Recording length, respiration,
-movement, posture, fitness, medication, contact quality, and vendor processing
-limit interpretation~\cite{laborde2017,quigley2024}. Vibe Shuffle uses heart
-rate and RMSSD only as baseline-relative Arousal evidence. Its custom
-spectral-peakedness field is diagnostic, differs from the group-level coherence
-measure in Balaji et al.~\cite{balaji2025}, and never affects selection.
+Cardiac timing provides one source of relative arousal evidence. HRV describes
+variation between heartbeats, while RMSSD summarizes short-term variation in RR
+intervals~\cite{shaffer2017}. Their interpretation depends on recording length,
+respiration, movement, posture, fitness, medication, sensor quality, and device
+processing~\cite{laborde2017,quigley2024}. Vibe Shuffle therefore uses heart
+rate and RMSSD only relative to a personal reference.
