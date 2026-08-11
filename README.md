@@ -10,7 +10,7 @@ average to one of four broad regions, and selects a nearby unplayed song. A
 masked study mode compares this policy with Random selection from the same
 controlled pool.
 
-- **Authors:** Felix Hajuj, Markus Baumann, Miriam Janner
+- **Authors:** Markus Baumann, Felix Hajuj, Miriam Janner
 - **Paper:** [`public/paper.pdf`](public/paper.pdf)
 - **Submission package:** [`paper/submission/`](paper/submission/)
 - **Cross-computer handoff:** [`HANDOFF.md`](HANDOFF.md)
@@ -35,8 +35,10 @@ objective or clinical emotion.
    estimate Arousal.
 3. The signals are fused into a sequence of relative Valence-Arousal points
    during each listening window. The arithmetic mean summarizes this trajectory.
-4. Random mode uses a reproducible seeded order. Vibe mode maps the trajectory
-   mean to one of four regions and selects the closest eligible unplayed track.
+4. Random mode ranks remaining tracks with deterministic pseudorandom scores
+   derived from their IDs and a fresh session seed. Reusing the seed reproduces
+   the ranking. Vibe mode maps the trajectory mean to one of four regions and
+   selects the closest eligible unplayed track.
 5. The participant rates liking and mood fit on seven-point scales and reports
    their current mood.
 

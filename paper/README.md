@@ -15,7 +15,9 @@ layout:
 Run:
 
 ```bash
-python3 -m pip install -r paper/requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r paper/requirements.txt
 npm run paper
 ```
 

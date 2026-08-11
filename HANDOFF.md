@@ -54,11 +54,13 @@ tables, catalog snapshot, provenance note, and build instructions.
 
 ## Rebuild the paper
 
-Install Python 3, the packages in `paper/requirements.txt`, and a current TeX
-Live distribution with `latexmk` and the ACM `acmart` class. Then run:
+Install Python 3 and a current TeX Live distribution with `latexmk` and the ACM
+`acmart` class. Create an isolated Python environment and run:
 
 ```bash
-python3 -m pip install -r paper/requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r paper/requirements.txt
 npm run paper
 ```
 
