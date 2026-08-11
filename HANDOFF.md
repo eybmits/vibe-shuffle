@@ -68,9 +68,11 @@ deliberately and their checksums must then be regenerated.
 
 ## Scientific boundary
 
-Vibe Shuffle studies a transparent, baseline-relative next-song policy. Camera
-and optional cardiac observations are interpreted as within-listener proxy
-changes, not as an objective, complete, or clinical emotion label. The retained
+Vibe Shuffle studies a transparent, personal-reference-informed next-song
+policy. Facial and cardiac observations are interpreted relative to personal
+references, while recent-window movement cues enter separately. These signals
+provide recommendation context, not an objective, complete, or clinical emotion
+label. The retained
 exploratory crossover includes participant/session means for 15 records, but no
 raw trial rows, sensor streams, recruitment records, administration logs, or
 historical collection revision. Both reported paired confidence intervals cross

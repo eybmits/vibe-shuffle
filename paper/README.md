@@ -31,7 +31,8 @@ the final PDF to `public/paper.pdf`.
   distinction discussed by Balaji et al. It does not reconstruct their curves,
   observations, or session data.
 - Figure 2 is original to Vibe Shuffle and documents the implemented
-  baseline-relative signal, trajectory, and selection path. Its trajectory is
+  reference-relative facial and cardiac paths, recent-window movement cues,
+  trajectory, and selection path. Its trajectory is
   illustrative; the candidate ranking, distances, played-track exclusion, and
   selected track are repository-derived.
 - Figure 3 independently redraws the original paired-estimation display using
@@ -48,6 +49,7 @@ permission.
 
 ## Claim boundary
 
-Vibe Shuffle estimates relative proxy changes for a transparent recommendation
-rule. It does not infer objective emotion, provide a clinical measurement, or
-establish that adaptive selection is superior to Random selection.
+Vibe Shuffle combines within-session proxy observations for a transparent
+recommendation rule. It does not infer objective emotion, provide a clinical
+measurement, or establish that adaptive selection is superior to Random
+selection.

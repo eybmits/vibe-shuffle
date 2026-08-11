@@ -1,7 +1,7 @@
 {
   "name": "vibe-shuffle",
   "version": "1.0.0",
-  "description": "Baseline-relative research system for reviewable next-song selection.",
+  "description": "Personal-reference-informed research system for reviewable next-song selection.",
   "license": "MIT",
   "homepage": "https://eybmits.github.io/vibe-shuffle/",
   "repository": {

@@ -1,10 +1,11 @@
 # Vibe Shuffle
 
-Vibe Shuffle is a scientific research project on baseline-relative music
-selection. Its current experimental implementation runs in a browser and turns
-changes relative to a listener's personal camera and cardiac references into a
-reviewable next-song choice. It does not claim to diagnose a complete emotional
-state. Instead, it follows a recent Valence-Arousal trajectory, assigns its
+Vibe Shuffle is a scientific research project on session-contextual music
+selection. Its current experimental implementation runs in a browser and
+combines reference-relative facial and cardiac observations with recent-window
+movement cues to produce a reviewable next-song choice. It does not claim to
+diagnose a complete emotional state. Instead, it follows a recent
+Valence-Arousal trajectory, assigns its
 average to one of four broad regions, and selects a nearby unplayed song. A
 masked study mode compares this policy with Random selection from the same
 controlled pool.
@@ -17,17 +18,18 @@ controlled pool.
 
 ## Research question
 
-Can a transparent next-song policy based on relative Valence-Arousal changes
-improve participant-rated mood fit compared with Random selection from the same
-fixed track pool?
+Can a transparent next-song policy based on within-session Valence-Arousal
+observations improve participant-rated mood fit compared with Random selection
+from the same fixed track pool?
 
 The prototype evaluates recommendation quality. It does not claim to infer an
 objective or clinical emotion.
 
 ## How it works
 
-1. MediaPipe facial blendshapes are mapped to a baseline-relative Valence score
+1. MediaPipe facial blendshapes are mapped to a reference-relative Valence score
    with transparent, rule-based heuristics after a 14-second calibration.
+   Movement and nodding are summarized separately over a recent camera window.
 2. An optional Bluetooth heart-rate sensor provides heart rate and RR intervals.
    Heart rate and RMSSD are compared with a 120-second personal baseline to
    estimate Arousal.
