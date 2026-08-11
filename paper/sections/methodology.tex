@@ -1,9 +1,10 @@
 \section{Concept Overview}
 \label{sec:concept}
 
-Vibe Shuffle expresses camera and cardiac observations as changes from personal
-reference values rather than population thresholds. These relative observations
-form a trajectory whose mean determines a catalog region and selected track.
+Vibe Shuffle expresses facial and cardiac observations as changes from personal
+reference values rather than population thresholds and combines them with
+recent-window movement cues. The resulting coordinates form a trajectory whose
+mean determines a catalog region and selected track.
 Sensor outputs guide selection but do not identify the listener's emotion.
 
 The selection objective is momentary track fit, not mood regulation. The method
@@ -21,12 +22,12 @@ Vibe Shuffle follows a six-step loop:
   \setlength{\itemsep}{0pt}
   \setlength{\parsep}{0pt}
   \setlength{\topsep}{3pt}
-  \item \textbf{Personal references.} Acquire camera and cardiac reference
+  \item \textbf{Personal references.} Acquire facial and cardiac reference
   values.
   \item \textbf{Observation.} Collect camera and cardiac observations during
   playback.
-  \item \textbf{Relative coordinates.} Express the observations as relative
-  valence--arousal points.
+  \item \textbf{Relative coordinates.} Combine reference-relative facial and
+  cardiac observations with recent movement as valence--arousal points.
   \item \textbf{Trajectory summary.} Summarize the collected points as a
   trajectory mean.
   \item \textbf{Song selection.} Choose the nearest eligible song in the
@@ -36,9 +37,10 @@ Vibe Shuffle follows a six-step loop:
 Adaptation occurs between tracks, so brief fluctuations cannot interrupt the
 current song (Figure~\ref{fig:trajectory}).
 
-These design choices serve different purposes. Personal references make the
-system sensitive to changes within one listener rather than differences between
-people. Updating only between tracks keeps playback stable. The four catalog
+These design choices serve different purposes. Personal references make facial
+and cardiac evidence sensitive to changes within one listener rather than
+differences between people. Recent camera windows capture current movement.
+Updating only between tracks keeps playback stable. The four catalog
 regions provide an understandable target, while distance ranking selects the
 closest remaining song within that target. Optional sensing lets the same
 pipeline operate with camera data, cardiac data, both, or a fallback coordinate.
@@ -49,24 +51,27 @@ The result is a direct and inspectable chain from observation to song choice.
 
 The multimodal input has two distinct channels. A camera supplies visual and
 behavioral cues. An optional wearable supplies physiological timing. The
-camera reference runs for up to 14 seconds. The cardiac
+facial reference runs for up to 14 seconds. The cardiac
 reference, when available, records 120 seconds of device-produced heart rate and
-RR intervals. The camera reference then adapts slowly to longer visible changes,
+RR intervals. The facial reference then adapts slowly to longer visible changes,
 whereas the cardiac reference remains fixed during the session. Subsequent
-observations are centered on the active channel references. The references do
-not define a neutral or true emotional state. They provide local comparison
-points for the session.
+facial and cardiac observations are centered on the active channel references.
+Movement and nodding are computed over a recent camera window rather than a
+personal movement reference. The references do not define a neutral or true
+emotional state. They provide local comparison points for the session.
 
-Camera observations primarily provide relative valence evidence, whereas
-cardiac changes provide relative activation evidence. Both mappings require
-independent validation.
+Reference-relative facial observations primarily provide valence evidence,
+whereas cardiac changes provide relative activation evidence. Camera movement
+can additionally raise both coordinates. All mappings require independent
+validation.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{fig2_relative_trajectory.pdf}
-  \caption{Panel (a) shows signed camera and cardiac changes measured against
-  personal references. It shows the primary signal paths. Camera movement may
-  also contribute to relative arousal. Panel (b) summarizes the trajectory
+  \caption{Panel (a) shows signed facial and cardiac changes measured against
+  personal references. It shows the primary reference-relative signal paths.
+  Camera movement may also contribute positive-valence and upward-arousal
+  evidence. Panel (b) summarizes the trajectory
   between its open start and filled endpoint using the arithmetic mean (gold
   diamond). In panel
   (c), the nearest catalog track is \emph{As It Was} by Harry Styles, which the
@@ -74,8 +79,8 @@ independent validation.
   track. Two unlabeled open points indicate nearby alternatives, and the equivalent
   squared-distance expression appears below the panel. Panels (a)--(b) are
   schematic, whereas panel (c) uses catalog-derived coordinates and distance.}
-  \Description{Three equal square panels show camera and cardiac changes from
-  personal references, a curved illustrative relative valence--arousal
+  \Description{Three equal square panels show reference-relative facial and
+  cardiac changes, a curved illustrative relative valence--arousal
   trajectory with its mean, and a circular catalog neighbourhood in which the
   nearest track, As It Was by Harry Styles, is selected in red while two
   unlabeled open points show other nearby catalog candidates.}
@@ -94,8 +99,9 @@ evidence moves relative valence right. Negative or tension-related evidence
 moves it left. If no face is detected, valence returns to the center.
 
 Visible movement and nodding can also add positive-valence and upward-arousal
-evidence. The channel represents change in observable behavior under a fixed
-rule, not felt emotion. Deliberate expression, dancing, and repositioning can
+evidence. These cues are computed over a recent camera window and are not
+centered on a personal movement reference. The motion channel represents current
+observable behavior under a fixed rule, not felt emotion. Deliberate expression, dancing, and repositioning can
 change the visible behavior, while body context and culture constrain its
 interpretation~\cite{barrett2019,aviezer2012,kuppens2017}. Fixed coefficients and gating
 rules are applied uniformly across sessions.
@@ -126,9 +132,10 @@ group-level coherence measure associated with post-session emotion labels in
 large-scale biofeedback data~\cite{balaji2025} and does not affect song
 selection.
 
-The channel-specific values enter a shared pipeline for acquisition,
-plausibility filtering, centering on personal references, smoothing, quality
-assessment, and coordinate fusion. Usable
+The facial and cardiac values enter a shared pipeline for acquisition,
+plausibility filtering, centering on personal references, smoothing, and quality
+assessment. Camera-derived movement evidence is computed separately before
+coordinate fusion. Usable
 cardiac evidence sets the arousal base, while camera movement can add upward
 evidence. Camera movement supplies an upward-only fallback when cardiac data
 are unavailable. If neither channel is usable, the coordinate returns to the

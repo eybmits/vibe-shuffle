@@ -22,11 +22,13 @@ therefore be treated as a direct measurement of emotion.
 
 \emph{Vibe Shuffle} examines whether short-term changes within the same listener
 provide useful context for selecting the next song. At the
-beginning of a session, the system initializes personal reference values for the
-available camera and cardiac channels. During playback, the camera reference
+beginning of a session, the system initializes personal reference values for
+facial and cardiac signals. During playback, the facial reference
 adapts slowly to longer visible changes, whereas the cardiac reference remains
-fixed. Later observations are expressed only as changes from the active
-references and mapped to relative valence and arousal coordinates. The
+fixed. Later facial and cardiac observations are expressed as changes from the
+active references, while movement and nodding are summarized over a recent
+camera window. The resulting observations are mapped to relative valence and
+arousal coordinates. The
 observations collected during a song form a trajectory. Its mean identifies one of four
 regions in a fixed music catalog, and the nearest unplayed track in that region
 becomes the next recommendation. The region names Energetic, Calm, Tense, and
@@ -36,8 +38,9 @@ coordinates without being treated as the same construct.
 
 Vibe Shuffle combines three elements:
 \begin{itemize}
-  \item \textbf{Sensing relative to personal references.} Camera and
-  cardiac observations are combined without assigning a fixed emotion label.
+  \item \textbf{Reference-informed sensing.} Reference-relative facial and
+  cardiac observations are combined with recent-window movement cues without
+  assigning a fixed emotion label.
   \item \textbf{Explicit next-song selection.} A trajectory mean, catalog
   region, and nearest-track rule turn those observations into one decision.
   \item \textbf{Exploratory comparison.} A within-session crossover across 15

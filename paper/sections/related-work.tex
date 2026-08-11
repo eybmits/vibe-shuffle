@@ -5,7 +5,8 @@ Emotion-aware recommenders therefore use the listener's current context to
 guide song selection. \emph{Feel the Moosic} asks listeners to choose a
 position in an affect space and maps it to Spotify valence and energy
 ranges~\cite{helmholz2019}. Vibe Shuffle instead derives its coordinate from
-camera and cardiac observations measured relative to personal references.
+reference-relative facial and cardiac observations together with recent-window
+movement cues.
 
 Other systems infer context from sensor data. Janssen et al.\ learned
 listener-specific relations between music and physiological responses and used
@@ -23,6 +24,6 @@ Explanations can support transparency and trust~\cite{nunes2017}, while
 perceived quality also depends on effort, privacy, and
 context~\cite{knijnenburg2012}.
 
-Vibe Shuffle centers multimodal observations on personal reference values,
-aggregates their changes as a trajectory, and applies a fixed
-region-and-distance rule.
+Vibe Shuffle centers facial and cardiac observations on personal reference
+values, combines them with recent-window movement cues, aggregates the resulting
+coordinates as a trajectory, and applies a fixed region-and-distance rule.
