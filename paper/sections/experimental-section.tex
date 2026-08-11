@@ -5,11 +5,14 @@
 
 The study examined whether context-sensitive selection improves the momentary
 fit of the next songs while maintaining general liking. Fifteen sessions
-followed a within-session crossover design. Each session contained a five-track
-Vibe block and a five-track Random block drawn from the same frozen catalog.
-The block order was reversed across two study sequences, and condition labels
-were hidden in the interface. Each session therefore provided a paired
-comparison between the two selection methods.
+followed a within-session crossover design. Each listener completed exactly one
+five-track Vibe block and one five-track Random block drawn from the same frozen
+catalog. The order was counterbalanced between listeners. One sequence presented
+Vibe before Random, while the other presented Random before Vibe. No listener
+repeated the two-block sequence. Condition labels were hidden in the interface.
+Each session therefore provided one paired comparison between the two selection
+methods, while counterbalancing reduced systematic order effects across the
+sample.
 
 Each track played for up to 60 seconds, with the option to continue to the
 rating screen earlier. After every track, listeners answered \emph{How much do
@@ -18,12 +21,11 @@ seven-point scales. They also selected one of five descriptive mood categories:
 Energetic, Calm, Tense, Melancholic, or Neutral. This categorical response did
 not affect song selection and was not included in the analyses.
 
-In the Vibe condition, the next song was chosen from the relative
-valence--arousal trajectory described in Sections~\ref{sec:signals}
-and~\ref{sec:inference}. In the Random condition, selection did not use that
-trajectory. Both conditions used the same catalog, number of tracks, playback
-interface, and rating questions. The selection method was the central
-experimental difference.
+In the Vibe condition, song selection used the sensor-guided Vibe Shuffle mode
+deployed during the study. In the Random condition, selection did not use sensed
+context. Both conditions used the same catalog, number of tracks, playback
+interface, and rating questions. The comparison therefore evaluates the two
+delivered selection modes.
 
 \subsection{Analysis}
 
@@ -38,7 +40,7 @@ intervals, and standardized paired effects $d_z$. Directional paired $t$ tests
 and Wilcoxon signed-rank tests assess whether ratings were higher under Vibe.
 The confidence intervals use the paired $t$ distribution with 14 degrees of
 freedom. Figure~\ref{fig:pilot} additionally shows 20,000 fixed-seed bootstrap
-resamples of the paired mean distribution; its displayed interval bars remain
+resamples of the paired mean distribution. Its displayed interval bars remain
 $t$-based. The analysis was exploratory and not preregistered, so estimation
 and two-sided uncertainty are primary~\cite{cumming2014,nosek2018}.
 
@@ -60,7 +62,7 @@ intervals include zero, so their size and direction remain uncertain.
 
 \begin{table*}[t]
   \caption{Five-track condition means across 15 sessions. Differences are Vibe
-  minus Random. Confidence intervals are two-sided; $p$-values correspond to
+  minus Random. Confidence intervals are two-sided. The $p$-values correspond to
   one-sided Vibe-over-Random tests.}
   \label{tab:pilot}
   \centering
@@ -83,13 +85,13 @@ intervals include zero, so their size and direction remain uncertain.
   \includegraphics[width=\columnwidth]{fig3_pilot_evidence.pdf}
   \caption{Mood fit is shown in panels (a)--(b) and liking in panels
   (c)--(d). The left panels connect the Random and Vibe five-track means for
-  each session; diamonds and bars summarize the condition means and their
+  each session. Diamonds and bars summarize the condition means and their
   $t$-based 95\% confidence intervals. The right panels show all paired
   differences, fixed-seed bootstrap distributions of the mean difference, and
   $t$-based 95\% confidence intervals. Positive differences favor Vibe
   Shuffle.}
   \Description{Four compact panels compare mood fit and liking across 15
-  sessions. Connected pairs show Random and Vibe five-track means; estimation
+  sessions. Connected pairs show Random and Vibe five-track means. Estimation
   panels show paired differences and mean confidence intervals.}
   \label{fig:pilot}
 \end{figure}

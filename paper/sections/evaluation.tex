@@ -7,7 +7,7 @@ The two outcomes capture different aspects of recommendation quality. Liking
 reflects general preference, whereas mood fit asks whether a song suits the
 present situation. A context-aware method can therefore target momentary fit
 without aiming to increase general liking. The outcomes were analyzed
-separately; neither estimate was precise enough to support a performance
+separately. Neither estimate was precise enough to support a performance
 conclusion.
 
 The selection rule links camera and cardiac changes to a recommendation through
@@ -35,7 +35,7 @@ component in an existing music service.
 
 Sixty-three deterministic unit tests cover catalog structure, data
 serialization, sensing heuristics, and song ranking. They check the implemented
-decision rules; they do not validate sensor accuracy or recommendation benefit.
+decision rules. They do not validate sensor accuracy or recommendation benefit.
 
 \subsection{Limitations}
 
@@ -56,8 +56,8 @@ differences between individual songs.
 
 The sensing layer uses fixed mappings from facial behavior, movement, heart
 rate, and RMSSD to relative valence and arousal. These observations can change
-with pose, lighting, respiration, posture, physical movement, fitness,
-medication, and sensor quality~\cite{aviezer2012,barrett2019,kuppens2017,
+with visible behavior, body context, cultural interpretation, respiration,
+posture, physical movement, fitness, medication, and sensor quality~\cite{aviezer2012,barrett2019,kuppens2017,
 laborde2017,quigley2024,shaffer2017}. Movement may influence camera evidence
 and cardiac measurements simultaneously, and the study did not estimate the
 contribution of each sensing channel. The trajectory mean is event-weighted,

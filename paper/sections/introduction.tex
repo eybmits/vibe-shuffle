@@ -13,8 +13,8 @@ challenge for contextual music recommendation~\cite{kaminskas2012,schedl2018}.
 One way to include the current situation is to ask listeners to select their
 mood. This can provide useful context, but it also interrupts the listening
 experience. Automatic adaptation avoids that interruption, although the
-available observations are uncertain. Facial behavior varies with pose,
-lighting, culture, context, and deliberate
+available observations are uncertain. Facial movements are variable, and their
+interpretation depends on body context, culture, situation, and deliberate
 expression~\cite{aviezer2012,barrett2019,kuppens2017}. Cardiac timing is also
 affected by respiration, posture, movement, fitness, medication, and sensor
 quality~\cite{laborde2017,quigley2024,shaffer2017}. Neither channel should
@@ -22,11 +22,12 @@ therefore be treated as a direct measurement of emotion.
 
 \emph{Vibe Shuffle} examines whether short-term changes within the same listener
 provide useful context for selecting the next song. At the
-beginning of a session, the system records personal reference values for the
-available camera and cardiac channels. Later observations are expressed only as
-changes from these references and mapped to relative valence and arousal
-coordinates. The observations
-collected during a song form a trajectory. Its mean identifies one of four
+beginning of a session, the system initializes personal reference values for the
+available camera and cardiac channels. During playback, the camera reference
+adapts slowly to longer visible changes, whereas the cardiac reference remains
+fixed. Later observations are expressed only as changes from the active
+references and mapped to relative valence and arousal coordinates. The
+observations collected during a song form a trajectory. Its mean identifies one of four
 regions in a fixed music catalog, and the nearest unplayed track in that region
 becomes the next recommendation. The region names Energetic, Calm, Tense, and
 Melancholic describe parts of the catalog rather than the listener's emotional
@@ -35,7 +36,7 @@ coordinates without being treated as the same construct.
 
 Vibe Shuffle combines three elements:
 \begin{itemize}
-  \item \textbf{Sensing relative to personal references.} Optional camera and
+  \item \textbf{Sensing relative to personal references.} Camera and
   cardiac observations are combined without assigning a fixed emotion label.
   \item \textbf{Explicit next-song selection.} A trajectory mean, catalog
   region, and nearest-track rule turn those observations into one decision.
@@ -58,7 +59,7 @@ study with a realistic candidate pool.
   \caption{Panels (a)--(b) adapt the affect-space representations of Helmholz
   et al.~\cite{helmholz2019}, based on Russell's
   circumplex~\cite{russell1980} and Thayer's mood--arousal
-  model~\cite{thayer1991}. Panel (c) schematically represents the group-level
+  model~\cite{thayer1990}. Panel (c) schematically represents the group-level
   frequency distinction reported by Balaji et al.~\cite{balaji2025}.}
   \Description{Three square conceptual panels show a continuous
   valence--arousal plane, a categorical affect vocabulary, and a
