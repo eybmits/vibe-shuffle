@@ -1,21 +1,19 @@
 \begin{abstract}
 Music recommenders learn what listeners like in general, but the song that fits
-depends on the moment. Vibe Shuffle asks whether facial and cardiac changes
-measured relative to personal references, together with recent camera movement,
-can make next-song selection more context-sensitive. At the start of a session
-the system initializes personal reference values for facial and cardiac signals. The facial reference then
-adapts slowly to longer visible changes, whereas the cardiac reference remains
-fixed. Later facial and cardiac observations are expressed as deviations from
-the active references, while movement and nodding are summarized over a recent
-camera window. The resulting observations are mapped to a valence--arousal plane
-without assigning the listener an emotion label. Observations collected during a track form a
-short trajectory whose mean identifies a catalog region, and the nearest
-unplayed song in that region is selected. An exploratory within-session
-crossover compared Vibe Shuffle with Random selection from the same catalog.
-Mood-fit ratings were higher on average under Vibe Shuffle while general liking
-differed little on average, but the confidence intervals for both differences
-included zero, so no recommendation benefit is established. The contribution is
-an inspectable method that turns within-session multimodal observations into a single
+depends on the moment. Vibe Shuffle asks whether within-session camera and
+cardiac observations can make next-song selection more context-sensitive. At
+the start of a session, the system initializes personal references for facial
+and cardiac signals. Later facial and cardiac observations are expressed as
+changes from those references and combined with movement and nodding summarized
+over a recent camera window. Together, these observations form a short
+trajectory in a valence--arousal plane without assigning the listener an emotion
+label. The trajectory mean identifies a catalog region, and the nearest unplayed
+song in that region is selected. An exploratory within-session crossover
+compared Vibe Shuffle with Random selection from the same catalog. Mood-fit
+ratings were higher on average under Vibe Shuffle while general liking differed
+little on average, but both confidence intervals included zero, so no
+recommendation benefit is established. The contribution is an inspectable
+method that turns within-session multimodal observations into a single
 song-selection decision, together with a blueprint for the study needed to test
 it.
 \end{abstract}
